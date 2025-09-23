@@ -789,50 +789,59 @@
                 var progressText = document.getElementById('progress-text');
                 var progressDetails = document.getElementById('progress-details');
 
-                progressText.textContent = 'OCR 워커를 초기화하고 있습니다...';
+                progressText.textContent = '이미지를 전처리하고 있습니다...';
                 progressBar.style.width = '10%';
 
-                Tesseract.createWorker({
-                    logger: function(m) {
-                        if (m.status === 'recognizing text' && typeof m.progress === 'number') {
-                            var progress = 50 + Math.round(m.progress * 40);
-                            progressBar.style.width = progress + '%';
-                            progressDetails.textContent = '텍스트 인식: ' + Math.round(m.progress * 100) + '%';
+                preprocessImage(file).then(function(processedFile) {
+                    progressText.textContent = 'OCR 워커를 초기화하고 있습니다...';
+                    progressBar.style.width = '20%';
+
+                    return Tesseract.createWorker({
+                        logger: function(m) {
+                            if (m.status === 'recognizing text' && typeof m.progress === 'number') {
+                                var progress = 60 + Math.round(m.progress * 30);
+                                progressBar.style.width = progress + '%';
+                                progressDetails.textContent = '숫자 인식 중: ' + Math.round(m.progress * 100) + '%';
+                            }
                         }
-                    }
+                    });
                 }).then(function(worker) {
                     progressText.textContent = '언어 모델을 로딩하고 있습니다...';
-                    progressBar.style.width = '20%';
+                    progressBar.style.width = '30%';
                     
                     return worker.loadLanguage('kor+eng').then(function() {
                         progressText.textContent = 'OCR 엔진을 초기화하고 있습니다...';
-                        progressBar.style.width = '30%';
+                        progressBar.style.width = '40%';
                         
                         return worker.initialize('kor+eng').then(function() {
                             progressText.textContent = 'OCR 설정을 최적화하고 있습니다...';
-                            progressBar.style.width = '40%';
+                            progressBar.style.width = '50%';
                             
+                            // 숫자와 한글 이름에만 집중
                             return worker.setParameters({
-                                tessedit_char_whitelist: '0123456789가-힣ㄱ-ㅎㅏ-ㅣABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz(),.:/%-만원점건님의상령일월납보험료합계'
+                                tessedit_char_whitelist: '0123456789가-힣,-./점만원건님',
+                                tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK,
+                                tessedit_ocr_engine_mode: Tesseract.OEM.LSTM_ONLY
                             }).then(function() {
-                                progressText.textContent = '텍스트를 인식하고 있습니다...';
-                                progressBar.style.width = '50%';
+                                progressText.textContent = '핵심 데이터를 인식하고 있습니다...';
+                                progressBar.style.width = '60%';
                                 
-                                return worker.recognize(file).then(function(result) {
+                                return worker.recognize(processedFile).then(function(result) {
                                     var text = result.data.text;
                                     var confidence = result.data.confidence;
                                     
-                                    console.log('OCR 결과:', text);
+                                    console.log('OCR 원본 결과:', text);
                                     console.log('신뢰도:', confidence);
                                     
                                     progressBar.style.width = '90%';
-                                    progressText.textContent = '데이터를 분석하고 있습니다...';
+                                    progressText.textContent = '데이터를 파싱하고 있습니다...';
                                     
-                                    parseOCRResult(text);
+                                    // 위치 기반 데이터 추출
+                                    parseFixedFormatData(text);
                                     
                                     progressBar.style.width = '100%';
-                                    progressText.textContent = 'OCR 완료!';
-                                    progressDetails.textContent = '인식 신뢰도: ' + Math.round(confidence) + '%';
+                                    progressText.textContent = '완료!';
+                                    progressDetails.textContent = '핵심 데이터 추출 완료';
                                     
                                     return worker.terminate().then(function() {
                                         resolve();
@@ -842,8 +851,256 @@
                         });
                     });
                 }).catch(function(error) {
+                    console.error('OCR 오류:', error);
                     reject(error);
                 });
+            });
+        }
+
+        function parseFixedFormatData(text) {
+            console.log('파싱 시작:', text);
+            
+            // 텍스트를 줄별로 분리하고 정리
+            var lines = text.split('\n').filter(function(line) {
+                return line.trim().length > 0;
+            });
+            
+            // 고객명 추출 (첫 번째 줄에서 한글 이름 찾기)
+            var namePattern = /([가-힣]{2,4})/g;
+            var nameMatches = text.match(namePattern);
+            if (nameMatches && nameMatches.length > 0) {
+                // 보통 첫 번째나 두 번째 한글 이름이 고객명
+                for (var i = 0; i < nameMatches.length; i++) {
+                    var name = nameMatches[i];
+                    if (name !== '가족' && name !== '보장' && name !== '의료' && name !== '간병' && name !== '생활') {
+                        currentData.personal.name = name;
+                        document.getElementById('name-input').value = name;
+                        break;
+                    }
+                }
+            }
+
+            // 생년월일 추출 (YY-MM-DD 형식)
+            var birthPattern = /(\d{2}-\d{2}-\d{2})/g;
+            var birthMatch = text.match(birthPattern);
+            if (birthMatch) {
+                currentData.personal.birthDate = birthMatch[0];
+                document.getElementById('birth-input').value = birthMatch[0];
+            }
+
+            // 점수 추출 (원형 차트 안의 숫자)
+            var scorePattern = /(\d{1,3})점/g;
+            var scoreMatches = [];
+            var match;
+            while ((match = scorePattern.exec(text)) !== null) {
+                scoreMatches.push(parseInt(match[1]));
+            }
+            
+            console.log('추출된 점수들:', scoreMatches);
+            
+            // 점수가 4개 이상 추출되면 순서대로 할당 (가족보장, 큰병보장, 의료보장, 간병보장)
+            if (scoreMatches.length >= 4) {
+                currentData.sections.family.score = scoreMatches[0];
+                currentData.sections.disease.score = scoreMatches[1];
+                currentData.sections.medical.score = scoreMatches[2];
+                currentData.sections.care.score = scoreMatches[3];
+            }
+
+            // 보험료 추출 (큰 숫자들 찾기)
+            var premiumPattern = /(\d{1,3}(?:,\d{3})+)원/;
+            var premiumMatch = text.match(premiumPattern);
+            if (premiumMatch) {
+                var premium = parseInt(premiumMatch[1].replace(/,/g, ''));
+                currentData.personal.monthlyPremium = premium;
+                document.getElementById('premium-input').value = premium;
+            }
+
+            // 보험 건수 추출 (작은 숫자들)
+            var insurancePattern = /(\d+)건/g;
+            var insuranceMatches = [];
+            while ((match = insurancePattern.exec(text)) !== null) {
+                insuranceMatches.push(parseInt(match[1]));
+            }
+            
+            if (insuranceMatches.length >= 2) {
+                currentData.personal.damageInsurance = insuranceMatches[0];
+                currentData.personal.lifeInsurance = insuranceMatches[1];
+                document.getElementById('damage-input').value = insuranceMatches[0];
+                document.getElementById('life-input').value = insuranceMatches[1];
+            }
+
+            // 금액 데이터 추출 (패턴: 숫자 / 숫자만원 또는 숫자,숫자 / 숫자,숫자만원)
+            extractAmountData(text);
+
+            // UI 업데이트
+            updatePersonalInfo();
+            renderSections();
+            renderLifestyle();
+        }
+
+        function extractAmountData(text) {
+            // 일반적인 금액 패턴들
+            var patterns = [
+                // 3,800 / 10,000만원 형태
+                /(\d{1,3}(?:,\d{3})*)\s*\/\s*(\d{1,3}(?:,\d{3})*)만원/g,
+                // 3800 / 10000 형태
+                /(\d{3,6})\s*\/\s*(\d{3,6})/g,
+                // 단순 숫자 / 숫자 형태
+                /(\d{1,5})\s*\/\s*(\d{1,5})/g
+            ];
+
+            var amounts = [];
+            
+            for (var p = 0; p < patterns.length; p++) {
+                var pattern = patterns[p];
+                var match;
+                while ((match = pattern.exec(text)) !== null) {
+                    var current = parseInt(match[1].replace(/,/g, ''));
+                    var target = parseInt(match[2].replace(/,/g, ''));
+                    
+                    // 합리적인 범위 체크 (0~100,000)
+                    if (current >= 0 && current <= 100000 && target >= 0 && target <= 100000) {
+                        amounts.push({ current: current, target: target });
+                    }
+                }
+            }
+
+            console.log('추출된 금액들:', amounts);
+
+            // 추출된 금액을 각 섹션에 할당
+            var sectionKeys = ['family', 'disease', 'medical', 'care'];
+            var amountIndex = 0;
+
+            for (var s = 0; s < sectionKeys.length; s++) {
+                var sectionKey = sectionKeys[s];
+                var section = currentData.sections[sectionKey];
+                
+                for (var i = 0; i < section.items.length && amountIndex < amounts.length; i++) {
+                    var amount = amounts[amountIndex];
+                    if (amount) {
+                        section.items[i].current = amount.current;
+                        section.items[i].target = amount.target;
+                        amountIndex++;
+                    }
+                }
+            }
+
+            // 점수 재계산
+            for (var s = 0; s < sectionKeys.length; s++) {
+                var sectionKey = sectionKeys[s];
+                var section = currentData.sections[sectionKey];
+                var totalPercentage = 0;
+                var itemCount = 0;
+                
+                for (var i = 0; i < section.items.length; i++) {
+                    var item = section.items[i];
+                    if (item.target > 0) {
+                        var percentage = (item.current / item.target) * 100;
+                        totalPercentage += Math.min(100, percentage);
+                        itemCount++;
+                    }
+                }
+                
+                if (itemCount > 0 && section.score === 0) {
+                    section.score = Math.round(totalPercentage / itemCount);
+                }
+            }
+        }
+
+        function preprocessImage(file) {
+            return new Promise(function(resolve, reject) {
+                var canvas = document.createElement('canvas');
+                var ctx = canvas.getContext('2d');
+                var img = new Image();
+                
+                img.onload = function() {
+                    try {
+                        var originalWidth = img.width;
+                        var originalHeight = img.height;
+                        
+                        // 최소 크기 체크
+                        if (originalWidth < 200 || originalHeight < 150) {
+                            reject(new Error('이미지가 너무 작습니다. 더 큰 이미지를 사용해주세요.'));
+                            return;
+                        }
+                        
+                        // OCR 최적화된 크기로 조정
+                        var targetWidth = 1800;  // 더 큰 크기로 처리
+                        var targetHeight = 1400;
+                        
+                        var ratio = Math.min(targetWidth / originalWidth, targetHeight / originalHeight);
+                        
+                        // 크기가 너무 작으면 확대
+                        if (ratio < 1) ratio = 1.5;  // 최소 1.5배 확대
+                        if (ratio > 4) ratio = 4;    // 최대 4배까지 확대
+                        
+                        var newWidth = Math.round(originalWidth * ratio);
+                        var newHeight = Math.round(originalHeight * ratio);
+                        
+                        canvas.width = newWidth;
+                        canvas.height = newHeight;
+                        
+                        // 고품질 렌더링 설정
+                        ctx.imageSmoothingEnabled = true;
+                        ctx.imageSmoothingQuality = 'high';
+                        
+                        // 흰색 배경
+                        ctx.fillStyle = 'white';
+                        ctx.fillRect(0, 0, newWidth, newHeight);
+                        
+                        // 이미지 그리기
+                        ctx.drawImage(img, 0, 0, newWidth, newHeight);
+                        
+                        // 숫자 인식 최적화된 이미지 처리
+                        var imageData = ctx.getImageData(0, 0, newWidth, newHeight);
+                        var data = imageData.data;
+                        
+                        for (var i = 0; i < data.length; i += 4) {
+                            var r = data[i];
+                            var g = data[i + 1];
+                            var b = data[i + 2];
+                            
+                            // 그레이스케일 변환
+                            var gray = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+                            
+                            // 샤프닝 효과로 텍스트 선명도 향상
+                            var enhanced = gray;
+                            if (gray > 100 && gray < 200) {
+                                // 중간톤을 더 선명하게
+                                enhanced = gray < 150 ? Math.max(0, gray - 30) : Math.min(255, gray + 30);
+                            }
+                            
+                            // 대비 증가 (숫자가 잘 보이도록)
+                            var contrast = 2.0;
+                            var result = Math.round((enhanced - 128) * contrast + 128);
+                            result = Math.max(0, Math.min(255, result));
+                            
+                            data[i] = result;     // R
+                            data[i + 1] = result; // G
+                            data[i + 2] = result; // B
+                        }
+                        
+                        ctx.putImageData(imageData, 0, 0);
+                        
+                        canvas.toBlob(function(blob) {
+                            if (blob) {
+                                console.log('이미지 전처리 완료:', newWidth + 'x' + newHeight + ' 픽셀');
+                                resolve(blob);
+                            } else {
+                                reject(new Error('이미지 변환 실패'));
+                            }
+                        }, 'image/png', 0.95);
+                        
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                
+                img.onerror = function() {
+                    reject(new Error('이미지 로드 실패'));
+                };
+                
+                img.src = URL.createObjectURL(file);
             });
         }
 
