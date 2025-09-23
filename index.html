@@ -788,11 +788,14 @@
                 var progressBar = document.getElementById('progress-bar');
                 var progressText = document.getElementById('progress-text');
                 var progressDetails = document.getElementById('progress-details');
+                var processedFile = null;
+                var worker = null;
 
                 progressText.textContent = '이미지를 전처리하고 있습니다...';
                 progressBar.style.width = '10%';
 
-                preprocessImage(file).then(function(processedFile) {
+                preprocessImage(file).then(function(result) {
+                    processedFile = result;
                     progressText.textContent = 'OCR 워커를 초기화하고 있습니다...';
                     progressBar.style.width = '20%';
 
@@ -805,53 +808,57 @@
                             }
                         }
                     });
-                }).then(function(worker) {
+                }).then(function(createdWorker) {
+                    worker = createdWorker;
                     progressText.textContent = '언어 모델을 로딩하고 있습니다...';
                     progressBar.style.width = '30%';
                     
-                    return worker.loadLanguage('kor+eng').then(function() {
-                        progressText.textContent = 'OCR 엔진을 초기화하고 있습니다...';
-                        progressBar.style.width = '40%';
-                        
-                        return worker.initialize('kor+eng').then(function() {
-                            progressText.textContent = 'OCR 설정을 최적화하고 있습니다...';
-                            progressBar.style.width = '50%';
-                            
-                            // 숫자와 한글 이름에만 집중
-                            return worker.setParameters({
-                                tessedit_char_whitelist: '0123456789가-힣,-./점만원건님',
-                                tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK,
-                                tessedit_ocr_engine_mode: Tesseract.OEM.LSTM_ONLY
-                            }).then(function() {
-                                progressText.textContent = '핵심 데이터를 인식하고 있습니다...';
-                                progressBar.style.width = '60%';
-                                
-                                return worker.recognize(processedFile).then(function(result) {
-                                    var text = result.data.text;
-                                    var confidence = result.data.confidence;
-                                    
-                                    console.log('OCR 원본 결과:', text);
-                                    console.log('신뢰도:', confidence);
-                                    
-                                    progressBar.style.width = '90%';
-                                    progressText.textContent = '데이터를 파싱하고 있습니다...';
-                                    
-                                    // 위치 기반 데이터 추출
-                                    parseFixedFormatData(text);
-                                    
-                                    progressBar.style.width = '100%';
-                                    progressText.textContent = '완료!';
-                                    progressDetails.textContent = '핵심 데이터 추출 완료';
-                                    
-                                    return worker.terminate().then(function() {
-                                        resolve();
-                                    });
-                                });
-                            });
-                        });
+                    return worker.loadLanguage('kor+eng');
+                }).then(function() {
+                    progressText.textContent = 'OCR 엔진을 초기화하고 있습니다...';
+                    progressBar.style.width = '40%';
+                    
+                    return worker.initialize('kor+eng');
+                }).then(function() {
+                    progressText.textContent = 'OCR 설정을 최적화하고 있습니다...';
+                    progressBar.style.width = '50%';
+                    
+                    return worker.setParameters({
+                        tessedit_char_whitelist: '0123456789가-힣,-./점만원건님',
+                        tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK,
+                        tessedit_ocr_engine_mode: Tesseract.OEM.LSTM_ONLY
                     });
+                }).then(function() {
+                    progressText.textContent = '핵심 데이터를 인식하고 있습니다...';
+                    progressBar.style.width = '60%';
+                    
+                    return worker.recognize(processedFile);
+                }).then(function(result) {
+                    var text = result.data.text;
+                    var confidence = result.data.confidence;
+                    
+                    console.log('OCR 원본 결과:', text);
+                    console.log('신뢰도:', confidence);
+                    
+                    progressBar.style.width = '90%';
+                    progressText.textContent = '데이터를 파싱하고 있습니다...';
+                    
+                    parseFixedFormatData(text);
+                    
+                    progressBar.style.width = '100%';
+                    progressText.textContent = '완료!';
+                    progressDetails.textContent = '핵심 데이터 추출 완료';
+                    
+                    return worker.terminate();
+                }).then(function() {
+                    resolve();
                 }).catch(function(error) {
                     console.error('OCR 오류:', error);
+                    if (worker) {
+                        worker.terminate().catch(function(terminateError) {
+                            console.error('Worker 종료 오류:', terminateError);
+                        });
+                    }
                     reject(error);
                 });
             });
