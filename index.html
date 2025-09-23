@@ -824,8 +824,8 @@
                     progressBar.style.width = '50%';
                     
                     return worker.setParameters({
-                        tessedit_char_whitelist: '0123456789가-힣,-./점만원건님',
-                        tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK,
+                        tessedit_char_whitelist: '0123456789가-힣ㄱ-ㅎㅏ-ㅣABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz(),.:/%-만원점건님의상령일월납보험료합계손해생명질병후유암뇌혈관경색입원실손치매요양급성심근혈증중증장기대인형사합의지원금변호사선임비용운전자벌금상생활배책임임플란트유사일반통합수술비허혈성심장혈관',
+                        tessedit_pageseg_mode: Tesseract.PSM.AUTO,
                         tessedit_ocr_engine_mode: Tesseract.OEM.LSTM_ONLY
                     });
                 }).then(function() {
