@@ -868,36 +868,63 @@
         function parseFixedFormatData(text, ocrResult) {
             console.log('좌표 기반 파싱 시작:', text);
             
-            // 이미지 크기 기준 좌표 영역 정의 (1800x1400 기준)
+            // 이미지 크기 기준 좌표 영역 정의 (실제 파란색 박스 위치)
             var regions = {
-                // 개인정보 영역
-                customerName: { x1: 67, y1: 130, x2: 200, y2: 160 },
-                birthDate: { x1: 650, y1: 170, x2: 750, y2: 190 },
-                ageDate: { x1: 850, y1: 170, x2: 950, y2: 190 },
-                damageInsurance: { x1: 810, y1: 140, x2: 830, y2: 170 },
-                lifeInsurance: { x1: 960, y1: 140, x2: 980, y2: 170 },
-                monthlyPremium: { x1: 1100, y1: 140, x2: 1200, y2: 170 },
+                // 개인정보 영역 (상단)
+                customerName: { x1: 67, y1: 120, x2: 200, y2: 160 },
+                birthDate: { x1: 565, y1: 160, x2: 650, y2: 185 },
+                ageDate: { x1: 678, y1: 160, x2: 760, y2: 185 },
+                damageInsurance: { x1: 820, y1: 135, x2: 870, y2: 160 },
+                lifeInsurance: { x1: 958, y1: 135, x2: 1008, y2: 160 },
+                monthlyPremium: { x1: 1099, y1: 135, x2: 1227, y2: 160 },
                 
-                // 점수 영역 (파란색 박스들)
-                familyScore: { x1: 236, y1: 213, x2: 340, y2: 293 },
-                diseaseScore: { x1: 523, y1: 213, x2: 627, y2: 293 },
-                medicalScore: { x1: 810, y1: 213, x2: 914, y2: 293 },
-                careScore: { x1: 1097, y1: 213, x2: 1201, y2: 293 },
+                // 점수 영역 (4개의 파란색 박스들)
+                familyScore: { x1: 236, y1: 213, x2: 340, y2: 293 },      // 가족보장 점수
+                diseaseScore: { x1: 524, y1: 213, x2: 628, y2: 293 },     // 큰병보장 점수  
+                medicalScore: { x1: 810, y1: 213, x2: 914, y2: 293 },     // 의료보장 점수
+                careScore: { x1: 1099, y1: 213, x2: 1203, y2: 293 },      // 간병보장 점수
                 
-                // 가족보장 데이터 영역
-                familyData: { x1: 60, y1: 310, x2: 360, y2: 520 },
+                // 각 섹션별 데이터 영역들 (파란색 박스들)
+                // 가족보장 영역의 4개 박스
+                familyItem1: { x1: 184, y1: 310, x2: 340, y2: 340 },      // 질병사망
+                familyItem2: { x1: 184, y1: 372, x2: 340, y2: 402 },      // 상해사망  
+                familyItem3: { x1: 184, y1: 431, x2: 340, y2: 461 },      // 질병후유(3%)
+                familyItem4: { x1: 184, y1: 490, x2: 340, y2: 520 },      // 상해후유(3%)
                 
-                // 큰병보장 데이터 영역  
-                diseaseData: { x1: 367, y1: 310, x2: 647, y2: 780 },
+                // 큰병보장 영역의 박스들
+                diseaseItem1: { x1: 483, y1: 310, x2: 625, y2: 340 },     // 유사암
+                diseaseItem2: { x1: 483, y1: 372, x2: 625, y2: 402 },     // 일반암
+                diseaseItem3: { x1: 483, y1: 431, x2: 625, y2: 461 },     // 통합암
+                diseaseItem4: { x1: 483, y1: 490, x2: 625, y2: 520 },     // 표적항암약물
+                diseaseItem5: { x1: 483, y1: 541, x2: 625, y2: 571 },     // 뇌혈관질환
+                diseaseItem6: { x1: 483, y1: 602, x2: 625, y2: 632 },     // 뇌졸중
+                diseaseItem7: { x1: 483, y1: 661, x2: 625, y2: 691 },     // 허혈성심질환
+                diseaseItem8: { x1: 483, y1: 720, x2: 625, y2: 750 },     // 급성심근경색증
                 
-                // 의료보장 데이터 영역
-                medicalData: { x1: 654, y1: 310, x2: 940, y2: 650 },
+                // 의료보장 영역의 박스들
+                medicalItem1: { x1: 770, y1: 310, x2: 912, y2: 340 },     // 질병입원 실손
+                medicalItem2: { x1: 770, y1: 372, x2: 912, y2: 402 },     // 상해입원 실손
+                medicalItem3: { x1: 770, y1: 431, x2: 912, y2: 461 },     // 질병입원(1일)
+                medicalItem4: { x1: 770, y1: 490, x2: 912, y2: 520 },     // 상해입원(1일)
+                medicalItem5: { x1: 770, y1: 549, x2: 912, y2: 579 },     // 질병수술비
+                medicalItem6: { x1: 770, y1: 602, x2: 912, y2: 632 },     // 상해수술비
                 
-                // 간병보장 데이터 영역
-                careData: { x1: 947, y1: 310, x2: 1230, y2: 650 },
+                // 간병보장 영역의 박스들
+                careItem1: { x1: 1079, y1: 310, x2: 1191, y2: 340 },     // 경증치매
+                careItem2: { x1: 1079, y1: 372, x2: 1191, y2: 402 },     // 중증치매
+                careItem3: { x1: 1079, y1: 431, x2: 1191, y2: 461 },     // 장기요양(4급)
+                careItem4: { x1: 1079, y1: 490, x2: 1191, y2: 520 },     // 장기요양(1급)
+                careItem5: { x1: 1079, y1: 549, x2: 1191, y2: 579 },     // 간병인상해입원
+                careItem6: { x1: 1079, y1: 602, x2: 1191, y2: 632 },     // 간병인질병입원
                 
-                // 생활보장 데이터 영역
-                lifestyleData: { x1: 60, y1: 800, x2: 1230, y2: 880 }
+                // 생활보장 영역의 박스들
+                lifestyleItem1: { x1: 577, y1: 794, x2: 603, y2: 820 },  // 대인형사합의지원금
+                lifestyleItem2: { x1: 577, y1: 835, x2: 603, y2: 861 },  // 변호사선임비용
+                lifestyleItem3: { x1: 577, y1: 876, x2: 603, y2: 902 },  // 운전자벌금
+                lifestyleItem4: { x1: 817, y1: 794, x2: 899, y2: 820 },  // 자동차부부방생
+                lifestyleItem5: { x1: 817, y1: 835, x2: 899, y2: 861 },  // 화재배금
+                lifestyleItem6: { x1: 817, y1: 876, x2: 899, y2: 902 },  // 일상생활배상책임
+                lifestyleItem7: { x1: 1070, y1: 794, x2: 1135, y2: 820 } // 임플란트
             };
 
             // OCR 결과에서 좌표 정보가 있는 경우 사용
@@ -916,65 +943,170 @@
 
         function parseByCoordinates(words, regions) {
             console.log('좌표 기반 데이터 추출 시작');
+            console.log('OCR words 배열:', words);
+            console.log('words 길이:', words ? words.length : 0);
             
-            words.forEach(function(word) {
-                if (!word.bbox) return;
+            if (!words || words.length === 0) {
+                console.log('words 배열이 비어있습니다. 백업 방식 사용');
+                return;
+            }
+            
+            words.forEach(function(word, index) {
+                if (!word.bbox) {
+                    console.log('word', index, '에 bbox가 없습니다:', word);
+                    return;
+                }
                 
                 var bbox = word.bbox;
-                var text = word.text.trim();
+                var text = word.text ? word.text.trim() : '';
                 var centerX = (bbox.x0 + bbox.x1) / 2;
                 var centerY = (bbox.y0 + bbox.y1) / 2;
                 
-                // 고객명 추출
-                if (isInRegion(centerX, centerY, regions.customerName)) {
-                    if (/^[가-힣]{2,4}$/.test(text)) {
-                        currentData.personal.name = text;
-                        document.getElementById('name-input').value = text;
-                    }
-                }
+                console.log('Word:', text, 'at', centerX, centerY, 'bbox:', bbox);
                 
-                // 생년월일 추출
-                if (isInRegion(centerX, centerY, regions.birthDate)) {
-                    if (/\d{2}-\d{2}-\d{2}/.test(text)) {
-                        currentData.personal.birthDate = text;
-                        document.getElementById('birth-input').value = text;
-                    }
-                }
-                
-                // 점수 추출
+                // 점수 추출 (4개 파란색 박스)
                 if (isInRegion(centerX, centerY, regions.familyScore)) {
+                    console.log('가족보장 점수 영역에서 발견:', text);
                     var score = extractNumber(text);
                     if (score >= 0 && score <= 100) {
                         currentData.sections.family.score = score;
+                        console.log('가족보장 점수 설정:', score);
                     }
                 }
                 
                 if (isInRegion(centerX, centerY, regions.diseaseScore)) {
+                    console.log('큰병보장 점수 영역에서 발견:', text);
                     var score = extractNumber(text);
                     if (score >= 0 && score <= 100) {
                         currentData.sections.disease.score = score;
+                        console.log('큰병보장 점수 설정:', score);
                     }
                 }
                 
                 if (isInRegion(centerX, centerY, regions.medicalScore)) {
+                    console.log('의료보장 점수 영역에서 발견:', text);
                     var score = extractNumber(text);
                     if (score >= 0 && score <= 100) {
                         currentData.sections.medical.score = score;
+                        console.log('의료보장 점수 설정:', score);
                     }
                 }
                 
                 if (isInRegion(centerX, centerY, regions.careScore)) {
+                    console.log('간병보장 점수 영역에서 발견:', text);
                     var score = extractNumber(text);
                     if (score >= 0 && score <= 100) {
                         currentData.sections.care.score = score;
+                        console.log('간병보장 점수 설정:', score);
                     }
                 }
                 
-                // 금액 데이터 추출
-                extractAmountFromRegion(centerX, centerY, text, regions);
+                // 개별 항목별 데이터 추출
+                extractIndividualItemData(centerX, centerY, text, regions);
             });
             
             console.log('좌표 기반 추출 완료');
+        }
+
+        function extractIndividualItemData(x, y, text, regions) {
+            // 현재값/목표값 패턴 찾기
+            var amountPattern = /(\d{1,5}(?:,\d{3})*)\s*\/\s*(\d{1,5}(?:,\d{3})*)/;
+            var match = text.match(amountPattern);
+            
+            if (!match) return;
+            
+            var current = parseInt(match[1].replace(/,/g, ''));
+            var target = parseInt(match[2].replace(/,/g, ''));
+            
+            console.log('금액 패턴 발견:', text, '-> current:', current, 'target:', target, 'at', x, y);
+            
+            // 가족보장 항목들
+            if (isInRegion(x, y, regions.familyItem1)) {
+                currentData.sections.family.items[0].current = current;
+                currentData.sections.family.items[0].target = target;
+                console.log('질병사망 데이터 설정:', current, '/', target);
+            }
+            else if (isInRegion(x, y, regions.familyItem2)) {
+                currentData.sections.family.items[1].current = current;
+                currentData.sections.family.items[1].target = target;
+                console.log('상해사망 데이터 설정:', current, '/', target);
+            }
+            else if (isInRegion(x, y, regions.familyItem3)) {
+                currentData.sections.family.items[2].current = current;
+                currentData.sections.family.items[2].target = target;
+                console.log('질병후유 데이터 설정:', current, '/', target);
+            }
+            else if (isInRegion(x, y, regions.familyItem4)) {
+                currentData.sections.family.items[3].current = current;
+                currentData.sections.family.items[3].target = target;
+                console.log('상해후유 데이터 설정:', current, '/', target);
+            }
+            
+            // 큰병보장 항목들
+            else if (isInRegion(x, y, regions.diseaseItem1)) {
+                currentData.sections.disease.items[0].current = current;
+                currentData.sections.disease.items[0].target = target;
+                console.log('유사암 데이터 설정:', current, '/', target);
+            }
+            else if (isInRegion(x, y, regions.diseaseItem2)) {
+                currentData.sections.disease.items[1].current = current;
+                currentData.sections.disease.items[1].target = target;
+                console.log('일반암 데이터 설정:', current, '/', target);
+            }
+            else if (isInRegion(x, y, regions.diseaseItem3)) {
+                currentData.sections.disease.items[2].current = current;
+                currentData.sections.disease.items[2].target = target;
+                console.log('통합암 데이터 설정:', current, '/', target);
+            }
+            else if (isInRegion(x, y, regions.diseaseItem8)) {
+                currentData.sections.disease.items[4].current = current;
+                currentData.sections.disease.items[4].target = target;
+                console.log('급성심근경색 데이터 설정:', current, '/', target);
+            }
+            
+            // 의료보장 항목들
+            else if (isInRegion(x, y, regions.medicalItem1)) {
+                currentData.sections.medical.items[0].current = current;
+                currentData.sections.medical.items[0].target = target;
+                console.log('질병입원실손 데이터 설정:', current, '/', target);
+            }
+            else if (isInRegion(x, y, regions.medicalItem2)) {
+                currentData.sections.medical.items[1].current = current;
+                currentData.sections.medical.items[1].target = target;
+                console.log('상해입원실손 데이터 설정:', current, '/', target);
+            }
+            else if (isInRegion(x, y, regions.medicalItem3)) {
+                currentData.sections.medical.items[2].current = current;
+                currentData.sections.medical.items[2].target = target;
+                console.log('질병입원(1일) 데이터 설정:', current, '/', target);
+            }
+            else if (isInRegion(x, y, regions.medicalItem4)) {
+                currentData.sections.medical.items[3].current = current;
+                currentData.sections.medical.items[3].target = target;
+                console.log('상해입원(1일) 데이터 설정:', current, '/', target);
+            }
+            
+            // 간병보장 항목들
+            else if (isInRegion(x, y, regions.careItem1)) {
+                currentData.sections.care.items[0].current = current;
+                currentData.sections.care.items[0].target = target;
+                console.log('경증치매 데이터 설정:', current, '/', target);
+            }
+            else if (isInRegion(x, y, regions.careItem2)) {
+                currentData.sections.care.items[1].current = current;
+                currentData.sections.care.items[1].target = target;
+                console.log('중증치매 데이터 설정:', current, '/', target);
+            }
+            else if (isInRegion(x, y, regions.careItem3)) {
+                currentData.sections.care.items[2].current = current;
+                currentData.sections.care.items[2].target = target;
+                console.log('장기요양(4급) 데이터 설정:', current, '/', target);
+            }
+            else if (isInRegion(x, y, regions.careItem4)) {
+                currentData.sections.care.items[3].current = current;
+                currentData.sections.care.items[3].target = target;
+                console.log('장기요양(1급) 데이터 설정:', current, '/', target);
+            }
         }
 
         function isInRegion(x, y, region) {
