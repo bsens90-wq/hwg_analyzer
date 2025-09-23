@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>보장분석지</title>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.1/tesseract.min.js'></script>
     <style>
         * {
             margin: 0;
@@ -111,11 +112,17 @@
             text-align: center;
             background: white;
             transition: all 0.3s;
+            position: relative;
         }
 
         .upload-area:hover {
             border-color: #c62828;
             background: #fafafa;
+        }
+
+        .upload-area.processing {
+            border-color: #2196F3;
+            background: #f0f8ff;
         }
 
         .upload-area input[type="file"] {
@@ -135,6 +142,49 @@
 
         .upload-btn:hover {
             background: #a52525;
+        }
+
+        .upload-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .progress-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 8px;
+            border-left: 4px solid #2196F3;
+            display: none;
+        }
+
+        .progress-info.show {
+            display: block;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: #2196F3;
+            transition: width 0.3s;
+            border-radius: 5px;
+        }
+
+        .uploaded-image {
+            max-width: 300px;
+            max-height: 200px;
+            margin: 20px auto;
+            display: none;
+            border: 1px solid #ddd;
+            border-radius: 8px;
         }
 
         /* 메인 콘텐츠 */
@@ -298,29 +348,6 @@
         .status-o { background: #4caf50; }
         .status-triangle { background: #ff9800; }
         .status-x { background: #f44336; }
-
-        /* 반응형 */
-        @media (max-width: 768px) {
-            .sections-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .info-row {
-                flex-direction: column;
-                gap: 10px;
-            }
-            
-            .nav-steps {
-                overflow-x: auto;
-                justify-content: flex-start;
-                padding: 10px;
-            }
-        }
-
-        .edit-mode {
-            background: #fff3cd !important;
-            border: 1px solid #ffc107 !important;
-        }
 
         /* 결과 이미지 생성 버튼 */
         .action-buttons {
@@ -536,6 +563,29 @@
             font-weight: bold;
             margin: 0 auto;
         }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .sections-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .info-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .nav-steps {
+                overflow-x: auto;
+                justify-content: flex-start;
+                padding: 10px;
+            }
+        }
+
+        .edit-mode {
+            background: #fff3cd !important;
+            border: 1px solid #ffc107 !important;
+        }
     </style>
 </head>
 <body>
@@ -553,7 +603,7 @@
 
         <!-- 헤더 -->
         <div class="header">
-            <div class="title" id="title">손덕령님의 한 장 요약 보장분석</div>
+            <div class="title" id="title">고객님의 한 장 요약 보장분석</div>
             <div class="legend">
                 <div class="legend-item">
                     <div class="legend-color" style="background: #4caf50;"></div>
@@ -571,40 +621,49 @@
             <div class="info-row" id="info-row">
                 <div class="info-item">
                     <span>생년월일</span>
-                    <span id="birth-date">73-12-19</span>
+                    <span id="birth-date">-</span>
                 </div>
                 <div class="info-item">
                     <span>/</span>
                     <span>상령일</span>
-                    <span id="age-date">06-18</span>
+                    <span id="age-date">-</span>
                 </div>
                 <div class="info-item">
                     <span>/</span>
                     <span>손해보험</span>
-                    <span id="damage-insurance">3</span>건
+                    <span id="damage-insurance">-</span>건
                 </div>
                 <div class="info-item">
                     <span>/</span>
                     <span>생명보험</span>
-                    <span id="life-insurance">7</span>건
+                    <span id="life-insurance">-</span>건
                 </div>
                 <div class="info-item">
                     <span>/</span>
                     <span>월납보험료 합계</span>
-                    <span id="monthly-premium">563,810</span>원
+                    <span id="monthly-premium">-</span>원
                 </div>
             </div>
         </div>
 
         <!-- 업로드 섹션 -->
         <div class="upload-section">
-            <div class="upload-area" onclick="document.getElementById('file-input').click()">
+            <div class="upload-area" id="upload-area" onclick="document.getElementById('file-input').click()">
                 <input type="file" id="file-input" accept="image/*" onchange="handleFileUpload(event)">
-                <div>
+                <div id="upload-content">
                     <h3>보장분석지 이미지를 업로드하세요</h3>
                     <p>클릭하거나 파일을 드래그해서 업로드</p>
-                    <button class="upload-btn" type="button">파일 선택</button>
+                    <button class="upload-btn" type="button" id="upload-btn">파일 선택</button>
                 </div>
+                <img id="uploaded-image" class="uploaded-image" alt="업로드된 이미지">
+            </div>
+            
+            <div class="progress-info" id="progress-info">
+                <div id="progress-text">이미지를 분석하고 있습니다...</div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="progress-bar"></div>
+                </div>
+                <div id="progress-details"></div>
             </div>
         </div>
 
@@ -615,12 +674,14 @@
                 <div class="section">
                     <div class="section-header">
                         <div class="section-title">가족보장</div>
-                        <div class="score-circle" style="--score-deg: 190.8deg;">
-                            <span id="family-score">53점</span>
+                        <div class="score-circle" style="--score-deg: 0deg;">
+                            <span id="family-score">-점</span>
                         </div>
                     </div>
                     <div id="family-items">
-                        <!-- 동적으로 생성 -->
+                        <div class="item">
+                            <div class="item-name">데이터를 업로드하세요</div>
+                        </div>
                     </div>
                 </div>
 
@@ -628,12 +689,14 @@
                 <div class="section">
                     <div class="section-header">
                         <div class="section-title">큰병보장</div>
-                        <div class="score-circle" style="--score-deg: 280.8deg;">
-                            <span id="disease-score">78점</span>
+                        <div class="score-circle" style="--score-deg: 0deg;">
+                            <span id="disease-score">-점</span>
                         </div>
                     </div>
                     <div id="disease-items">
-                        <!-- 동적으로 생성 -->
+                        <div class="item">
+                            <div class="item-name">데이터를 업로드하세요</div>
+                        </div>
                     </div>
                 </div>
 
@@ -641,12 +704,14 @@
                 <div class="section">
                     <div class="section-header">
                         <div class="section-title">의료보장</div>
-                        <div class="score-circle" style="--score-deg: 313.2deg;">
-                            <span id="medical-score">87점</span>
+                        <div class="score-circle" style="--score-deg: 0deg;">
+                            <span id="medical-score">-점</span>
                         </div>
                     </div>
                     <div id="medical-items">
-                        <!-- 동적으로 생성 -->
+                        <div class="item">
+                            <div class="item-name">데이터를 업로드하세요</div>
+                        </div>
                     </div>
                 </div>
 
@@ -654,12 +719,14 @@
                 <div class="section">
                     <div class="section-header">
                         <div class="section-title">간병보장</div>
-                        <div class="score-circle" style="--score-deg: 46.8deg;">
-                            <span id="care-score">13점</span>
+                        <div class="score-circle" style="--score-deg: 0deg;">
+                            <span id="care-score">-점</span>
                         </div>
                     </div>
                     <div id="care-items">
-                        <!-- 동적으로 생성 -->
+                        <div class="item">
+                            <div class="item-name">데이터를 업로드하세요</div>
+                        </div>
                     </div>
                 </div>
 
@@ -674,7 +741,9 @@
                         </div>
                     </div>
                     <div class="lifestyle-items" id="lifestyle-items">
-                        <!-- 동적으로 생성 -->
+                        <div class="lifestyle-item">
+                            <div>데이터를 업로드하세요</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -697,98 +766,336 @@
     </div>
 
     <script>
-        // 기본 데이터
-        const defaultData = {
+        let currentData = {
             personal: {
-                name: "손덕령",
-                birthDate: "73-12-19",
-                ageDate: "06-18",
-                damageInsurance: 3,
-                lifeInsurance: 7,
-                monthlyPremium: 563810
+                name: "고객",
+                birthDate: "",
+                ageDate: "",
+                damageInsurance: 0,
+                lifeInsurance: 0,
+                monthlyPremium: 0
             },
             sections: {
-                family: {
-                    score: 53,
-                    items: [
-                        { name: "질병사망", current: 3800, target: 10000 },
-                        { name: "상해사망", current: 8200, target: 20000 },
-                        { name: "질병후유(3%)", current: 2000, target: 3000 },
-                        { name: "상해후유(3%)", current: 7000, target: 10000 }
-                    ]
-                },
-                disease: {
-                    score: 78,
-                    items: [
-                        { name: "유사암", current: 900, target: 1000 },
-                        { name: "일반암", current: 3000, target: 7000 },
-                        { name: "통합암", current: 0, target: 7000 },
-                        { name: "표적항암약물", current: 0, target: 5000 },
-                        { name: "뇌혈관질환", current: 1000, target: 2000 },
-                        { name: "뇌졸중", current: 1000, target: 3000 },
-                        { name: "허혈성심장질환", current: 1000, target: 2000 },
-                        { name: "급성심근경색", current: 1000, target: 3000 }
-                    ]
-                },
-                medical: {
-                    score: 87,
-                    items: [
-                        { name: "질병입원 실손", current: 5000, target: 5000 },
-                        { name: "상해입원 실손", current: 5000, target: 5000 },
-                        { name: "질병입원(1일)", current: 10, target: 3 },
-                        { name: "상해입원(1일)", current: 2, target: 3 },
-                        { name: "질병수술비", current: 52, target: 50 },
-                        { name: "상해수술비", current: 53, target: 150 }
-                    ]
-                },
-                care: {
-                    score: 13,
-                    items: [
-                        { name: "경증치매", current: 0, target: 2000 },
-                        { name: "중증치매", current: 0, target: 4000 },
-                        { name: "장기요양(4급)", current: 0, target: 2000 },
-                        { name: "장기요양(1급)", current: 0, target: 4000 },
-                        { name: "간병인상해입원", current: 0, target: 10 },
-                        { name: "간병인질병입원", current: 0, target: 10 }
-                    ]
-                }
+                family: { score: 0, items: [] },
+                disease: { score: 0, items: [] },
+                medical: { score: 0, items: [] },
+                care: { score: 0, items: [] }
             },
-            lifestyle: [
-                { name: "대인형사합의지원금", amount: 20000, status: "O" },
-                { name: "변호사선임비용", amount: 3000, status: "△" },
-                { name: "운전자벌금", amount: 3500, status: "O" },
-                { name: "자동차부상발생금", amount: 10, status: "△" },
-                { name: "화재벌금", amount: 2000, status: "O" },
-                { name: "일상생활배상책임", amount: 10000, status: "O" },
-                { name: "임플란트", amount: 200, status: "O" }
-            ]
+            lifestyle: []
         };
 
-        let currentData = JSON.parse(JSON.stringify(defaultData));
+        let isProcessing = false;
 
         // 초기화
         function init() {
             updatePersonalInfo();
-            renderSections();
-            renderLifestyle();
+            renderEmptySections();
+            renderEmptyLifestyle();
+        }
+
+        // 빈 섹션 렌더링
+        function renderEmptySections() {
+            const sections = ['family', 'disease', 'medical', 'care'];
+            sections.forEach(sectionKey => {
+                const scoreElement = document.getElementById(`${sectionKey}-score`);
+                scoreElement.textContent = '-점';
+                updateScoreCircle(scoreElement.parentElement, 0);
+            });
+        }
+
+        // 빈 생활보장 렌더링
+        function renderEmptyLifestyle() {
+            const container = document.getElementById('lifestyle-items');
+            container.innerHTML = '<div class="lifestyle-item"><div>데이터를 업로드하세요</div></div>';
         }
 
         // 개인정보 업데이트
         function updatePersonalInfo() {
             document.getElementById('title').textContent = `${currentData.personal.name}님의 한 장 요약 보장분석`;
-            document.getElementById('birth-date').textContent = currentData.personal.birthDate;
-            document.getElementById('age-date').textContent = currentData.personal.ageDate;
-            document.getElementById('damage-insurance').textContent = currentData.personal.damageInsurance;
-            document.getElementById('life-insurance').textContent = currentData.personal.lifeInsurance;
-            document.getElementById('monthly-premium').textContent = currentData.personal.monthlyPremium.toLocaleString();
+            document.getElementById('birth-date').textContent = currentData.personal.birthDate || '-';
+            document.getElementById('age-date').textContent = currentData.personal.ageDate || '-';
+            document.getElementById('damage-insurance').textContent = currentData.personal.damageInsurance || '-';
+            document.getElementById('life-insurance').textContent = currentData.personal.lifeInsurance || '-';
+            document.getElementById('monthly-premium').textContent = currentData.personal.monthlyPremium ? 
+                currentData.personal.monthlyPremium.toLocaleString() : '-';
+        }
+
+        // 파일 업로드 처리
+        async function handleFileUpload(event) {
+            if (isProcessing) return;
+            
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (!file.type.startsWith('image/')) {
+                alert('이미지 파일만 업로드 가능합니다.');
+                return;
+            }
+
+            isProcessing = true;
+            const uploadBtn = document.getElementById('upload-btn');
+            const uploadArea = document.getElementById('upload-area');
+            const progressInfo = document.getElementById('progress-info');
+            const uploadedImage = document.getElementById('uploaded-image');
+
+            // UI 상태 변경
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = '처리 중...';
+            uploadArea.classList.add('processing');
+            progressInfo.classList.add('show');
+
+            try {
+                // 이미지 미리보기 표시
+                const imageUrl = URL.createObjectURL(file);
+                uploadedImage.src = imageUrl;
+                uploadedImage.style.display = 'block';
+
+                // OCR 처리
+                await performOCR(file);
+
+            } catch (error) {
+                console.error('OCR 처리 중 오류:', error);
+                alert('이미지 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+                
+                // 오류 시 UI 복원
+                uploadedImage.style.display = 'none';
+                progressInfo.classList.remove('show');
+                
+            } finally {
+                isProcessing = false;
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = '다른 파일 선택';
+                uploadArea.classList.remove('processing');
+            }
+        }
+
+        // OCR 수행
+        async function performOCR(file) {
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            const progressDetails = document.getElementById('progress-details');
+
+            try {
+                progressText.textContent = 'OCR 엔진을 초기화하고 있습니다...';
+                progressBar.style.width = '10%';
+
+                const worker = await Tesseract.createWorker('kor', 1, {
+                    logger: (m) => {
+                        if (m.status === 'recognizing text') {
+                            const progress = Math.round(m.progress * 80) + 10; // 10-90%
+                            progressBar.style.width = progress + '%';
+                            progressDetails.textContent = `텍스트 인식 중... ${Math.round(m.progress * 100)}%`;
+                        }
+                    }
+                });
+
+                progressText.textContent = '이미지에서 텍스트를 추출하고 있습니다...';
+                
+                const { data: { text } } = await worker.recognize(file);
+                
+                progressBar.style.width = '90%';
+                progressText.textContent = '데이터를 분석하고 있습니다...';
+                progressDetails.textContent = '텍스트 파싱 중...';
+
+                // OCR 결과 파싱
+                parseOCRResult(text);
+
+                progressBar.style.width = '100%';
+                progressText.textContent = '완료! 보장분석지가 업데이트되었습니다.';
+                progressDetails.textContent = '';
+
+                await worker.terminate();
+
+                // 3초 후 진행률 정보 숨기기
+                setTimeout(() => {
+                    document.getElementById('progress-info').classList.remove('show');
+                }, 3000);
+
+            } catch (error) {
+                throw error;
+            }
+        }
+
+        // OCR 결과 파싱
+        function parseOCRResult(text) {
+            console.log('OCR 결과:', text);
+            
+            // 한글 텍스트 정리
+            const cleanText = text.replace(/[^\w\s가-힣(),.:/%-]/g, ' ')
+                                 .replace(/\s+/g, ' ')
+                                 .trim();
+
+            // 이름 추출 (패턴: "OOO님의" 또는 "OOO 님의")
+            const nameMatch = cleanText.match(/([가-힣]{2,4})\s?님의/);
+            if (nameMatch) {
+                currentData.personal.name = nameMatch[1];
+            }
+
+            // 생년월일 추출 (패턴: YY-MM-DD)
+            const birthMatch = cleanText.match(/(\d{2}-\d{2}-\d{2})/);
+            if (birthMatch) {
+                currentData.personal.birthDate = birthMatch[1];
+            }
+
+            // 월납보험료 추출 (패턴: 숫자,숫자원)
+            const premiumMatch = cleanText.match(/월납보험료[^0-9]*([0-9,]+)원/);
+            if (premiumMatch) {
+                currentData.personal.monthlyPremium = parseInt(premiumMatch[1].replace(/,/g, ''));
+            }
+
+            // 손해보험/생명보험 건수 추출
+            const damageMatch = cleanText.match(/손해보험[^0-9]*(\d+)건/);
+            if (damageMatch) {
+                currentData.personal.damageInsurance = parseInt(damageMatch[1]);
+            }
+
+            const lifeMatch = cleanText.match(/생명보험[^0-9]*(\d+)건/);
+            if (lifeMatch) {
+                currentData.personal.lifeInsurance = parseInt(lifeMatch[1]);
+            }
+
+            // 점수 추출 (패턴: 숫자점)
+            const familyScoreMatch = cleanText.match(/가족보장[^0-9]*(\d+)점/);
+            if (familyScoreMatch) {
+                currentData.sections.family.score = parseInt(familyScoreMatch[1]);
+            }
+
+            const diseaseScoreMatch = cleanText.match(/큰병보장[^0-9]*(\d+)점/);
+            if (diseaseScoreMatch) {
+                currentData.sections.disease.score = parseInt(diseaseScoreMatch[1]);
+            }
+
+            const medicalScoreMatch = cleanText.match(/의료보장[^0-9]*(\d+)점/);
+            if (medicalScoreMatch) {
+                currentData.sections.medical.score = parseInt(medicalScoreMatch[1]);
+            }
+
+            const careScoreMatch = cleanText.match(/간병보장[^0-9]*(\d+)점/);
+            if (careScoreMatch) {
+                currentData.sections.care.score = parseInt(careScoreMatch[1]);
+            }
+
+            // 보장 항목들 파싱 (기본 패턴 매칭)
+            parseInsuranceItems(cleanText);
+
+            // UI 업데이트
+            updatePersonalInfo();
+            renderSections();
+            renderLifestyle();
+        }
+
+        // 보험 항목 파싱
+        function parseInsuranceItems(text) {
+            // 가족보장 항목들
+            const familyItems = [
+                { name: "질병사망", pattern: /질병사망[^0-9]*(\d+)[^0-9]*(\d+)/ },
+                { name: "상해사망", pattern: /상해사망[^0-9]*(\d+)[^0-9]*(\d+)/ },
+                { name: "질병후유", pattern: /질병후유[^0-9]*(\d+)[^0-9]*(\d+)/ },
+                { name: "상해후유", pattern: /상해후유[^0-9]*(\d+)[^0-9]*(\d+)/ }
+            ];
+
+            // 큰병보장 항목들
+            const diseaseItems = [
+                { name: "유사암", pattern: /유사암[^0-9]*(\d+)[^0-9]*(\d+)/ },
+                { name: "일반암", pattern: /일반암[^0-9]*(\d+)[^0-9]*(\d+)/ },
+                { name: "뇌혈관질환", pattern: /뇌혈관질환[^0-9]*(\d+)[^0-9]*(\d+)/ },
+                { name: "심장질환", pattern: /심장질환[^0-9]*(\d+)[^0-9]*(\d+)/ }
+            ];
+
+            // 의료보장 항목들
+            const medicalItems = [
+                { name: "실손보험", pattern: /실손[^0-9]*(\d+)[^0-9]*(\d+)/ },
+                { name: "입원비", pattern: /입원[^0-9]*(\d+)[^0-9]*(\d+)/ },
+                { name: "수술비", pattern: /수술[^0-9]*(\d+)[^0-9]*(\d+)/ }
+            ];
+
+            // 간병보장 항목들
+            const careItems = [
+                { name: "치매보장", pattern: /치매[^0-9]*(\d+)[^0-9]*(\d+)/ },
+                { name: "장기요양", pattern: /장기요양[^0-9]*(\d+)[^0-9]*(\d+)/ }
+            ];
+
+            // 각 섹션별 아이템 파싱
+            currentData.sections.family.items = parseSection(text, familyItems);
+            currentData.sections.disease.items = parseSection(text, diseaseItems);
+            currentData.sections.medical.items = parseSection(text, medicalItems);
+            currentData.sections.care.items = parseSection(text, careItems);
+
+            // 기본값으로 채우기 (OCR에서 인식되지 않은 경우)
+            fillDefaultItems();
+        }
+
+        // 섹션별 아이템 파싱
+        function parseSection(text, itemPatterns) {
+            const items = [];
+            
+            itemPatterns.forEach(item => {
+                const match = text.match(item.pattern);
+                if (match) {
+                    items.push({
+                        name: item.name,
+                        current: parseInt(match[1]) || 0,
+                        target: parseInt(match[2]) || 0
+                    });
+                }
+            });
+
+            return items;
+        }
+
+        // 기본 아이템으로 채우기
+        function fillDefaultItems() {
+            if (currentData.sections.family.items.length === 0) {
+                currentData.sections.family.items = [
+                    { name: "질병사망", current: 0, target: 10000 },
+                    { name: "상해사망", current: 0, target: 20000 },
+                    { name: "질병후유(3%)", current: 0, target: 3000 },
+                    { name: "상해후유(3%)", current: 0, target: 10000 }
+                ];
+            }
+
+            if (currentData.sections.disease.items.length === 0) {
+                currentData.sections.disease.items = [
+                    { name: "유사암", current: 0, target: 1000 },
+                    { name: "일반암", current: 0, target: 7000 },
+                    { name: "뇌혈관질환", current: 0, target: 2000 },
+                    { name: "심장질환", current: 0, target: 3000 }
+                ];
+            }
+
+            if (currentData.sections.medical.items.length === 0) {
+                currentData.sections.medical.items = [
+                    { name: "질병입원 실손", current: 0, target: 5000 },
+                    { name: "상해입원 실손", current: 0, target: 5000 },
+                    { name: "질병입원(1일)", current: 0, target: 3 },
+                    { name: "수술비", current: 0, target: 50 }
+                ];
+            }
+
+            if (currentData.sections.care.items.length === 0) {
+                currentData.sections.care.items = [
+                    { name: "경증치매", current: 0, target: 2000 },
+                    { name: "중증치매", current: 0, target: 4000 },
+                    { name: "장기요양", current: 0, target: 2000 }
+                ];
+            }
+
+            // 생활보장 기본값
+            if (currentData.lifestyle.length === 0) {
+                currentData.lifestyle = [
+                    { name: "대인배상책임", amount: 0, status: "✕" },
+                    { name: "변호사선임비용", amount: 0, status: "✕" },
+                    { name: "운전자벌금", amount: 0, status: "✕" },
+                    { name: "일상생활배상책임", amount: 0, status: "✕" }
+                ];
+            }
         }
 
         // 섹션 렌더링
         function renderSections() {
             const sections = ['family', 'disease', 'medical', 'care'];
-            const sectionNames = ['가족보장', '큰병보장', '의료보장', '간병보장'];
             
-            sections.forEach((sectionKey, index) => {
+            sections.forEach((sectionKey) => {
                 const section = currentData.sections[sectionKey];
                 const container = document.getElementById(`${sectionKey}-items`);
                 const scoreElement = document.getElementById(`${sectionKey}-score`);
@@ -799,10 +1106,14 @@
                 
                 // 아이템 렌더링
                 container.innerHTML = '';
-                section.items.forEach((item, itemIndex) => {
-                    const itemElement = createItemElement(item, sectionKey, itemIndex);
-                    container.appendChild(itemElement);
-                });
+                if (section.items.length > 0) {
+                    section.items.forEach((item, itemIndex) => {
+                        const itemElement = createItemElement(item, sectionKey, itemIndex);
+                        container.appendChild(itemElement);
+                    });
+                } else {
+                    container.innerHTML = '<div class="item"><div class="item-name">데이터가 없습니다</div></div>';
+                }
             });
         }
 
@@ -812,7 +1123,7 @@
             div.className = 'item';
             
             const shortage = Math.max(0, item.target - item.current);
-            const percentage = Math.min(100, (item.current / item.target) * 100);
+            const percentage = item.target > 0 ? Math.min(100, (item.current / item.target) * 100) : 0;
             
             let progressColor = '#f44336'; // 30% 미만
             if (percentage >= 100) progressColor = '#4caf50'; // 100% 이상
@@ -847,16 +1158,19 @@
         // 생활보장 렌더링
         function renderLifestyle() {
             const container = document.getElementById('lifestyle-items');
-            container.innerHTML = '';
             
+            if (currentData.lifestyle.length === 0) {
+                container.innerHTML = '<div class="lifestyle-item"><div>데이터가 없습니다</div></div>';
+                return;
+            }
+
+            container.innerHTML = '';
             currentData.lifestyle.forEach((item, index) => {
                 const div = document.createElement('div');
                 div.className = 'lifestyle-item';
                 
-                const statusClass = item.status === 'O' ? 'status-o' : 
-                                   item.status === '△' ? 'status-triangle' : 'status-x';
-                const statusText = item.status === 'O' ? '●' : 
-                                  item.status === '△' ? '▲' : '✕';
+                const statusClass = item.status === '●' ? 'status-o' : 
+                                   item.status === '▲' ? 'status-triangle' : 'status-x';
                 
                 div.innerHTML = `
                     <div>
@@ -866,7 +1180,7 @@
                                    onchange="updateLifestyle(${index}, 'amount', this.value)">만원
                         </div>
                     </div>
-                    <div class="status-indicator ${statusClass}" onclick="toggleStatus(${index})">${statusText}</div>
+                    <div class="status-indicator ${statusClass}" onclick="toggleStatus(${index})">${item.status}</div>
                 `;
                 
                 container.appendChild(div);
@@ -878,10 +1192,11 @@
             const numValue = parseInt(value) || 0;
             currentData.sections[sectionKey].items[itemIndex][field] = numValue;
             
-            // 점수 재계산 (간단한 예시)
+            // 점수 재계산
             const section = currentData.sections[sectionKey];
             const totalPercentage = section.items.reduce((sum, item) => {
-                return sum + Math.min(100, (item.current / item.target) * 100);
+                const percentage = item.target > 0 ? (item.current / item.target) * 100 : 0;
+                return sum + Math.min(100, percentage);
             }, 0);
             section.score = Math.round(totalPercentage / section.items.length);
             
@@ -896,24 +1211,12 @@
 
         // 상태 토글
         function toggleStatus(index) {
-            const statuses = ['O', '△', '✕'];
+            const statuses = ['●', '▲', '✕'];
             const currentStatus = currentData.lifestyle[index].status;
             const currentIndex = statuses.indexOf(currentStatus);
             const nextIndex = (currentIndex + 1) % statuses.length;
             currentData.lifestyle[index].status = statuses[nextIndex];
             renderLifestyle();
-        }
-
-        // 파일 업로드 처리
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            // 여기서 OCR 처리를 시뮬레이션
-            alert('OCR 기능은 실제 구현에서 Tesseract.js 등을 사용하여 구현할 수 있습니다.\n현재는 기본 데이터를 사용합니다.');
-            
-            // 실제로는 여기서 OCR 결과를 파싱하여 currentData를 업데이트
-            // parseOCRResult(ocrText);
         }
 
         // 드래그 앤 드롭 이벤트
@@ -960,9 +1263,6 @@
                 }
             }
         });
-
-        // 초기화 실행
-        init();
 
         // 원본 레이아웃 생성
         function generateOriginalLayout() {
@@ -1012,11 +1312,11 @@
             const info = document.createElement('div');
             info.className = 'original-info';
             info.innerHTML = `
-                <span>생년월일 ${currentData.personal.birthDate}</span>
-                <span>/ 상령일 ${currentData.personal.ageDate}</span>
-                <span>/ 손해보험 ${currentData.personal.damageInsurance}건</span>
-                <span>/ 생명보험 ${currentData.personal.lifeInsurance}건</span>
-                <span>/ 월납보험료 합계 ${currentData.personal.monthlyPremium.toLocaleString()}원</span>
+                <span>생년월일 ${currentData.personal.birthDate || '-'}</span>
+                <span>/ 손해보험 ${currentData.personal.damageInsurance || '-'}건</span>
+                <span>/ 생명보험 ${currentData.personal.lifeInsurance || '-'}건</span>
+                <span>/ 월납보험료 합계 ${currentData.personal.monthlyPremium ? 
+                    currentData.personal.monthlyPremium.toLocaleString() : '-'}원</span>
             `;
             container.appendChild(info);
 
@@ -1069,19 +1369,17 @@
                     itemDiv.className = 'original-item';
                     
                     const shortage = Math.max(0, item.target - item.current);
-                    const percentage = Math.min(100, (item.current / item.target) * 100);
+                    const percentage = item.target > 0 ? Math.min(100, (item.current / item.target) * 100) : 0;
                     
                     let barColor = '#f44336';
                     if (percentage >= 100) barColor = '#4caf50';
                     else if (percentage >= 80) barColor = '#ff9800';
                     
-                    const unit = sectionInfo.key === 'medical' && item.name.includes('(1일)') ? '만원' : '만원';
-                    
                     itemDiv.innerHTML = `
                         <div class="original-item-name">${item.name}</div>
                         <div class="original-item-amount">
-                            ${item.current.toLocaleString()}${unit} / ${item.target.toLocaleString()}${unit}
-                            ${shortage > 0 ? `<span class="original-shortage">(${shortage.toLocaleString()}${unit} 부족)</span>` : ''}
+                            ${item.current.toLocaleString()}만원 / ${item.target.toLocaleString()}만원
+                            ${shortage > 0 ? `<span class="original-shortage">(${shortage.toLocaleString()}만원 부족)</span>` : ''}
                         </div>
                         <div class="original-bar">
                             <div class="original-bar-fill" style="width: ${Math.min(100, percentage)}%; background: ${barColor};"></div>
@@ -1121,10 +1419,10 @@
                 const status = document.createElement('div');
                 status.className = 'original-status';
                 
-                if (item.status === 'O') {
+                if (item.status === '●') {
                     status.style.background = '#4caf50';
                     status.textContent = '●';
-                } else if (item.status === '△') {
+                } else if (item.status === '▲') {
                     status.style.background = '#ff9800';
                     status.textContent = '▲';
                 } else {
@@ -1234,6 +1532,9 @@
                 element.style.zIndex = 'auto';
             });
         }
+
+        // 초기화 실행
+        init();
     </script>
 </body>
 </html>
