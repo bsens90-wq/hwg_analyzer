@@ -509,7 +509,7 @@
   <div class="header-fixed">
     <div></div>
     <div class="header-center">
-      <div class="logo-container" onclick="goHome()">
+      <div class="logo-container" id="logoBtn">
         <div class="logo-main">보장분석</div>
       </div>
     </div>
@@ -522,12 +522,12 @@
     <div class="card">
       <h2 style="margin-bottom:1.5rem; text-align:center;">메뉴 선택</h2>
       
-      <button class="menu-btn" onclick="showInputScreen()">
+      <button class="menu-btn" id="inputMenuBtn">
         <span style="display:block; margin-bottom:4px;">입력하기</span>
         <span style="font-size:14px; opacity:0.8;">새로운 보장분석 작성</span>
       </button>
       
-      <button class="menu-btn" onclick="showLoadScreen()">
+      <button class="menu-btn" id="loadMenuBtn">
         <span style="display:block; margin-bottom:4px;">불러오기</span>
         <span style="font-size:14px; opacity:0.8;">저장된 분석 불러오기</span>
       </button>
