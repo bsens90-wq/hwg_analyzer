@@ -14,15 +14,19 @@
       --text:#333;
       --muted:#777;
       --border:#e6e6e6;
+      --success:#28a745;
+      --warning:#ffc107;
+      --danger:#dc3545;
     }
     
     *{box-sizing:border-box}
     body{
       margin:0;
       padding-top: 70px;
-      font-family: Arial, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
+      font-family: "Noto Sans KR", Arial, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
       background:var(--bg);
       color:var(--text);
+      line-height: 1.4;
     }
     
     .header-fixed {
@@ -86,10 +90,89 @@
       padding:20px;
       margin-bottom:20px;
     }
+
+    /* 입력 화면 전용 스타일 */
+    .input-screen {
+      max-width: 100%;
+      padding: 0.5rem;
+    }
+
+    .input-card {
+      width: 100%;
+      background: var(--card);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .customer-name-section {
+      text-align: center;
+      margin-bottom: 24px;
+      padding: 20px;
+      background: linear-gradient(135deg, #ff7f00, #ff9933);
+      border-radius: 12px;
+      color: white;
+    }
+
+    .customer-name-input {
+      width: 100%;
+      max-width: 200px;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      margin: 8px 0;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--text);
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--hanwha);
+    }
+
+    .input-group {
+      margin-bottom: 16px;
+    }
+
+    .input-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 16px;
+      background: white;
+      transition: border-color 0.3s ease;
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: var(--hanwha);
+      box-shadow: 0 0 0 2px rgba(255, 127, 0, 0.2);
+    }
+
+    .input-unit {
+      font-size: 14px;
+      color: var(--muted);
+      margin-left: 8px;
+    }
     
     button{
       width:100%;
-      padding:12px 14px;
+      padding:14px 16px;
       background:var(--hanwha);
       color:#fff;
       border:none;
@@ -98,16 +181,24 @@
       cursor:pointer;
       font-size:16px;
       margin-bottom:8px;
+      transition: all 0.3s ease;
     }
     
-    button:hover{background:var(--hanwha-dark)}
+    button:hover{
+      background:var(--hanwha-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 127, 0, 0.3);
+    }
     
     button.secondary{
       background:#6c757d;
       margin-bottom:0;
     }
     
-    button.secondary:hover{background:#545b62}
+    button.secondary:hover{
+      background:#545b62;
+      box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+    }
     
     .saved-item{
       background:#fff;
@@ -158,196 +249,120 @@
       text-align:center;
     }
 
-    /* 엑셀 테이블 스타일 */
-    .excel-container {
-      width: 100%;
-      max-width: 100%;
+    /* 계산된 필드 표시 */
+    .calculated-field {
+      background: #f0f8ff !important;
+      border-color: #007bff !important;
+    }
+
+    .calculated-field::after {
+      content: ' (자동계산)';
+      font-size: 12px;
+      color: #007bff;
+    }
+
+    /* 조건부 서식을 위한 클래스 */
+    .status-good { background-color: #d4edda !important; border-color: #28a745 !important; }
+    .status-warning { background-color: #fff3cd !important; border-color: #ffc107 !important; }
+    .status-poor { background-color: #f8d7da !important; border-color: #dc3545 !important; }
+
+    @media (max-width: 768px) {
+      .screen { padding: 0.25rem; }
+      .input-card { padding: 12px; margin-bottom: 12px; }
+      .customer-name-section { padding: 16px; }
+    }
+
+    /* 이미지 생성용 숨김 스타일 */
+    .hidden-canvas {
+      position: absolute;
+      top: -9999px;
+      left: -9999px;
+      width: 800px;
+      background: white;
+      padding: 30px;
+      font-family: "Noto Sans KR", Arial, sans-serif;
+    }
+
+    .report-header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: linear-gradient(135deg, #ff7f00, #ff9933);
+      color: white;
+      border-radius: 12px;
+    }
+
+    .report-title {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .report-subtitle {
+      font-size: 16px;
+      opacity: 0.9;
+    }
+
+    .report-section {
+      margin-bottom: 25px;
       background: white;
       border-radius: 8px;
-      padding: 15px;
-      margin-bottom: 20px;
-      overflow-x: auto;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    
-    .excel-title {
-      text-align: center;
+
+    .report-section-title {
       font-size: 18px;
       font-weight: bold;
       color: #333;
-      margin-bottom: 20px;
-      padding: 10px;
+      margin-bottom: 15px;
+      padding-bottom: 8px;
       border-bottom: 2px solid #ff7f00;
     }
-    
-    .excel-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-      font-family: 'Malgun Gothic', Arial, sans-serif;
-    }
-    
-    .excel-table th,
-    .excel-table td {
-      border: 1px solid #333;
-      padding: 6px 4px;
-      text-align: center;
-      vertical-align: middle;
-      min-width: 40px;
-    }
-    
-    .excel-table th {
-      background-color: #d9d9d9;
-      font-weight: bold;
-    }
-    
-    .excel-table .section-header {
-      background-color: #b8b8b8;
-      font-weight: bold;
-      font-size: 14px;
-    }
-    
-    .excel-table .label-cell {
-      text-align: left;
-      padding-left: 8px;
-      background-color: #f5f5f5;
-      font-weight: 500;
-    }
-    
-    .excel-table .input-cell {
-      background-color: #fff;
-      text-align: right;
-      padding-right: 8px;
-      font-weight: 600;
-    }
-    
-    .excel-table .calculated-cell {
-      background-color: #f0f8ff;
-      text-align: right;
-      padding-right: 8px;
-      font-weight: 600;
-      color: #0066cc;
-    }
-    
-    .excel-table .unit-cell {
-      text-align: center;
-      font-size: 11px;
-      background-color: #f9f9f9;
+
+    .report-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
     }
 
-    /* 입력 모드에서만 보이는 스타일 */
-    .input-mode .excel-table input {
-      border: none;
-      background: transparent;
-      width: 100%;
-      text-align: right;
-      padding: 2px 4px;
-      font-size: 13px;
-      font-weight: 600;
-    }
-    
-    .input-mode .excel-table input:focus {
-      background-color: #ffffcc;
-      outline: 2px solid #ff7f00;
-    }
-    
-    .input-mode .customer-name-input {
-      text-align: center !important;
-      font-size: 16px !important;
-      font-weight: bold !important;
-      background-color: #fff !important;
-      border: 2px solid #ff7f00 !important;
-      border-radius: 4px !important;
-      padding: 8px !important;
+    .report-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      border-left: 4px solid #ff7f00;
     }
 
-    /* 조건부 서식 - 엑셀 규칙에 따른 색상 변경 */
-    
-    /* 가로 막대그래프 스타일 (B5:B14, F5:F24) */
-    .bar-chart-cell {
-      position: relative;
-      background: white;
+    .report-item-label {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .report-item-value {
+      font-weight: bold;
+      color: #007bff;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 20px;
+      background: #e9ecef;
+      border-radius: 10px;
       overflow: hidden;
+      margin-top: 5px;
     }
-    
-    .bar-chart-fill {
-      position: absolute;
-      top: 0;
-      left: 0;
+
+    .progress-fill {
       height: 100%;
-      z-index: 1;
       transition: width 0.3s ease;
     }
-    
-    .bar-chart-text {
-      position: relative;
-      z-index: 2;
-      padding: 6px 4px;
-      color: black;
-      font-weight: 600;
-    }
-    
-    .bar-green { background-color: #92d050; }
-    .bar-yellow { background-color: #ffff00; }
-    .bar-red { background-color: #ff9999; }
-    
-    /* 셀 채우기 서식 */
-    .fill-green {
-      background-color: #92d050 !important;
-      color: #000 !important;
-      font-weight: 600 !important;
-    }
-    
-    .fill-yellow {
-      background-color: #ffff00 !important;
-      color: #000 !important;
-      font-weight: 600 !important;
-    }
-    
-    .fill-red {
-      background-color: #ff9999 !important;
-      color: #000 !important;
-      font-weight: 600 !important;
-    }
-    
-    /* 계산된 셀 스타일 */
-    .calculated-cell {
-      background-color: #f0f8ff !important;
-      color: #0066cc !important;
-      font-style: italic !important;
-    }
 
-    /* 버튼 영역 */
-    .button-area {
-      margin-top: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    @media (max-width: 768px) {
-      .screen {
-        padding: 0.5rem;
-      }
-      
-      .excel-container {
-        padding: 10px;
-      }
-      
-      .excel-table {
-        font-size: 11px;
-      }
-      
-      .excel-table th,
-      .excel-table td {
-        padding: 4px 2px;
-        min-width: 35px;
-      }
-      
-      .input-mode .excel-table input {
-        font-size: 11px;
-      }
-    }
+    .progress-good { background: #28a745; }
+    .progress-warning { background: #ffc107; }
+    .progress-poor { background: #dc3545; }
   </style>
 </head>
 <body>
@@ -378,333 +393,219 @@
   </section>
 
   <!-- 입력 화면 -->
-  <section id="inputScreen" class="screen input-mode" style="display:none;">
+  <section id="inputScreen" class="screen input-screen" style="display:none;">
     <div class="app-title">보장분석 입력</div>
     
-    <div class="excel-container">
-      <table class="excel-table" id="analysisTable">
-        <!-- 제목 행 -->
-        <tr>
-          <td colspan="4" class="excel-title">
-            <input type="text" id="customerName" placeholder="(고객명)" class="customer-name-input">님의 한 장 요약 보장분석
-          </td>
-        </tr>
-        
-        <!-- 헤더 행 -->
-        <tr>
-          <th class="section-header">암</th>
-          <th class="section-header">보장내용</th>
-          <th class="section-header">가입한도(만원)</th>
-          <th class="section-header">뇌혈관/심장</th>
-          <th class="section-header">보장내용</th>
-          <th class="section-header">가입한도(만원)</th>
-          <th class="section-header">기타</th>
-          <th class="section-header">보장내용</th>
-          <th class="section-header">가입한도</th>
-        </tr>
-        
-        <!-- 데이터 행들 -->
-        <tr>
-          <td rowspan="10" class="section-header" style="writing-mode: vertical-lr; text-align: center;">암관련보장</td>
-          <td class="label-cell">일반암진단비</td>
-          <td class="bar-chart-cell" data-bar="B5">
-            <div class="bar-chart-fill" id="bar-B5"></div>
-            <div class="bar-chart-text" id="text-B5">
-              <input type="number" id="C5" placeholder="0" style="background:transparent;border:none;width:100%;text-align:center;font-weight:600;">
-            </div>
-          </td>
-          <td rowspan="10" class="section-header" style="writing-mode: vertical-lr; text-align: center;">뇌혈관심장관련보장</td>
-          <td class="label-cell">뇌혈관질환진단비</td>
-          <td class="bar-chart-cell" data-bar="F5">
-            <div class="bar-chart-fill" id="bar-F5"></div>
-            <div class="bar-chart-text" id="text-F5">
-              <input type="number" id="G5" placeholder="0" style="background:transparent;border:none;width:100%;text-align:center;font-weight:600;">
-            </div>
-          </td>
-          <td rowspan="4" class="section-header" style="writing-mode: vertical-lr; text-align: center;">의료실비</td>
-          <td class="label-cell">(질병)입원한도</td>
-          <td class="input-cell conditional-cell" data-condition="greater-than-1"><input type="number" id="J5" placeholder="0" data-condition="greater-than-1"><span class="unit-cell">만원</span></td>
-        </tr>
-        <tr>
-          <td class="label-cell">통합암진단비</td>
-          <td class="bar-chart-cell" data-bar="B6">
-            <div class="bar-chart-fill" id="bar-B6"></div>
-            <div class="bar-chart-text" id="text-B6">
-              <input type="number" id="C6" placeholder="0" style="background:transparent;border:none;width:100%;text-align:center;font-weight:600;">
-            </div>
-          </td>
-          <td class="label-cell">뇌졸중진단비</td>
-          <td class="bar-chart-cell" data-bar="F6">
-            <div class="bar-chart-fill" id="bar-F6"></div>
-            <div class="bar-chart-text" id="text-F6">
-              <input type="number" id="G6" placeholder="0" style="background:transparent;border:none;width:100%;text-align:center;font-weight:600;">
-            </div>
-          </td>
-          <td class="label-cell">(질병)통원한도</td>
-          <td class="input-cell conditional-cell" data-condition="greater-than-1"><input type="number" id="J6" placeholder="0" data-condition="greater-than-1"><span class="unit-cell">일</span></td>
-        </tr>
-        <tr>
-          <td class="label-cell">전이암진단비</td>
-          <td class="bar-chart-cell" data-bar="B7">
-            <div class="bar-chart-fill" id="bar-B7"></div>
-            <div class="bar-chart-text" id="text-B7">
-              <input type="number" id="C7" placeholder="0" style="background:transparent;border:none;width:100%;text-align:center;font-weight:600;">
-            </div>
-          </td>
-          <td class="label-cell">허혈성심장질환진단비</td>
-          <td class="bar-chart-cell" data-bar="F7">
-            <div class="bar-chart-fill" id="bar-F7"></div>
-            <div class="bar-chart-text" id="text-F7">
-              <input type="number" id="G7" placeholder="0" style="background:transparent;border:none;width:100%;text-align:center;font-weight:600;">
-            </div>
-          </td>
-          <td class="label-cell">(상해)입원한도</td>
-          <td class="input-cell conditional-cell" data-condition="greater-than-1"><input type="number" id="J7" placeholder="0" data-condition="greater-than-1"><span class="unit-cell">만원</span></td>
-        </tr>
-        <tr>
-          <td class="label-cell">암특정치료비</td>
-          <td class="bar-chart-cell" data-bar="B8">
-            <div class="bar-chart-fill" id="bar-B8"></div>
-            <div class="bar-chart-text" id="text-B8">
-              <input type="number" id="C8" placeholder="0" style="background:transparent;border:none;width:100%;text-align:center;font-weight:600;">
-            </div>
-          </td>
-          <td class="label-cell">심근경색진단비</td>
-          <td class="bar-chart-cell" data-bar="F8">
-            <div class="bar-chart-fill" id="bar-F8"></div>
-            <div class="bar-chart-text" id="text-F8">
-              <input type="number" id="G8" placeholder="0" style="background:transparent;border:none;width:100%;text-align:center;font-weight:600;">
-            </div>
-          </td>
-          <td class="label-cell">(상해)통원한도</td>
-          <td class="input-cell conditional-cell" data-condition="greater-than-1"><input type="number" id="J8" placeholder="0" data-condition="greater-than-1"><span class="unit-cell">일</span></td>
-        </tr>
-        <tr>
-          <td class="label-cell">암특정치료비(비급여)</td>
-          <td class="bar-chart-cell" data-bar="B9">
-            <div class="bar-chart-fill" id="bar-B9"></div>
-            <div class="bar-chart-text" id="text-B9">
-              <input type="number" id="C9" placeholder="0" style="background:transparent;border:none;width:100%;text-align:center;font-weight:600;">
-            </div>
-          </td>
-          <td class="label-cell">뇌혈관질환수술비</td>
-          <td class="bar-chart-cell" data-bar="F9">
-            <div class="bar-chart-fill" id="bar-F9"></div>
-            <div class="bar-chart-text" id="text-F9">
-              <input type="number" id="G9" placeholder="0" style="background:transparent;border:none;width:100%;text-align:center;font-weight:600;">
-            </div>
-          </td>
-          <td rowspan="3" class="section-header" style="writing-mode: vertical-lr; text-align: center;">운전자</td>
-          <td class="label-cell">형사합의금</td>
-          <td class="input-cell conditional-cell" data-condition="j11"><input type="number" id="J11" placeholder="0" data-condition="j11"><span class="unit-cell">만원</span></td>
-        </tr>
-        <tr>
-          <td class="label-cell">표적항암치료비</td>
-          <td class="bar-chart-cell" data-bar="B10">
-            <div class="bar-chart-fill" id="bar-B10"></div>
-            <div class="bar-chart-text" id="text-B10">
-              <input type="number" id="C10" placeholder="0" style="background:transparent;border:none;width:100%;text-align:center;font-weight:600;">
-            </div>
-          </td>
-          <td class="label-cell">뇌졸중수술비</td>
-          <td class="bar-chart-cell" data-bar="F10">
-            <div class="bar-chart-fill" id="bar-F10"></div>
-            <div class="bar-chart-text" id="text-F10">
-              <input type="number" id="G10" placeholder="0" style="background:transparent;border:none;width:100%;text-align:center;font-weight:600;">
-            </div>
-          </td>
-          <td class="label-cell">변호사선임비</td>
-          <td class="input-cell conditional-cell" data-condition="j12"><input type="number" id="J12" placeholder="0" data-condition="j12"><span class="unit-cell">만원</span></td>
-        </tr>
-        <tr>
-          <td class="label-cell">중입자치료비</td>
-          <td class="bar-chart-cell" data-bar="B11">
-            <div class="bar-chart-fill" id="bar-B11"></div>
-            <div class="bar-chart-text" id="text-B11">
-              <input type="number" id="C11" placeholder="0" style="background:transparent;border:none;width:100%;text-align:center;font-weight:600;">
-            </div>
-          </td>
-          <td class="label-cell">허혈성심장질환수술비</td>
-          <td class="bar-chart-cell" data-bar="F11">
-            <div class="bar-chart-fill" id="bar-F11"></div>
-            <div class="bar-chart-text" id="text-F11">
-              <input type="number" id="G11" placeholder="0" style="background:transparent;border:none;width:100%;text-align:center;font-weight:600;">
-            </div>
-          </td>
-          <td class="label-cell">간병인일당</td>
-          <td class="input-cell"><input type="number" id="J13" placeholder="0"><span class="unit-cell">만원</span></td>
-        </tr>
-        <tr>
-          <td class="label-cell">암수술비</td>
-          <td class="bar-chart-cell" data-bar="B12">
-            <div class="bar-chart-fill" id="bar-B12"></div>
-            <div class="bar-chart-text" id="text-B12">
-              <input type="number" id="C12" placeholder="0" style="background:transparent;border:none;width:100%;text-align:center;font-weight:600;">
-            </div>
-          </td>
-          <td class="label-cell">심근경색수술비</td>
-          <td class="bar-chart-cell" data-bar="F12">
-            <div class="bar-chart-fill" id="bar-F12"></div>
-            <div class="bar-chart-text" id="text-F12">
-              <input type="number" id="G12" placeholder="0" style="background:transparent;border:none;width:100%;text-align:center;font-weight:600;">
-            </div>
-          </td>
-          <td rowspan="6" class="section-header" style="writing-mode: vertical-lr; text-align: center;">간병비</td>
-          <td class="label-cell">지원 / 사용</td>
-          <td class="input-cell">-</td>
-        </tr>
-        <tr>
-          <td class="label-cell">다빈치로봇수술비</td>
-          <td class="bar-chart-cell" data-bar="B13">
-            <div class="bar-chart-fill" id="bar-B13"></div>
-            <div class="bar-chart-text" id="text-B13">
-              <input type="number" id="C13" placeholder="0" style="background:transparent;border:none;width:100%;text-align:center;font-weight:600;">
-            </div>
-          </td>
-          <td class="label-cell">뇌졸중혈전용해</td>
-          <td class="bar-chart-cell" data-bar="F13">
-            <div class="bar-chart-fill" id="bar-F13"></div>
-            <div class="bar-chart-text" id="text-F13">
-              <input type="number" id="G13" placeholder="0" style="background:transparent;border:none;width:100%;text-align:center;font-weight:600;">
-            </div>
-          </td>
-          <td class="label-cell">요양병원 외</td>
-          <td class="input-cell conditional-cell" data-condition="greater-than-1"><input type="number" id="J16" placeholder="0" data-condition="greater-than-1"><span class="unit-cell">만원</span></td>
-        </tr>
-        <tr>
-          <td class="label-cell">1-5종수술비(5종)</td>
-          <td class="bar-chart-cell" data-bar="B14">
-            <div class="bar-chart-fill" id="bar-B14"></div>
-            <div class="bar-chart-text" id="text-B14">
-              <input type="number" id="C14" placeholder="0" style="background:transparent;border:none;width:100%;text-align:center;font-weight:600;">
-            </div>
-          </td>
-          <td class="label-cell">심근경색혈전용해</td>
-          <td class="bar-chart-cell" data-bar="F14">
-            <div class="bar-chart-fill" id="bar-F14"></div>
-            <div class="bar-chart-text" id="text-F14">
-              <input type="number" id="G14" placeholder="0" style="background:transparent;border:none;width:100%;text-align:center;font-weight:600;">
-            </div>
-          </td>
-          <td class="label-cell">요양병원</td>
-          <td class="input-cell conditional-cell" data-condition="greater-than-1"><input type="number" id="J17" placeholder="0" data-condition="greater-than-1"><span class="unit-cell">만원</span></td>
-        </tr>
-        
-        <!-- 추가 행들 계속... -->
-        <tr>
-          <td rowspan="10" class="section-header" style="writing-mode: vertical-lr; text-align: center;">기타특약</td>
-          <td class="label-cell">2대특정치료비</td>
-          <td class="bar-chart-cell" data-bar="F15">
-            <div class="bar-chart-fill" id="bar-F15"></div>
-            <div class="bar-chart-text" id="text-F15">
-              <input type="number" id="G15" placeholder="0" style="background:transparent;border:none;width:100%;text-align:center;font-weight:600;">
-            </div>
-          </td>
-          <td class="label-cell">간호간병통합</td>
-          <td class="input-cell conditional-cell" data-condition="greater-than-1"><input type="number" id="J18" placeholder="0" data-condition="greater-than-1"><span class="unit-cell">만원</span></td>
-        </tr>
-        <tr>
-          <td class="label-cell">주요순환계(수술)</td>
-          <td class="bar-chart-cell" data-bar="F16">
-            <div class="bar-chart-fill" id="bar-F16"></div>
-            <div class="bar-chart-text" id="text-F16">
-              <input type="number" id="G16" placeholder="0" style="background:transparent;border:none;width:100%;text-align:center;font-weight:600;">
-            </div>
-          </td>
-          <td class="label-cell">일상생활배상책임</td>
-          <td class="input-cell">-</td>
-        </tr>
-        <tr>
-          <td class="label-cell">주요순환계(혈전제거)</td>
-          <td class="bar-chart-cell calculated-cell" data-bar="F17">
-            <div class="bar-chart-fill" id="bar-F17"></div>
-            <div class="bar-chart-text" id="text-F17">
-              <input type="number" id="G17" placeholder="0" readonly style="background:transparent;border:none;width:100%;text-align:center;font-weight:600;color:#0066cc;">
-            </div>
-          </td>
-          <td class="label-cell conditional-cell" data-condition="greater-than-1"><input type="number" id="I21" placeholder="0" style="width:60px;" data-condition="greater-than-1"> <input type="number" id="J21" placeholder="0" style="width:60px;" data-condition="greater-than-1"></td>
-        </tr>
-        <tr>
-          <td class="label-cell">주요순환계(혈전용해)</td>
-          <td class="bar-chart-cell calculated-cell" data-bar="F18">
-            <div class="bar-chart-fill" id="bar-F18"></div>
-            <div class="bar-chart-text" id="text-F18">
-              <input type="number" id="G18" placeholder="0" readonly style="background:transparent;border:none;width:100%;text-align:center;font-weight:600;color:#0066cc;">
-            </div>
-          </td>
-          <td class="label-cell">화재벌금</td>
-          <td class="input-cell">-</td>
-        </tr>
-        <tr>
-          <td class="label-cell">주요순환계(중환자실)</td>
-          <td class="bar-chart-cell calculated-cell" data-bar="F19">
-            <div class="bar-chart-fill" id="bar-F19"></div>
-            <div class="bar-chart-text" id="text-F19">
-              <input type="number" id="G19" placeholder="0" readonly style="background:transparent;border:none;width:100%;text-align:center;font-weight:600;color:#0066cc;">
-            </div>
-          </td>
-          <td class="label-cell conditional-cell" data-condition="greater-than-1"><input type="number" id="I24" placeholder="0" style="width:60px;" data-condition="greater-than-1"> <input type="number" id="J24" placeholder="0" style="width:60px;" data-condition="greater-than-1"></td>
-        </tr>
-        <tr>
-          <td class="label-cell">혈전제거치료비</td>
-          <td class="bar-chart-cell" data-bar="F20">
-            <div class="bar-chart-fill" id="bar-F20"></div>
-            <div class="bar-chart-text" id="text-F20">
-              <input type="number" id="G20" placeholder="0" style="background:transparent;border:none;width:100%;text-align:center;font-weight:600;">
-            </div>
-          </td>
-          <td class="label-cell">-</td>
-          <td class="input-cell">-</td>
-        </tr>
-        <tr>
-          <td class="label-cell">1-5종수술비(3종)</td>
-          <td class="bar-chart-cell" data-bar="F21">
-            <div class="bar-chart-fill" id="bar-F21"></div>
-            <div class="bar-chart-text" id="text-F21">
-              <input type="number" id="G21" placeholder="0" style="background:transparent;border:none;width:100%;text-align:center;font-weight:600;">
-            </div>
-          </td>
-          <td class="label-cell">-</td>
-          <td class="input-cell">-</td>
-        </tr>
-        <tr>
-          <td class="label-cell">1-5종수술비(5종)</td>
-          <td class="bar-chart-cell" data-bar="F22">
-            <div class="bar-chart-fill" id="bar-F22"></div>
-            <div class="bar-chart-text" id="text-F22">
-              <input type="number" id="G22" placeholder="0" style="background:transparent;border:none;width:100%;text-align:center;font-weight:600;">
-            </div>
-          </td>
-          <td class="label-cell">-</td>
-          <td class="input-cell">-</td>
-        </tr>
-        <tr>
-          <td class="label-cell">124대질병수술비(특정10대)</td>
-          <td class="bar-chart-cell" data-bar="F23">
-            <div class="bar-chart-fill" id="bar-F23"></div>
-            <div class="bar-chart-text" id="text-F23">
-              <input type="number" id="G23" placeholder="0" style="background:transparent;border:none;width:100%;text-align:center;font-weight:600;">
-            </div>
-          </td>
-          <td class="label-cell">-</td>
-          <td class="input-cell">-</td>
-        </tr>
-        <tr>
-          <td class="label-cell">7대기관수술비(뇌/심) 관혈</td>
-          <td class="bar-chart-cell" data-bar="F24">
-            <div class="bar-chart-fill" id="bar-F24"></div>
-            <div class="bar-chart-text" id="text-F24">
-              <input type="number" id="G24" placeholder="0" style="background:transparent;border:none;width:100%;text-align:center;font-weight:600;">
-            </div>
-          </td>
-          <td class="label-cell">-</td>
-          <td class="input-cell">-</td>
-        </tr>
-      </table>
+    <!-- 고객명 섹션 -->
+    <div class="customer-name-section">
+      <div style="font-size: 20px; margin-bottom: 8px;">고객정보</div>
+      <input type="text" id="customerName" placeholder="고객명 입력" class="customer-name-input">
+      <div style="font-size: 16px; margin-top: 8px;">님의 한 장 요약 보장분석</div>
+    </div>
+
+    <!-- 암관련보장 섹션 -->
+    <div class="input-card">
+      <div class="section-title">암관련보장</div>
+      <div class="input-group">
+        <label class="input-label">일반암진단비</label>
+        <input type="number" id="C5" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">통합암진단비</label>
+        <input type="number" id="C6" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">전이암진단비</label>
+        <input type="number" id="C7" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">암특정치료비</label>
+        <input type="number" id="C8" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">암특정치료비(비급여)</label>
+        <input type="number" id="C9" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">표적항암치료비</label>
+        <input type="number" id="C10" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">중입자치료비</label>
+        <input type="number" id="C11" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">암수술비</label>
+        <input type="number" id="C12" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">다빈치로봇수술비</label>
+        <input type="number" id="C13" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">1-5종수술비(5종)</label>
+        <input type="number" id="C14" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+    </div>
+
+    <!-- 뇌혈관/심장관련보장 섹션 -->
+    <div class="input-card">
+      <div class="section-title">뇌혈관/심장관련보장</div>
+      <div class="input-group">
+        <label class="input-label">뇌혈관질환진단비</label>
+        <input type="number" id="G5" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">뇌졸중진단비</label>
+        <input type="number" id="G6" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">허혈성심장질환진단비</label>
+        <input type="number" id="G7" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">심근경색진단비</label>
+        <input type="number" id="G8" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">뇌혈관질환수술비</label>
+        <input type="number" id="G9" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">뇌졸중수술비</label>
+        <input type="number" id="G10" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">허혈성심장질환수술비</label>
+        <input type="number" id="G11" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">심근경색수술비</label>
+        <input type="number" id="G12" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">뇌졸중혈전용해</label>
+        <input type="number" id="G13" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">심근경색혈전용해</label>
+        <input type="number" id="G14" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">2대특정치료비</label>
+        <input type="number" id="G15" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">주요순환계(수술)</label>
+        <input type="number" id="G16" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">주요순환계(혈전제거)</label>
+        <input type="number" id="G17" class="input-field calculated-field" readonly><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">주요순환계(혈전용해)</label>
+        <input type="number" id="G18" class="input-field calculated-field" readonly><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">주요순환계(중환자실)</label>
+        <input type="number" id="G19" class="input-field calculated-field" readonly><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">혈전제거치료비</label>
+        <input type="number" id="G20" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">1-5종수술비(3종)</label>
+        <input type="number" id="G21" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">1-5종수술비(5종)</label>
+        <input type="number" id="G22" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">124대질병수술비(특정10대)</label>
+        <input type="number" id="G23" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">7대기관수술비(뇌/심) 관혈</label>
+        <input type="number" id="G24" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+    </div>
+
+    <!-- 의료실비/운전자/간병비 섹션 -->
+    <div class="input-card">
+      <div class="section-title">의료실비</div>
+      <div class="input-group">
+        <label class="input-label">(질병)입원한도</label>
+        <input type="number" id="J5" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">(질병)통원한도</label>
+        <input type="number" id="J6" class="input-field" placeholder="0"><span class="input-unit">일</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">(상해)입원한도</label>
+        <input type="number" id="J7" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">(상해)통원한도</label>
+        <input type="number" id="J8" class="input-field" placeholder="0"><span class="input-unit">일</span>
+      </div>
+    </div>
+
+    <div class="input-card">
+      <div class="section-title">운전자보장</div>
+      <div class="input-group">
+        <label class="input-label">형사합의금</label>
+        <input type="number" id="J11" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">변호사선임비</label>
+        <input type="number" id="J12" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">간병인일당</label>
+        <input type="number" id="J13" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+    </div>
+
+    <div class="input-card">
+      <div class="section-title">간병비</div>
+      <div class="input-group">
+        <label class="input-label">요양병원 외</label>
+        <input type="number" id="J16" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">요양병원</label>
+        <input type="number" id="J17" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">간호간병통합</label>
+        <input type="number" id="J18" class="input-field" placeholder="0"><span class="input-unit">만원</span>
+      </div>
+    </div>
+
+    <div class="input-card">
+      <div class="section-title">기타보장</div>
+      <div class="input-group">
+        <label class="input-label">일상생활배상책임 (보장액/자기부담금)</label>
+        <div style="display: flex; gap: 10px;">
+          <input type="number" id="I21" class="input-field" placeholder="0" style="flex: 1;"><span class="input-unit">만원</span>
+          <input type="number" id="J21" class="input-field" placeholder="0" style="flex: 1;"><span class="input-unit">만원</span>
+        </div>
+      </div>
+      <div class="input-group">
+        <label class="input-label">화재벌금 (보장액/자기부담금)</label>
+        <div style="display: flex; gap: 10px;">
+          <input type="number" id="I24" class="input-field" placeholder="0" style="flex: 1;"><span class="input-unit">만원</span>
+          <input type="number" id="J24" class="input-field" placeholder="0" style="flex: 1;"><span class="input-unit">만원</span>
+        </div>
+      </div>
     </div>
 
     <!-- 버튼 영역 -->
-    <div class="button-area">
+    <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
       <button id="saveImageBtn">이미지로 저장하기</button>
       <button id="loadFromMenuBtn" class="secondary">불러오기</button>
       <button id="backToMenuBtn" class="secondary">뒤로가기</button>
@@ -760,10 +661,9 @@ function goHome() {
   navigateToScreen('menu');
 }
 
-// 계산 필드 설정 - 엑셀 수식 및 조건부 서식 구현
+// 계산 필드 설정
 function setupFormCalculations() {
-  // 모든 입력 필드에 이벤트 리스너 추가
-  const allInputs = document.querySelectorAll('.excel-table input[type="number"]');
+  const allInputs = document.querySelectorAll('.input-field[type="number"]');
   allInputs.forEach(input => {
     input.addEventListener('input', function() {
       updateCalculatedFields();
@@ -775,13 +675,11 @@ function setupFormCalculations() {
     });
   });
   
-  // 초기 조건부 서식 적용
   applyConditionalFormatting();
 }
 
 // 계산 필드 업데이트 (G16 기반 계산)
 function updateCalculatedFields() {
-  // G16 값을 기반으로 계산된 필드들 업데이트
   const g16Value = parseFloat(document.getElementById('G16')?.value) || 0;
   
   // G17 = G16 (주요순환계 혈전제거)
@@ -797,146 +695,51 @@ function updateCalculatedFields() {
   if (g19Input) g19Input.value = Math.floor(g16Value / 2);
 }
 
-// 막대그래프 업데이트 함수
-function updateBarChart(barId, value) {
-  const barFill = document.getElementById(`bar-${barId}`);
-  
-  if (!barFill) return;
-  
-  // 값에 따른 색상 및 너비 설정
-  let color, width;
-  
-  if (value >= 100) {
-    color = 'bar-green';
-    width = '100%';
-  } else if (value >= 30) {
-    color = 'bar-yellow';
-    width = `${Math.min(value, 100)}%`;
-  } else if (value > 0) {
-    color = 'bar-red';
-    width = `${Math.max(value, 10)}%`; // 최소 10% 너비
-  } else {
-    color = '';
-    width = '0%';
-  }
-  
-  // 기존 색상 클래스 제거
-  barFill.classList.remove('bar-green', 'bar-yellow', 'bar-red');
-  
-  // 새로운 색상 및 너비 적용
-  if (color) barFill.classList.add(color);
-  barFill.style.width = width;
-}
-
-// 엑셀 조건부 서식 적용 함수
+// 조건부 서식 적용
 function applyConditionalFormatting() {
-  // B5:B14 막대그래프 (암 관련)
-  const cancerInputs = ['C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14'];
-  cancerInputs.forEach((inputId, index) => {
-    const input = document.getElementById(inputId);
-    const value = parseFloat(input?.value) || 0;
-    const barId = `B${index + 5}`;
-    updateBarChart(barId, value);
-  });
-  
-  // F5:F24 막대그래프 (뇌혈관/심장 관련)
-  const heartInputs = ['G5', 'G6', 'G7', 'G8', 'G9', 'G10', 'G11', 'G12', 'G13', 'G14', 
-                      'G15', 'G16', 'G17', 'G18', 'G19', 'G20', 'G21', 'G22', 'G23', 'G24'];
-  heartInputs.forEach((inputId, index) => {
-    let value;
-    if (inputId === 'G17' || inputId === 'G18') {
-      value = parseFloat(document.getElementById('G16')?.value) || 0;
-    } else if (inputId === 'G19') {
-      value = Math.floor((parseFloat(document.getElementById('G16')?.value) || 0) / 2);
-    } else {
-      const input = document.getElementById(inputId);
-      value = parseFloat(input?.value) || 0;
-    }
-    const barId = `F${index + 5}`;
-    updateBarChart(barId, value);
-  });
-  
-  // 셀 채우기 서식 적용
-  applyCellFillFormatting();
-}
-
-// 셀 채우기 서식 적용
-function applyCellFillFormatting() {
-  // J5:J8, J16:J18 - 1보다 크면 녹색, 작으면 빨간색
-  const greaterThanOneIds = ['J5', 'J6', 'J7', 'J8', 'J16', 'J17', 'J18'];
+  // 1보다 큰 값은 좋음, 작으면 나쁨으로 표시
+  const greaterThanOneIds = ['J5', 'J6', 'J7', 'J8', 'J16', 'J17', 'J18', 'I21', 'J21', 'I24', 'J24'];
   greaterThanOneIds.forEach(id => {
     const input = document.getElementById(id);
-    const cell = input?.parentNode;
-    if (!input || !cell) return;
+    if (!input) return;
     
     const value = parseFloat(input.value) || 0;
+    input.classList.remove('status-good', 'status-poor');
     
-    // 기존 클래스 제거
-    cell.classList.remove('fill-green', 'fill-red');
-    
-    // 조건에 따른 클래스 추가
     if (value > 1) {
-      cell.classList.add('fill-green');
-    } else {
-      cell.classList.add('fill-red');
+      input.classList.add('status-good');
+    } else if (value > 0) {
+      input.classList.add('status-poor');
     }
   });
   
-  // I21, J21, I24, J24 - 1보다 크면 녹색, 작으면 빨간색
-  const specialIds = ['I21', 'J21', 'I24', 'J24'];
-  specialIds.forEach(id => {
-    const input = document.getElementById(id);
-    const cell = input?.parentNode;
-    if (!input || !cell) return;
-    
-    const value = parseFloat(input.value) || 0;
-    
-    // 기존 클래스 제거
-    cell.classList.remove('fill-green', 'fill-red');
-    
-    // 조건에 따른 클래스 추가
-    if (value > 1) {
-      cell.classList.add('fill-green');
-    } else {
-      cell.classList.add('fill-red');
-    }
-  });
-  
-  // J11 - 20000 이상이면 녹색, 10000 이상이면 겨자색, 10000 미만이면 빨간색
+  // J11 특별 조건 (형사합의금)
   const j11Input = document.getElementById('J11');
-  const j11Cell = j11Input?.parentNode;
-  if (j11Input && j11Cell) {
+  if (j11Input) {
     const value = parseFloat(j11Input.value) || 0;
+    j11Input.classList.remove('status-good', 'status-warning', 'status-poor');
     
-    // 기존 클래스 제거
-    j11Cell.classList.remove('fill-green', 'fill-yellow', 'fill-red');
-    
-    // 조건에 따른 클래스 추가
     if (value >= 20000) {
-      j11Cell.classList.add('fill-green');
+      j11Input.classList.add('status-good');
     } else if (value >= 10000) {
-      j11Cell.classList.add('fill-yellow');
-    } else {
-      j11Cell.classList.add('fill-red');
+      j11Input.classList.add('status-warning');
+    } else if (value > 0) {
+      j11Input.classList.add('status-poor');
     }
   }
   
-  // J12 - 5000 이상이면 녹색, 3000 이상이면 겨자색, 3000 미만이면 빨간색
+  // J12 특별 조건 (변호사선임비)
   const j12Input = document.getElementById('J12');
-  const j12Cell = j12Input?.parentNode;
-  if (j12Input && j12Cell) {
+  if (j12Input) {
     const value = parseFloat(j12Input.value) || 0;
+    j12Input.classList.remove('status-good', 'status-warning', 'status-poor');
     
-    // 기존 클래스 제거
-    j12Cell.classList.remove('fill-green', 'fill-yellow', 'fill-red');
-    
-    // 조건에 따른 클래스 추가
     if (value >= 5000) {
-      j12Cell.classList.add('fill-green');
+      j12Input.classList.add('status-good');
     } else if (value >= 3000) {
-      j12Cell.classList.add('fill-yellow');
-    } else {
-      j12Cell.classList.add('fill-red');
+      j12Input.classList.add('status-warning');
+    } else if (value > 0) {
+      j12Input.classList.add('status-poor');
     }
   }
 }
@@ -982,143 +785,143 @@ function saveData() {
   }
   
   localStorage.setItem('insuranceAnalysisData', JSON.stringify(savedData));
-  
   showMessage('저장되었습니다!', 'success');
   
-  // 엑셀과 동일한 이미지 생성
-  generateExcelImage(data);
+  // 개선된 이미지 생성
+  generateProfessionalImage(data);
 }
 
-// 엑셀 인쇄 형태와 동일한 이미지 생성
-function generateExcelImage(data) {
-  // 현재 테이블을 복사하여 이미지용 테이블 생성
-  const originalTable = document.getElementById('analysisTable');
-  const clonedTable = originalTable.cloneNode(true);
-  
-  // 복사된 테이블에서 input을 텍스트로 변경
-  const inputs = clonedTable.querySelectorAll('input');
-  inputs.forEach(input => {
-    const value = input.value || '0';
-    const span = document.createElement('span');
-    
-    if (input.id === 'customerName') {
-      span.textContent = value || '(고객명)';
-      span.style.fontWeight = 'bold';
-      span.style.fontSize = '16px';
-    } else {
-      span.textContent = value === '0' ? '-' : value;
-      span.style.fontWeight = '600';
-    }
-    
-    input.parentNode.replaceChild(span, input);
-  });
-  
-  // 이미지 생성용 컨테이너 생성
-  const imageContainer = document.createElement('div');
-  imageContainer.style.cssText = `
-    background: white;
-    padding: 20px;
-    font-family: 'Malgun Gothic', Arial, sans-serif;
-    width: 800px;
-    position: absolute;
-    top: -9999px;
-    left: -9999px;
-  `;
-  
-  imageContainer.appendChild(clonedTable);
-  document.body.appendChild(imageContainer);
-  
-  // html2canvas를 사용하여 이미지 생성 (CDN에서 로드)
-  const script = document.createElement('script');
-  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-  script.onload = function() {
-    html2canvas(imageContainer, {
-      backgroundColor: '#ffffff',
-      scale: 2,
-      logging: false,
-      useCORS: true,
-      allowTaint: true
-    }).then(canvas => {
-      // 이미지 다운로드
-      canvas.toBlob(function(blob) {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${data.customerName}_보장분석_${new Date().toISOString().slice(0,10).replace(/-/g, '')}.png`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        
-        showMessage('이미지가 다운로드되었습니다!', 'success');
-      }, 'image/png');
-      
-      // 임시 컨테이너 제거
-      document.body.removeChild(imageContainer);
-    }).catch(error => {
-      console.error('이미지 생성 실패:', error);
-      document.body.removeChild(imageContainer);
-      showMessage('이미지 생성에 실패했습니다.', 'error');
-    });
-  };
-  
-  script.onerror = function() {
-    // html2canvas 로드 실패시 Canvas API 사용
-    document.body.removeChild(imageContainer);
-    generateCanvasImage(data);
-  };
-  
-  document.head.appendChild(script);
-}
-
-// Canvas API를 사용한 이미지 생성 (폴백)
-function generateCanvasImage(data) {
+// 전문적인 이미지 생성
+function generateProfessionalImage(data) {
+  // 숨김 캔버스 생성
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   
   canvas.width = 800;
-  canvas.height = 1000;
+  canvas.height = 1200;
   
-  // 배경
-  ctx.fillStyle = '#ffffff';
+  // 배경 그라디언트
+  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  gradient.addColorStop(0, '#ffffff');
+  gradient.addColorStop(1, '#f8f9fa');
+  ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   
-  // 제목
-  ctx.fillStyle = '#000';
-  ctx.font = 'bold 20px Arial';
+  // 헤더 섹션
+  const headerGradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+  headerGradient.addColorStop(0, '#ff7f00');
+  headerGradient.addColorStop(1, '#ff9933');
+  ctx.fillStyle = headerGradient;
+  ctx.fillRect(30, 30, canvas.width - 60, 120);
+  
+  // 헤더 텍스트
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 32px Arial';
   ctx.textAlign = 'center';
-  ctx.fillText(`${data.customerName}님의 한 장 요약 보장분석`, canvas.width / 2, 40);
+  ctx.fillText(`${data.customerName}님의 보장분석`, canvas.width / 2, 80);
   
-  // 간단한 테이블 형태로 그리기
-  let y = 80;
-  const leftCol = 50;
-  const rightCol = 400;
+  ctx.font = '16px Arial';
+  ctx.fillText(`생성일: ${data.timestamp}`, canvas.width / 2, 110);
+  ctx.fillText('한 장 요약 보장분석 리포트', canvas.width / 2, 130);
   
-  ctx.font = '14px Arial';
-  ctx.textAlign = 'left';
+  let yPos = 200;
   
-  // 주요 데이터만 표시
-  const importantFields = [
-    { id: 'C5', label: '일반암진단비' },
-    { id: 'C8', label: '암특정치료비' },
-    { id: 'G5', label: '뇌혈관질환진단비' },
-    { id: 'G6', label: '뇌졸중진단비' },
-    { id: 'J5', label: '질병입원한도' },
-    { id: 'J11', label: '형사합의금' }
+  // 섹션별 데이터 표시
+  const sections = [
+    {
+      title: '암관련보장',
+      fields: [
+        { id: 'C5', label: '일반암진단비' },
+        { id: 'C6', label: '통합암진단비' },
+        { id: 'C7', label: '전이암진단비' },
+        { id: 'C8', label: '암특정치료비' },
+        { id: 'C9', label: '암특정치료비(비급여)' },
+        { id: 'C10', label: '표적항암치료비' }
+      ]
+    },
+    {
+      title: '뇌혈관/심장관련보장',
+      fields: [
+        { id: 'G5', label: '뇌혈관질환진단비' },
+        { id: 'G6', label: '뇌졸중진단비' },
+        { id: 'G7', label: '허혈성심장질환진단비' },
+        { id: 'G8', label: '심근경색진단비' },
+        { id: 'G16', label: '주요순환계(수술)' }
+      ]
+    },
+    {
+      title: '의료실비/운전자보장',
+      fields: [
+        { id: 'J5', label: '질병입원한도' },
+        { id: 'J6', label: '질병통원한도' },
+        { id: 'J11', label: '형사합의금' },
+        { id: 'J12', label: '변호사선임비' }
+      ]
+    }
   ];
   
-  importantFields.forEach(field => {
-    const value = data.values[field.id] || 0;
-    if (value > 0) {
-      ctx.fillText(field.label, leftCol, y);
-      ctx.textAlign = 'right';
-      ctx.fillText(`${value.toLocaleString()}만원`, rightCol, y);
-      ctx.textAlign = 'left';
-      y += 25;
-    }
+  sections.forEach(section => {
+    // 섹션 헤더
+    ctx.fillStyle = '#333';
+    ctx.font = 'bold 20px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText(section.title, 50, yPos);
+    
+    // 섹션 라인
+    ctx.strokeStyle = '#ff7f00';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(50, yPos + 5);
+    ctx.lineTo(250, yPos + 5);
+    ctx.stroke();
+    
+    yPos += 40;
+    
+    // 필드들 표시
+    section.fields.forEach(field => {
+      const value = data.values[field.id] || 0;
+      if (value > 0) {
+        // 배경 박스
+        ctx.fillStyle = '#f8f9fa';
+        ctx.fillRect(50, yPos - 20, 700, 30);
+        
+        // 라벨
+        ctx.fillStyle = '#333';
+        ctx.font = '14px Arial';
+        ctx.fillText(field.label, 70, yPos);
+        
+        // 값
+        ctx.fillStyle = '#007bff';
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'right';
+        ctx.fillText(`${value.toLocaleString()}만원`, 730, yPos);
+        ctx.textAlign = 'left';
+        
+        // 프로그레스 바
+        const maxValue = Math.max(...Object.values(data.values));
+        const barWidth = Math.min((value / maxValue) * 200, 200);
+        
+        let barColor = '#dc3545';
+        if (value >= 1000) barColor = '#28a745';
+        else if (value >= 300) barColor = '#ffc107';
+        
+        ctx.fillStyle = barColor;
+        ctx.fillRect(500, yPos - 15, barWidth, 10);
+        
+        yPos += 35;
+      }
+    });
+    
+    yPos += 30;
   });
   
-  // 다운로드
+  // 푸터
+  ctx.fillStyle = '#666';
+  ctx.font = '12px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('본 자료는 보험 가입 현황을 요약한 것으로, 실제 보장내용과 차이가 있을 수 있습니다.', canvas.width / 2, canvas.height - 30);
+  
+  // 이미지 다운로드
   canvas.toBlob(function(blob) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -1128,6 +931,8 @@ function generateCanvasImage(data) {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    
+    showMessage('전문적인 보고서 이미지가 다운로드되었습니다!', 'success');
   }, 'image/png');
 }
 
@@ -1152,9 +957,8 @@ function loadData(id) {
   
   // 계산 필드 업데이트
   setupFormCalculations();
-  const event = new Event('input');
-  const g16 = document.getElementById('G16');
-  if (g16) g16.dispatchEvent(event);
+  updateCalculatedFields();
+  applyConditionalFormatting();
   
   navigateToScreen('input');
   showMessage(`${data.customerName}의 데이터를 불러왔습니다.`, 'success');
@@ -1206,7 +1010,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // 초기 화면 설정
   navigateToScreen('menu');
 });
-
 </script>
 
 </body>
