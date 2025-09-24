@@ -7,22 +7,16 @@
   <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,">
   <style>
     :root{
-      --primary:#ff7f00;
-      --primary-dark:#e67100;
+      --hanwha:#ff7f00;
+      --hanwha-dark:#e67100;
       --bg:#f8f9fa;
       --card:#ffffff;
       --text:#333;
       --muted:#777;
       --border:#e6e6e6;
-      --success:#28a745;
-      --danger:#dc3545;
-    .insurance-details {
-      margin-left: 20px;
-      margin-top: 8px;
     }
     
     *{box-sizing:border-box}
-    
     body{
       margin:0;
       padding-top: 70px;
@@ -43,12 +37,7 @@
       box-shadow: 0 2px 4px rgba(0,0,0,.08);
       display: flex;
       align-items: center;
-      justify-content: space-between;
-    }
-    
-    .header-center {
-      flex: 1;
-      text-align: center;
+      justify-content: center;
     }
     
     .logo-container {
@@ -57,11 +46,15 @@
       display: inline-block;
     }
     
+    .logo-container:hover {
+      transform: scale(1.05);
+    }
+    
     .logo-main {
-      font-size: 28px;
+      font-size: 32px;
       font-weight: 900;
-      color: var(--primary);
-      letter-spacing: 2px;
+      color: var(--hanwha);
+      letter-spacing: 3px;
       text-shadow: 0 2px 4px rgba(255,127,0,0.2);
       margin: 0;
       line-height: 1;
@@ -79,7 +72,7 @@
     .app-title{
       font-size:24px;
       font-weight:700;
-      color:var(--primary);
+      color:var(--hanwha);
       margin-bottom:2rem;
       text-align:center;
     }
@@ -91,1561 +84,786 @@
       border-radius:16px;
       box-shadow:0 6px 18px rgba(0,0,0,.08);
       padding:20px;
+      margin-bottom:20px;
     }
     
-    .card-wide{
-      max-width:800px;
-    }
+    h2{margin:0 0 .75rem 0}
+    .row{margin-bottom:.75rem}
     
-    h2{margin:0 0 1rem 0; font-size:20px;}
-    
-    .menu-btn{
+    input, select{
       width:100%;
-      padding:16px 20px;
-      background:var(--primary);
+      padding:12px 14px;
+      border:1px solid var(--border);
+      border-radius:10px;
+      font-size:16px;
+      outline:none;
+      background:#fff;
+      text-align:right;
+    }
+    
+    input.customer-name{
+      text-align:left;
+    }
+    
+    input:focus, select:focus{border-color:var(--hanwha)}
+    
+    button{
+      width:100%;
+      padding:12px 14px;
+      background:var(--hanwha);
       color:#fff;
       border:none;
-      border-radius:12px;
+      border-radius:10px;
       font-weight:700;
       cursor:pointer;
-      font-size:18px;
-      margin-bottom:12px;
-      transition: all 0.2s ease;
-    }
-    
-    .menu-btn:hover{background:var(--primary-dark)}
-    
-    .secondary-btn{
-      background:#6c757d;
       font-size:16px;
-      padding:12px 16px;
+      margin-bottom:8px;
     }
     
-    .secondary-btn:hover{background:#545b62}
+    button:hover{background:var(--hanwha-dark)}
     
-    .input-section{
-      margin-bottom:1.5rem;
+    button.secondary{
+      background:#6c757d;
+      margin-bottom:0;
+    }
+    
+    button.secondary:hover{background:#545b62}
+    
+    .label{
+      font-size:14px;
+      font-weight:600;
+      color:var(--text);
+      margin-bottom:5px;
+      display:block;
+    }
+    
+    .unit{
+      font-size:12px;
+      color:var(--muted);
+      margin-left:5px;
     }
     
     .section-title{
       font-size:18px;
       font-weight:700;
-      color:var(--primary);
-      margin-bottom:1rem;
+      color:var(--hanwha);
+      margin:20px 0 15px 0;
       text-align:center;
-      border-bottom:2px solid var(--primary);
+      border-bottom:2px solid var(--hanwha);
       padding-bottom:8px;
     }
     
-    .input-grid{
-      display:grid;
-      grid-template-columns:1fr 120px;
-      gap:8px;
-      margin-bottom:8px;
-      align-items:center;
-    }
-    
-    .input-label{
-      font-size:14px;
-      font-weight:600;
-      color:var(--text);
-      background:#f8f9fa;
-      padding:8px 12px;
-      border-radius:8px;
-      border:1px solid var(--border);
-    }
-    
-    .input-field{
-      padding:8px 12px;
-      border:1px solid var(--border);
-      border-radius:8px;
-      font-size:14px;
-      outline:none;
-      background:#fff;
+    .meta{
+      color:var(--muted); 
+      font-size:13px; 
+      margin-top:.25rem;
       text-align:center;
     }
     
-    .input-field:focus{border-color:var(--primary)}
-    
-    .select-field{
-      padding:8px 12px;
-      border:1px solid var(--border);
-      border-radius:8px;
-      font-size:14px;
-      outline:none;
-      background:#fff;
+    .error{
+      color:#d93025; 
+      font-size:14px; 
+      margin-top:.5rem;
       text-align:center;
     }
     
-    .example-section{
-      background:#fff3cd;
-      border:1px solid #ffeaa7;
-      border-radius:8px;
-      padding:12px;
-      margin-bottom:1.5rem;
-    }
-    
-    .example-title{
-      font-size:16px;
-      font-weight:600;
-      margin-bottom:8px;
-      color:#856404;
-    }
-    
-    .example-grid{
-      display:grid;
-      grid-template-columns:1fr auto;
-      gap:8px;
-      margin-bottom:6px;
-      align-items:center;
-    }
-    
-    .example-label{
-      font-size:13px;
-      color:#856404;
-    }
-    
-    .example-value{
-      font-size:13px;
-      font-weight:600;
-      color:#856404;
-      text-align:right;
-    }
-    
-    .insurance-section{
-      background:#d1ecf1;
-      border:1px solid #bee5eb;
-      border-radius:8px;
-      padding:12px;
-      margin-bottom:1.5rem;
-    }
-    
-    .insurance-title{
-      font-size:16px;
-      font-weight:600;
-      margin-bottom:12px;
-      color:#0c5460;
+    .success{
+      color:#28a745; 
+      font-size:14px; 
+      margin-top:.5rem;
       text-align:center;
-    }
-    
-    .insurance-grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit, minmax(80px, 1fr));
-      gap:8px;
-      margin-bottom:12px;
-    }
-    
-    .insurance-item{
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:4px;
-    }
-    
-    .insurance-label{
-      font-size:12px;
-      color:#0c5460;
-      text-align:center;
-      line-height:1.3;
-    }
-    
-    .limit-grid{
-      display:grid;
-      grid-template-columns:1fr 80px;
-      gap:8px;
-      margin-bottom:6px;
-      align-items:center;
-    }
-    
-    .save-btn{
-      width:100%;
-      padding:16px 20px;
-      background:var(--success);
-      color:#fff;
-      border:none;
-      border-radius:12px;
-      font-weight:700;
-      cursor:pointer;
-      font-size:18px;
-      margin-top:20px;
-    }
-    
-    .save-btn:hover{background:#218838}
-    
-    .customer-input{
-      margin-bottom:20px;
-    }
-    
-    .customer-input input{
-      width:100%;
-      padding:12px 16px;
-      border:1px solid var(--border);
-      border-radius:8px;
-      font-size:16px;
-      outline:none;
-      background:#fff;
-      text-align:center;
-      font-weight:600;
-    }
-    
-    .saved-list{
-      margin-top:1rem;
     }
     
     .saved-item{
       background:#fff;
       border:1px solid var(--border);
-      border-radius:8px;
-      padding:12px;
-      margin-bottom:8px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
+      border-radius:12px;
+      padding:16px;
+      margin-bottom:12px;
       cursor:pointer;
-      transition: all 0.2s ease;
+      transition:all 0.2s ease;
     }
     
     .saved-item:hover{
       background:#f8f9fa;
-      transform:translateY(-1px);
+      transform:translateY(-2px);
+      box-shadow:0 4px 12px rgba(0,0,0,.1);
     }
     
-    .saved-info{
-      flex:1;
-    }
-    
-    .saved-name{
-      font-weight:600;
+    .saved-item-title{
       font-size:16px;
-      margin-bottom:4px;
-    }
-    
-    .saved-date{
-      font-size:12px;
-      color:var(--muted);
-    }
-    
-    .delete-btn{
-      background:var(--danger);
-      color:#fff;
-      border:none;
-      border-radius:6px;
-      padding:6px 12px;
-      font-size:12px;
-      cursor:pointer;
       font-weight:600;
+      color:var(--text);
+      margin-bottom:5px;
     }
     
-    .delete-btn:hover{background:#c82333}
-    
-    .meta{
-      margin-top:1rem;
+    .saved-item-date{
       font-size:12px;
       color:var(--muted);
-      text-align:center;
     }
     
     @media (max-width: 768px) {
-      body{
-        padding-top: 60px;
-      }
-      
-      .header-fixed{
-        padding: 6px 15px;
-      }
-      
-      .logo-main{
-        font-size: 24px;
-      }
-      
       .card{
         max-width:100%;
-        margin:0 10px;
-        padding:15px;
+        margin:0 10px 20px 10px;
       }
-      
-      .input-grid{
-        grid-template-columns:1fr 100px;
-        gap:6px;
-      }
-      
-      .input-label, .input-field{
-        font-size:13px;
-        padding:6px 10px;
-      }
-      
-      .insurance-grid{
-        grid-template-columns:repeat(4, 1fr);
-        gap:6px;
-      }
-      
-      .insurance-label{
-        font-size:11px;
-      }
+    }
+    
+    .calculated-field {
+      background-color: #f0f8ff;
+      border: 1px solid #b3d9ff;
+    }
+    
+    .customer-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--hanwha);
+      text-align: center;
+      margin-bottom: 20px;
+      padding: 15px;
+      background: rgba(255,127,0,0.1);
+      border-radius: 10px;
+    }
+    
+    .preview-container {
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      margin: 20px 0;
+      max-width: 100%;
+      overflow: hidden;
+    }
+    
+    .preview-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+    
+    .preview-table th, .preview-table td {
+      border: 1px solid #ddd;
+      padding: 8px 4px;
+      text-align: center;
+    }
+    
+    .preview-table th {
+      background-color: var(--hanwha);
+      color: white;
+      font-weight: 600;
+    }
+    
+    .preview-table .label-cell {
+      text-align: left;
+      font-weight: 600;
+      background-color: #f8f9fa;
+    }
+    
+    .preview-table .value-cell {
+      text-align: right;
+      font-weight: 600;
+    }
+    
+    .input-section {
+      margin-bottom: 30px;
     }
   </style>
-
-  <script>
-    let currentScreen = 'menu';
-
-    // 화면 전환 함수들을 먼저 정의
-    function hideAllScreens() {
-      const menuScreen = document.getElementById("menuScreen");
-      const inputScreen = document.getElementById("inputScreen");
-      const loadScreen = document.getElementById("loadScreen");
-      
-      if (menuScreen) menuScreen.style.display = "none";
-      if (inputScreen) inputScreen.style.display = "none";
-      if (loadScreen) loadScreen.style.display = "none";
-    }
-
-    function showInputScreen() {
-      hideAllScreens();
-      const inputScreen = document.getElementById("inputScreen");
-      if (inputScreen) {
-        inputScreen.style.display = "flex";
-        currentScreen = 'input';
-        
-        setTimeout(() => {
-          addInputListeners();
-          updateExamples();
-        }, 100);
-      }
-    }
-
-    function showLoadScreen() {
-      hideAllScreens();
-      const loadScreen = document.getElementById("loadScreen");
-      if (loadScreen) {
-        loadScreen.style.display = "flex";
-        currentScreen = 'load';
-        setTimeout(() => {
-          loadSavedAnalyses();
-        }, 100);
-      }
-    }
-
-    function goHome() {
-      hideAllScreens();
-      const menuScreen = document.getElementById("menuScreen");
-      if (menuScreen) {
-        menuScreen.style.display = "flex";
-        currentScreen = 'menu';
-      }
-    }
-
-    // 입력 필드 이벤트 리스너
-    function addInputListeners() {
-      const inputFields = document.querySelectorAll('.input-field[type="number"]');
-      inputFields.forEach(field => {
-        field.removeEventListener('input', updateExamples); // 기존 리스너 제거
-      });
-      
-      // 5대 필수보험 동적 이벤트 추가
-      addInsuranceListeners();
-    }
-
-    function addInsuranceListeners() {
-      // 실손의료비 선택 변경
-      const medicalInsurance = document.getElementById('medical_insurance');
-      if (medicalInsurance) {
-        medicalInsurance.addEventListener('change', function() {
-          const details = document.getElementById('medicalDetails');
-          if (details) {
-            details.style.display = this.value === 'O' ? 'block' : 'none';
-          }
-        });
-      }
-      
-      // 화재보험 선택 변경
-      const fireInsurance = document.getElementById('fire_insurance');
-      if (fireInsurance) {
-        fireInsurance.addEventListener('change', function() {
-          const details = document.getElementById('fireDetails');
-          if (details) {
-            details.style.display = this.value === 'O' ? 'block' : 'none';
-          }
-        });
-      }
-      
-      // 운전자보험 선택 변경
-      const driverInsurance = document.getElementById('driver_insurance');
-      if (driverInsurance) {
-        driverInsurance.addEventListener('change', function() {
-          const details = document.getElementById('driverDetails');
-          if (details) {
-            details.style.display = this.value === 'O' ? 'block' : 'none';
-          }
-        });
-      }
-      
-      // 간병인일당 선택 변경
-      const caregiverInsurance = document.getElementById('caregiver_insurance');
-      if (caregiverInsurance) {
-        caregiverInsurance.addEventListener('change', function() {
-          const details = document.getElementById('caregiverDetails');
-          if (details) {
-            details.style.display = this.value === 'O' ? 'block' : 'none';
-          }
-        });
-      }
-      
-      // 간병인 형태 선택 변경
-      const caregiverType = document.getElementById('caregiver_type');
-      if (caregiverType) {
-        caregiverType.addEventListener('change', function() {
-          const support = document.getElementById('caregiverSupport');
-          const usage = document.getElementById('caregiverUsage');
-          
-          if (support && usage) {
-            if (this.value === '지원') {
-              support.style.display = 'block';
-              usage.style.display = 'none';
-            } else if (this.value === '사용') {
-              support.style.display = 'none';
-              usage.style.display = 'block';
-            }
-          }
-        });
-      }
-    }
-
-    // 예시 계산 업데이트 (제거 - 출력시에만 사용)
-    function updateExamples() {
-      // 입력 화면에서는 예시를 표시하지 않음
-    }
-
-    // 입력값 가져오기 헬퍼 함수
-    function getValue(fieldId) {
-      const field = document.getElementById(fieldId);
-      return field ? parseInt(field.value) || 0 : 0;
-    }
-
-    function getTextValue(fieldId) {
-      const field = document.getElementById(fieldId);
-      return field ? field.value || '' : '';
-    }
-
-    function getSelectValue(fieldId) {
-      const field = document.getElementById(fieldId);
-      return field ? field.value || '' : '';
-    }
-
-    // 분석 저장
-    function saveAnalysis() {
-      const customerName = document.getElementById('customerName').value.trim();
-      
-      if (!customerName) {
-        alert('고객명을 입력해주세요.');
-        return;
-      }
-      
-      // 모든 입력값 수집
-      const analysisData = {
-        customerName: customerName,
-        timestamp: new Date().toISOString(),
-        data: {
-          // 암 보장
-          cancer_general: getValue('cancer_general'),
-          cancer_integrated: getValue('cancer_integrated'),
-          cancer_metastatic: getValue('cancer_metastatic'),
-          cancer_treatment: getValue('cancer_treatment'),
-          cancer_treatment_non: getValue('cancer_treatment_non'),
-          cancer_targeted: getValue('cancer_targeted'),
-          cancer_heavy_ion: getValue('cancer_heavy_ion'),
-          cancer_surgery: getValue('cancer_surgery'),
-          cancer_robot_surgery: getValue('cancer_robot_surgery'),
-          cancer_surgery_5type: getValue('cancer_surgery_5type'),
-          
-          // 뇌 관련
-          brain_diagnosis: getValue('brain_diagnosis'),
-          stroke_diagnosis: getValue('stroke_diagnosis'),
-          
-          // 심장 관련
-          heart_ischemic_diagnosis: getValue('heart_ischemic_diagnosis'),
-          heart_infarction_diagnosis: getValue('heart_infarction_diagnosis'),
-          
-          // 치료비
-          major2_treatment: getValue('major2_treatment'),
-          circulatory_surgery: getValue('circulatory_surgery'),
-          circulatory_thrombectomy: getValue('circulatory_thrombectomy'),
-          circulatory_thrombolysis: getValue('circulatory_thrombolysis'),
-          circulatory_icu: getValue('circulatory_icu'),
-          thrombectomy_treatment: getValue('thrombectomy_treatment'),
-          thrombolysis_treatment: getValue('thrombolysis_treatment'),
-          brain_heart_surgery: getValue('brain_heart_surgery'),
-          surgery_3type: getValue('surgery_3type'),
-          surgery_5type: getValue('surgery_5type'),
-          disease_124_surgery: getValue('disease_124_surgery'),
-          organ_7_surgery: getValue('organ_7_surgery'),
-          
-          // 5대 필수 보험
-          medical_insurance: getSelectValue('medical_insurance'),
-          medical_premium: getValue('medical_premium'),
-          fire_insurance: getSelectValue('fire_insurance'),
-          fire_premium: getValue('fire_premium'),
-          driver_insurance: getSelectValue('driver_insurance'),
-          driver_premium: getValue('driver_premium'),
-          liability_insurance: getSelectValue('liability_insurance'),
-          caregiver_insurance: getSelectValue('caregiver_insurance'),
-          caregiver_type: getSelectValue('caregiver_type'),
-          
-          // 한도
-          disease_inpatient_limit: getTextValue('disease_inpatient_limit'),
-          disease_outpatient_limit: getTextValue('disease_outpatient_limit'),
-          injury_inpatient_limit: getTextValue('injury_inpatient_limit'),
-          injury_outpatient_limit: getTextValue('injury_outpatient_limit'),
-          criminal_settlement: getTextValue('criminal_settlement'),
-          lawyer_fee: getTextValue('lawyer_fee'),
-          
-          // 간병인일당 세부
-          caregiver_outside: getValue('caregiver_outside'),
-          caregiver_nursing_home: getValue('caregiver_nursing_home'),
-          caregiver_integrated: getValue('caregiver_integrated')
-        }
-      };
-      
-      // 로컬 스토리지에 저장
-      const savedAnalyses = JSON.parse(localStorage.getItem('coverageAnalyses') || '[]');
-      const analysisId = Date.now().toString();
-      analysisData.id = analysisId;
-      
-      savedAnalyses.push(analysisData);
-      localStorage.setItem('coverageAnalyses', JSON.stringify(savedAnalyses));
-      
-      // 이미지 생성 및 다운로드
-      generateAndDownloadImage(analysisData);
-      
-      alert(`${customerName}님의 보장분석이 저장되었습니다.\n이미지가 다운로드됩니다.`);
-    }
-
-    // 이미지 생성 및 다운로드
-    function generateAndDownloadImage(analysisData) {
-      // A4 가로 사이즈 Canvas 생성 (11.7" x 8.3" at 150 DPI)
-      const canvas = document.createElement('canvas');
-      canvas.width = 1755;  // A4 가로 너비
-      canvas.height = 1245; // A4 가로 높이
-      const ctx = canvas.getContext('2d');
-      
-      // 배경색
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      // 한화손보 스타일 헤더
-      ctx.fillStyle = '#ff7f00';
-      ctx.fillRect(50, 30, canvas.width - 100, 50);
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 28px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText(`${analysisData.customerName}님의 한 장 요약 보장분석`, canvas.width/2, 65);
-      
-      // 메인 컨텐츠 영역을 3개 섹션으로 나누기
-      const leftWidth = 500;
-      const centerWidth = 550;
-      const rightWidth = 550;
-      const startY = 120;
-      const sectionHeight = 800;
-      
-      // 왼쪽: 암 보장
-      drawCancerSection(ctx, 70, startY, leftWidth, analysisData.data);
-      
-      // 중앙: 2대 중대질환
-      drawMajorDiseaseSection(ctx, 70 + leftWidth + 30, startY, centerWidth, analysisData.data);
-      
-      // 우측: 5대 필수보험 + 보장예시
-      drawInsuranceAndExamples(ctx, 70 + leftWidth + centerWidth + 60, startY, rightWidth, analysisData.data);
-      
-      // 푸터
-      ctx.fillStyle = '#666666';
-      ctx.font = '14px Arial';
-      ctx.textAlign = 'center';
-      const date = new Date(analysisData.timestamp).toLocaleString('ko-KR');
-      ctx.fillText(`생성일시: ${date}`, canvas.width/2, canvas.height - 30);
-      
-      // 이미지 다운로드
-      const link = document.createElement('a');
-      link.download = `${analysisData.customerName}_보장분석_${new Date().toISOString().slice(0,10)}.png`;
-      link.href = canvas.toDataURL();
-      link.click();
-    }
-    
-    function drawCancerSection(ctx, x, y, width, data) {
-      // 섹션 헤더
-      ctx.fillStyle = '#ff7f00';
-      ctx.fillRect(x, y, width, 40);
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 18px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('암 보장', x + width/2, y + 27);
-      
-      let currentY = y + 50;
-      
-      const cancerItems = [
-        ['일반암진단비', data.cancer_general],
-        ['통합암진단비', data.cancer_integrated],
-        ['전이암진단비', data.cancer_metastatic],
-        ['암특정치료비', data.cancer_treatment],
-        ['암특정치료비(비급여)', data.cancer_treatment_non],
-        ['표적항암치료비', data.cancer_targeted],
-        ['중입자치료비', data.cancer_heavy_ion],
-        ['암수술비', data.cancer_surgery],
-        ['다빈치로봇수술비', data.cancer_robot_surgery],
-        ['1-5종수술비(5종)', data.cancer_surgery_5type]
-      ];
-      
-      cancerItems.forEach(([label, value]) => {
-        drawTableRow(ctx, x, currentY, width, label, value);
-        currentY += 35;
-      });
-    }
-    
-    function drawMajorDiseaseSection(ctx, x, y, width, data) {
-      // 섹션 헤더
-      ctx.fillStyle = '#ff7f00';
-      ctx.fillRect(x, y, width, 40);
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 18px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('2대 중대질환', x + width/2, y + 27);
-      
-      let currentY = y + 50;
-      
-      // 뇌 관련 서브헤더
-      ctx.fillStyle = '#f8f9fa';
-      ctx.fillRect(x, currentY, width, 30);
-      ctx.strokeStyle = '#e6e6e6';
-      ctx.strokeRect(x, currentY, width, 30);
-      ctx.fillStyle = '#333333';
-      ctx.font = 'bold 14px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('뇌 관련 보장', x + width/2, currentY + 20);
-      currentY += 35;
-      
-      const brainItems = [
-        ['뇌혈관질환 진단비', data.brain_diagnosis],
-        ['뇌졸중 진단비', data.stroke_diagnosis]
-      ];
-      
-      brainItems.forEach(([label, value]) => {
-        drawTableRow(ctx, x, currentY, width, label, value);
-        currentY += 35;
-      });
-      
-      // 심장 관련 서브헤더
-      currentY += 10;
-      ctx.fillStyle = '#f8f9fa';
-      ctx.fillRect(x, currentY, width, 30);
-      ctx.strokeStyle = '#e6e6e6';
-      ctx.strokeRect(x, currentY, width, 30);
-      ctx.fillStyle = '#333333';
-      ctx.font = 'bold 14px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('심장 관련 보장', x + width/2, currentY + 20);
-      currentY += 35;
-      
-      const heartItems = [
-        ['허혈성심장질환 진단비', data.heart_ischemic_diagnosis],
-        ['급성심근경색 진단비', data.heart_infarction_diagnosis]
-      ];
-      
-      heartItems.forEach(([label, value]) => {
-        drawTableRow(ctx, x, currentY, width, label, value);
-        currentY += 35;
-      });
-      
-      // 치료비 서브헤더
-      currentY += 10;
-      ctx.fillStyle = '#f8f9fa';
-      ctx.fillRect(x, currentY, width, 30);
-      ctx.strokeStyle = '#e6e6e6';
-      ctx.strokeRect(x, currentY, width, 30);
-      ctx.fillStyle = '#333333';
-      ctx.font = 'bold 14px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('치료비', x + width/2, currentY + 20);
-      currentY += 35;
-      
-      const treatmentItems = [
-        ['2대특정치료비', data.major2_treatment],
-        ['주요순환계(수술)', data.circulatory_surgery],
-        ['주요순환계(혈전제거)', data.circulatory_thrombectomy],
-        ['주요순환계(혈전용해)', data.circulatory_thrombolysis],
-        ['주요순환계(중환자실)', data.circulatory_icu]
-      ];
-      
-      treatmentItems.forEach(([label, value]) => {
-        drawTableRow(ctx, x, currentY, width, label, value);
-        currentY += 35;
-      });
-    }
-    
-    function drawInsuranceAndExamples(ctx, x, y, width, data) {
-      // 5대 필수보험 섹션
-      ctx.fillStyle = '#17a2b8';
-      ctx.fillRect(x, y, width, 40);
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 18px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('5대 필수 보험', x + width/2, y + 27);
-      
-      let currentY = y + 50;
-      
-      const insuranceItems = [
-        ['실손의료비', data.medical_insurance, data.medical_premium],
-        ['화재보험', data.fire_insurance, data.fire_premium],
-        ['운전자', data.driver_insurance, data.driver_premium],
-        ['일상생활배상책임', data.liability_insurance, ''],
-        ['간병인일당', data.caregiver_insurance, data.caregiver_type]
-      ];
-      
-      insuranceItems.forEach(([label, status, extra]) => {
-        drawInsuranceRow(ctx, x, currentY, width, label, status, extra);
-        currentY += 35;
-      });
-      
-      // 보장예시 섹션
-      currentY += 20;
-      ctx.fillStyle = '#f0c674';
-      ctx.fillRect(x, currentY, width, 35);
-      ctx.fillStyle = '#333333';
-      ctx.font = 'bold 16px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('일반암 치료 보장 예시', x + width/2, currentY + 23);
-      currentY += 40;
-      
-      // 예시 계산
-      const robotSurgery = (data.cancer_surgery || 0) + (data.cancer_robot_surgery || 0);
-      const metastaticTargeted = (data.cancer_metastatic || 0) + (data.cancer_targeted || 0);
-      const heavyIon = data.cancer_heavy_ion || 0;
-      
-      const cancerExamples = [
-        ['다빈치로봇수술', robotSurgery],
-        ['1개 부위 전이+표적', metastaticTargeted],
-        ['중입자치료', heavyIon]
-      ];
-      
-      cancerExamples.forEach(([label, value]) => {
-        drawExampleRow(ctx, x, currentY, width, label, value);
-        currentY += 30;
-      });
-      
-      currentY += 10;
-      ctx.fillStyle = '#f0c674';
-      ctx.fillRect(x, currentY, width, 35);
-      ctx.fillStyle = '#333333';
-      ctx.font = 'bold 16px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('뇌경색 또는 심근경색 치료 보장 예시', x + width/2, currentY + 23);
-      currentY += 40;
-      
-      const stent = data.circulatory_surgery || 0;
-      const stentThrombolysis = (data.circulatory_surgery || 0) + (data.circulatory_thrombolysis || 0);
-      const comprehensive = (data.circulatory_thrombolysis || 0) + 
-                           (data.circulatory_thrombectomy || 0) + 
-                           (data.circulatory_icu || 0);
-      
-      const heartExamples = [
-        ['스텐트', stent],
-        ['스텐트+혈전용해', stentThrombolysis],
-        ['혈전용해+혈전제거+중환자실', comprehensive]
-      ];
-      
-      heartExamples.forEach(([label, value]) => {
-        drawExampleRow(ctx, x, currentY, width, label, value);
-        currentY += 30;
-      });
-    }
-    
-    function drawTableRow(ctx, x, y, width, label, value) {
-      // 라벨 배경
-      ctx.fillStyle = '#f8f9fa';
-      ctx.fillRect(x, y, width * 0.7, 30);
-      ctx.strokeStyle = '#e6e6e6';
-      ctx.strokeRect(x, y, width * 0.7, 30);
-      
-      // 값 배경
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(x + width * 0.7, y, width * 0.3, 30);
-      ctx.strokeRect(x + width * 0.7, y, width * 0.3, 30);
-      
-      // 텍스트
-      ctx.fillStyle = '#333333';
-      ctx.font = '13px Arial';
-      ctx.textAlign = 'left';
-      ctx.fillText(label, x + 8, y + 20);
-      
-      ctx.fillStyle = '#ff7f00';
-      ctx.font = 'bold 13px Arial';
-      ctx.textAlign = 'center';
-      const displayValue = (typeof value === 'number' && value > 0) ? value + '만원' : 
-                          (value && value !== '' && value !== '0') ? value : '-';
-      ctx.fillText(displayValue, x + width * 0.85, y + 20);
-    }
-    
-    function drawInsuranceRow(ctx, x, y, width, label, status, extra) {
-      // 라벨 배경
-      ctx.fillStyle = '#e1f5fe';
-      ctx.fillRect(x, y, width * 0.5, 30);
-      ctx.strokeStyle = '#bee5eb';
-      ctx.strokeRect(x, y, width * 0.5, 30);
-      
-      // 상태 배경
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(x + width * 0.5, y, width * 0.25, 30);
-      ctx.strokeRect(x + width * 0.5, y, width * 0.25, 30);
-      
-      // 추가정보 배경
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(x + width * 0.75, y, width * 0.25, 30);
-      ctx.strokeRect(x + width * 0.75, y, width * 0.25, 30);
-      
-      // 텍스트
-      ctx.fillStyle = '#0c5460';
-      ctx.font = 'bold 12px Arial';
-      ctx.textAlign = 'left';
-      ctx.fillText(label, x + 8, y + 20);
-      
-      ctx.fillStyle = '#17a2b8';
-      ctx.font = 'bold 12px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText(status || 'X', x + width * 0.625, y + 20);
-      
-      ctx.fillStyle = '#333333';
-      ctx.font = '11px Arial';
-      ctx.textAlign = 'center';
-      if (extra) {
-        if (typeof extra === 'number' && extra > 0) {
-          ctx.fillText(extra + '만원', x + width * 0.875, y + 20);
-        } else {
-          ctx.fillText(extra, x + width * 0.875, y + 20);
-        }
-      }
-    }
-    
-    function drawExampleRow(ctx, x, y, width, label, value) {
-      // 배경
-      ctx.fillStyle = '#fff3cd';
-      ctx.fillRect(x, y, width * 0.7, 25);
-      ctx.strokeStyle = '#ffeaa7';
-      ctx.strokeRect(x, y, width * 0.7, 25);
-      
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(x + width * 0.7, y, width * 0.3, 25);
-      ctx.strokeRect(x + width * 0.7, y, width * 0.3, 25);
-      
-      // 텍스트
-      ctx.fillStyle = '#856404';
-      ctx.font = '12px Arial';
-      ctx.textAlign = 'left';
-      ctx.fillText(label, x + 8, y + 17);
-      
-      ctx.fillStyle = '#856404';
-      ctx.font = 'bold 12px Arial';
-      ctx.textAlign = 'center';
-      const displayValue = (typeof value === 'number' && value > 0) ? value + '만원' : '-';
-      ctx.fillText(displayValue, x + width * 0.85, y + 17);
-    }
-
-    // 저장된 분석 불러오기
-    function loadSavedAnalyses() {
-      const savedAnalyses = JSON.parse(localStorage.getItem('coverageAnalyses') || '[]');
-      const listElement = document.getElementById('savedAnalysisList');
-      
-      if (!listElement) {
-        console.error('savedAnalysisList 요소를 찾을 수 없습니다.');
-        return;
-      }
-      
-      if (savedAnalyses.length === 0) {
-        listElement.innerHTML = '<div class="hint" style="text-align:center; color:#666; padding:20px;">저장된 분석이 없습니다.</div>';
-        return;
-      }
-      
-      // 최신 순으로 정렬
-      savedAnalyses.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-      
-      listElement.innerHTML = savedAnalyses.map(analysis => {
-        const date = new Date(analysis.timestamp).toLocaleString('ko-KR');
-        return `
-          <div class="saved-item" onclick="loadAnalysis('${analysis.id}')">
-            <div class="saved-info">
-              <div class="saved-name">${analysis.customerName}</div>
-              <div class="saved-date">${date}</div>
-            </div>
-            <button class="delete-btn" onclick="event.stopPropagation(); deleteAnalysis('${analysis.id}')">삭제</button>
-          </div>
-        `;
-      }).join('');
-    }
-
-    // 특정 분석 불러오기
-    function loadAnalysis(analysisId) {
-      const savedAnalyses = JSON.parse(localStorage.getItem('coverageAnalyses') || '[]');
-      const analysis = savedAnalyses.find(a => a.id === analysisId);
-      
-      if (!analysis) {
-        alert('해당 분석을 찾을 수 없습니다.');
-        return;
-      }
-      
-      // 입력 화면으로 이동
-      showInputScreen();
-      
-      // 모든 값 설정
-      setTimeout(() => {
-        document.getElementById('customerName').value = analysis.customerName;
-        
-        Object.keys(analysis.data).forEach(key => {
-          const field = document.getElementById(key);
-          if (field) {
-            field.value = analysis.data[key] || '';
-          }
-        });
-        
-        // 예시 업데이트
-        updateExamples();
-        
-        alert(`${analysis.customerName}님의 분석을 불러왔습니다.`);
-      }, 100);
-    }
-
-    // 분석 삭제
-    function deleteAnalysis(analysisId) {
-      if (!confirm('정말로 삭제하시겠습니까?')) {
-        return;
-      }
-      
-      const savedAnalyses = JSON.parse(localStorage.getItem('coverageAnalyses') || '[]');
-      const filteredAnalyses = savedAnalyses.filter(a => a.id !== analysisId);
-      
-      localStorage.setItem('coverageAnalyses', JSON.stringify(filteredAnalyses));
-      loadSavedAnalyses();
-      
-      alert('삭제되었습니다.');
-    }
-
-    // 초기화 - DOM이 로드되면 실행
-    window.onload = function() {
-      goHome();
-    };
-  </script>
 </head>
 <body>
   <div class="header-fixed">
-    <div></div>
-    <div class="header-center">
-      <div class="logo-container" onclick="goHome()">
-        <div class="logo-main">보장분석</div>
-      </div>
+    <div class="logo-container" onclick="goHome()">
+      <div class="logo-main">보장분석</div>
     </div>
-    <div></div>
   </div>
 
   <!-- 메뉴 화면 -->
   <section id="menuScreen" class="screen">
-    <div class="app-title">보장분석 도구</div>
+    <div class="app-title">보장분석 앱</div>
     <div class="card">
-      <h2 style="margin-bottom:1.5rem; text-align:center;">메뉴 선택</h2>
+      <h2 style="margin-bottom:1.5rem;">메뉴 선택</h2>
       
-      <button class="menu-btn" onclick="showInputScreen()">
-        <span style="display:block; margin-bottom:4px;">입력하기</span>
+      <button id="inputMenuBtn" style="margin-bottom:1rem;">
+        <span style="font-size:18px; display:block; margin-bottom:4px;">입력하기</span>
         <span style="font-size:14px; opacity:0.8;">새로운 보장분석 작성</span>
       </button>
       
-      <button class="menu-btn" onclick="showLoadScreen()">
-        <span style="display:block; margin-bottom:4px;">불러오기</span>
-        <span style="font-size:14px; opacity:0.8;">저장된 분석 불러오기</span>
+      <button id="loadMenuBtn" style="margin-bottom:1rem;">
+        <span style="font-size:18px; display:block; margin-bottom:4px;">불러오기</span>
+        <span style="font-size:14px; opacity:0.8;">저장된 보장분석 불러오기</span>
       </button>
-      
-      <div class="meta" style="margin-top:2rem;">Copyright 2025 보장분석앱 all rights reserved.</div>
+
+      <div class="meta" style="margin-top:2rem;">Copyright 2025 보장분석 앱</div>
     </div>
   </section>
 
   <!-- 입력 화면 -->
   <section id="inputScreen" class="screen" style="display:none;">
     <div class="app-title">보장분석 입력</div>
-    <div class="card card-wide">
-      
-      <!-- 고객명 입력 -->
-      <div class="customer-input">
-        <input id="customerName" type="text" placeholder="고객명을 입력해주세요" maxlength="20">
+    
+    <div class="card">
+      <div class="row">
+        <label class="label">고객명</label>
+        <input id="customerName" type="text" placeholder="고객명을 입력하세요" class="customer-name">
       </div>
-      
-      <!-- 암 보장 섹션 -->
+    </div>
+
+    <!-- 암 관련 보장 섹션 -->
+    <div class="card">
+      <div class="section-title">암 관련 보장</div>
       <div class="input-section">
-        <div class="section-title">암 보장</div>
         
-        <div class="input-grid">
-          <div class="input-label">일반암진단비</div>
-          <input class="input-field" id="cancer_general" type="number" placeholder="금액" min="0">
+        <div class="row">
+          <label class="label">일반암진단비 <span class="unit">(만원)</span></label>
+          <input type="number" id="C5" placeholder="0" data-formula="">
         </div>
         
-        <div class="input-grid">
-          <div class="input-label">통합암진단비</div>
-          <input class="input-field" id="cancer_integrated" type="number" placeholder="금액" min="0">
+        <div class="row">
+          <label class="label">통합암진단비 <span class="unit">(만원)</span></label>
+          <input type="number" id="C6" placeholder="0" data-formula="">
         </div>
         
-        <div class="input-grid">
-          <div class="input-label">전이암진단비</div>
-          <input class="input-field" id="cancer_metastatic" type="number" placeholder="금액" min="0">
+        <div class="row">
+          <label class="label">전이암진단비 <span class="unit">(만원)</span></label>
+          <input type="number" id="C7" placeholder="0" data-formula="">
         </div>
         
-        <div class="input-grid">
-          <div class="input-label">암특정치료비</div>
-          <input class="input-field" id="cancer_treatment" type="number" placeholder="금액" min="0">
+        <div class="row">
+          <label class="label">암특정치료비 <span class="unit">(만원)</span></label>
+          <input type="number" id="C8" placeholder="0" data-formula="">
         </div>
         
-        <div class="input-grid">
-          <div class="input-label">암특정치료비(비급여)</div>
-          <input class="input-field" id="cancer_treatment_non" type="number" placeholder="금액" min="0">
+        <div class="row">
+          <label class="label">암특정치료비(비급여) <span class="unit">(만원)</span></label>
+          <input type="number" id="C9" placeholder="0" data-formula="">
         </div>
         
-        <div class="input-grid">
-          <div class="input-label">표적항암치료비</div>
-          <input class="input-field" id="cancer_targeted" type="number" placeholder="금액" min="0">
+        <div class="row">
+          <label class="label">표적항암치료비 <span class="unit">(만원)</span></label>
+          <input type="number" id="C10" placeholder="0" data-formula="">
         </div>
         
-        <div class="input-grid">
-          <div class="input-label">중입자치료비</div>
-          <input class="input-field" id="cancer_heavy_ion" type="number" placeholder="금액" min="0">
+        <div class="row">
+          <label class="label">중입자치료비 <span class="unit">(만원)</span></label>
+          <input type="number" id="C11" placeholder="0" data-formula="">
         </div>
         
-        <div class="input-grid">
-          <div class="input-label">암수술비</div>
-          <input class="input-field" id="cancer_surgery" type="number" placeholder="금액" min="0">
+        <div class="row">
+          <label class="label">암수술비 <span class="unit">(만원)</span></label>
+          <input type="number" id="C12" placeholder="0" data-formula="">
         </div>
         
-        <div class="input-grid">
-          <div class="input-label">다빈치로봇수술비</div>
-          <input class="input-field" id="cancer_robot_surgery" type="number" placeholder="금액" min="0">
+        <div class="row">
+          <label class="label">다빈치로봇수술비 <span class="unit">(만원)</span></label>
+          <input type="number" id="C13" placeholder="0" data-formula="">
         </div>
         
-        <div class="input-grid">
-          <div class="input-label">1-5종수술비(5종)</div>
-          <input class="input-field" id="cancer_surgery_5type" type="number" placeholder="금액" min="0">
+        <div class="row">
+          <label class="label">1-5종수술비(5종) <span class="unit">(만원)</span></label>
+          <input type="number" id="C14" placeholder="0" data-formula="">
         </div>
+        
       </div>
-      
-      <!-- 2대 중대질환 섹션 -->
+    </div>
+
+    <!-- 뇌혈관/심장 관련 보장 섹션 -->
+    <div class="card">
+      <div class="section-title">뇌혈관/심장 관련 보장</div>
       <div class="input-section">
-        <div class="section-title">2대 중대질환</div>
         
-        <!-- 뇌 관련 -->
-        <div style="background:#f8f9fa; padding:8px; border-radius:6px; margin-bottom:8px; text-align:center; font-weight:600; font-size:14px;">뇌 관련 보장</div>
-        
-        <div class="input-grid">
-          <div class="input-label">뇌혈관질환 진단비</div>
-          <input class="input-field" id="brain_diagnosis" type="number" placeholder="금액" min="0">
+        <div class="row">
+          <label class="label">뇌혈관질환진단비 <span class="unit">(만원)</span></label>
+          <input type="number" id="G5" placeholder="0" data-formula="">
         </div>
         
-        <div class="input-grid">
-          <div class="input-label">뇌졸중 진단비</div>
-          <input class="input-field" id="stroke_diagnosis" type="number" placeholder="금액" min="0">
+        <div class="row">
+          <label class="label">뇌졸중진단비 <span class="unit">(만원)</span></label>
+          <input type="number" id="G6" placeholder="0" data-formula="">
         </div>
         
-        <!-- 심장 관련 -->
-        <div style="background:#f8f9fa; padding:8px; border-radius:6px; margin-bottom:8px; margin-top:12px; text-align:center; font-weight:600; font-size:14px;">심장 관련 보장</div>
-        
-        <div class="input-grid">
-          <div class="input-label">허혈성심장질환 진단비</div>
-          <input class="input-field" id="heart_ischemic_diagnosis" type="number" placeholder="금액" min="0">
+        <div class="row">
+          <label class="label">허혈성심장질환진단비 <span class="unit">(만원)</span></label>
+          <input type="number" id="G7" placeholder="0" data-formula="">
         </div>
         
-        <div class="input-grid">
-          <div class="input-label">급성심근경색 진단비</div>
-          <input class="input-field" id="heart_infarction_diagnosis" type="number" placeholder="금액" min="0">
+        <div class="row">
+          <label class="label">심근경색진단비 <span class="unit">(만원)</span></label>
+          <input type="number" id="G8" placeholder="0" data-formula="">
         </div>
         
-        <!-- 공통 치료비 -->
-        <div style="background:#f8f9fa; padding:8px; border-radius:6px; margin-bottom:8px; margin-top:12px; text-align:center; font-weight:600; font-size:14px;">치료비</div>
-        
-        <div class="input-grid">
-          <div class="input-label">2대특정치료비</div>
-          <input class="input-field" id="major2_treatment" type="number" placeholder="금액" min="0">
+        <div class="row">
+          <label class="label">뇌혈관질환수술비 <span class="unit">(만원)</span></label>
+          <input type="number" id="G9" placeholder="0" data-formula="">
         </div>
         
-        <div class="input-grid">
-          <div class="input-label">주요순환계(수술)</div>
-          <input class="input-field" id="circulatory_surgery" type="number" placeholder="금액" min="0">
+        <div class="row">
+          <label class="label">뇌졸중수술비 <span class="unit">(만원)</span></label>
+          <input type="number" id="G10" placeholder="0" data-formula="">
         </div>
         
-        <div class="input-grid">
-          <div class="input-label">주요순환계(혈전제거)</div>
-          <input class="input-field" id="circulatory_thrombectomy" type="number" placeholder="금액" min="0">
+        <div class="row">
+          <label class="label">허혈성심장질환수술비 <span class="unit">(만원)</span></label>
+          <input type="number" id="G11" placeholder="0" data-formula="">
         </div>
         
-        <div class="input-grid">
-          <div class="input-label">주요순환계(혈전용해)</div>
-          <input class="input-field" id="circulatory_thrombolysis" type="number" placeholder="금액" min="0">
+        <div class="row">
+          <label class="label">심근경색수술비 <span class="unit">(만원)</span></label>
+          <input type="number" id="G12" placeholder="0" data-formula="">
         </div>
         
-        <div class="input-grid">
-          <div class="input-label">주요순환계(중환자실)</div>
-          <input class="input-field" id="circulatory_icu" type="number" placeholder="금액" min="0">
+        <div class="row">
+          <label class="label">뇌졸중혈전용해 <span class="unit">(만원)</span></label>
+          <input type="number" id="G13" placeholder="0" data-formula="">
         </div>
         
-        <div class="input-grid">
-          <div class="input-label">혈전제거치료비</div>
-          <input class="input-field" id="thrombectomy_treatment" type="number" placeholder="금액" min="0">
+        <div class="row">
+          <label class="label">심근경색혈전용해 <span class="unit">(만원)</span></label>
+          <input type="number" id="G14" placeholder="0" data-formula="">
         </div>
         
-        <div class="input-grid">
-          <div class="input-label">혈전용해치료비(뇌/심)</div>
-          <input class="input-field" id="thrombolysis_treatment" type="number" placeholder="금액" min="0">
+        <div class="row">
+          <label class="label">2대특정치료비 <span class="unit">(만원)</span></label>
+          <input type="number" id="G15" placeholder="0" data-formula="">
         </div>
         
-        <div class="input-grid">
-          <div class="input-label">수술비(뇌/심)</div>
-          <input class="input-field" id="brain_heart_surgery" type="number" placeholder="금액" min="0">
+        <div class="row">
+          <label class="label">주요순환계(수술) <span class="unit">(만원)</span></label>
+          <input type="number" id="G16" placeholder="0" data-formula="">
         </div>
         
-        <div class="input-grid">
-          <div class="input-label">1-5종수술비(3종)</div>
-          <input class="input-field" id="surgery_3type" type="number" placeholder="금액" min="0">
+        <div class="row">
+          <label class="label">주요순환계(혈전제거) <span class="unit">(만원)</span></label>
+          <input type="number" id="G17" placeholder="0" data-formula="G16" class="calculated-field" readonly>
         </div>
         
-        <div class="input-grid">
-          <div class="input-label">1-5종수술비(5종)</div>
-          <input class="input-field" id="surgery_5type" type="number" placeholder="금액" min="0">
+        <div class="row">
+          <label class="label">주요순환계(혈전용해) <span class="unit">(만원)</span></label>
+          <input type="number" id="G18" placeholder="0" data-formula="G16" class="calculated-field" readonly>
         </div>
         
-        <div class="input-grid">
-          <div class="input-label">124대질병수술비(특정10대)</div>
-          <input class="input-field" id="disease_124_surgery" type="number" placeholder="금액" min="0">
+        <div class="row">
+          <label class="label">주요순환계(중환자실) <span class="unit">(만원)</span></label>
+          <input type="number" id="G19" placeholder="0" data-formula="G16/2" class="calculated-field" readonly>
         </div>
         
-        <div class="input-grid">
-          <div class="input-label">7대기관수술비(뇌/심) 관혈</div>
-          <input class="input-field" id="organ_7_surgery" type="number" placeholder="금액" min="0">
+        <div class="row">
+          <label class="label">혈전제거치료비 <span class="unit">(만원)</span></label>
+          <input type="number" id="G20" placeholder="0" data-formula="">
         </div>
+        
+        <div class="row">
+          <label class="label">1-5종수술비(3종) <span class="unit">(만원)</span></label>
+          <input type="number" id="G21" placeholder="0" data-formula="">
+        </div>
+        
+        <div class="row">
+          <label class="label">1-5종수술비(5종) <span class="unit">(만원)</span></label>
+          <input type="number" id="G22" placeholder="0" data-formula="">
+        </div>
+        
+        <div class="row">
+          <label class="label">124대질병수술비(특정10대) <span class="unit">(만원)</span></label>
+          <input type="number" id="G23" placeholder="0" data-formula="">
+        </div>
+        
+        <div class="row">
+          <label class="label">7대기관수술비(뇌/심) 관혈 <span class="unit">(만원)</span></label>
+          <input type="number" id="G24" placeholder="0" data-formula="">
+        </div>
+        
       </div>
-      
-        
-        <div class="example-grid">
-          <div class="example-label">혈전용해+혈전제거+중환자실</div>
-          <div class="example-value" id="example_comprehensive">0만원</div>
-        </div>
-      </div>
-      
-      <!-- 5대 필수 보험 -->
-      <div class="insurance-section">
-        <div class="section-title">5대 필수 보험</div>
-        
-        <!-- 실손의료비 -->
-        <div class="input-grid">
-          <div class="input-label">실손의료비</div>
-          <select class="select-field" id="medical_insurance">
-            <option value="X">X</option>
-            <option value="O">O</option>
-          </select>
-        </div>
-        
-        <div id="medicalDetails" class="insurance-details" style="display:none;">
-          <div class="input-grid">
-            <div class="input-label">실손보험료 (월)</div>
-            <input class="input-field" id="medical_premium" type="number" placeholder="보험료" min="0">
-          </div>
-          
-          <div class="input-grid">
-            <div class="input-label">(질병)입원한도</div>
-            <input class="input-field" id="disease_inpatient_limit" type="text" placeholder="한도">
-          </div>
-          
-          <div class="input-grid">
-            <div class="input-label">(질병)통원한도</div>
-            <input class="input-field" id="disease_outpatient_limit" type="text" placeholder="한도">
-          </div>
-          
-          <div class="input-grid">
-            <div class="input-label">(상해)입원한도</div>
-            <input class="input-field" id="injury_inpatient_limit" type="text" placeholder="한도">
-          </div>
-          
-          <div class="input-grid">
-            <div class="input-label">(상해)통원한도</div>
-            <input class="input-field" id="injury_outpatient_limit" type="text" placeholder="한도">
-          </div>
-        </div>
-        
-        <!-- 화재보험 -->
-        <div class="input-grid">
-          <div class="input-label">화재보험</div>
-          <select class="select-field" id="fire_insurance">
-            <option value="X">X</option>
-            <option value="O">O</option>
-          </select>
-        </div>
-        
-        <div id="fireDetails" class="insurance-details" style="display:none;">
-          <div class="input-grid">
-            <div class="input-label">화재보험료 (월)</div>
-            <input class="input-field" id="fire_premium" type="number" placeholder="보험료" min="0">
-          </div>
-        </div>
-        
-        <!-- 운전자보험 -->
-        <div class="input-grid">
-          <div class="input-label">운전자</div>
-          <select class="select-field" id="driver_insurance">
-            <option value="X">X</option>
-            <option value="O">O</option>
-          </select>
-        </div>
-        
-        <div id="driverDetails" class="insurance-details" style="display:none;">
-          <div class="input-grid">
-            <div class="input-label">운전자보험료 (월)</div>
-            <input class="input-field" id="driver_premium" type="number" placeholder="보험료" min="0">
-          </div>
-          
-          <div class="input-grid">
-            <div class="input-label">형사합의금</div>
-            <input class="input-field" id="criminal_settlement" type="text" placeholder="금액">
-          </div>
-          
-          <div class="input-grid">
-            <div class="input-label">변호사선임비</div>
-            <input class="input-field" id="lawyer_fee" type="text" placeholder="금액">
-          </div>
-        </div>
-        
-        <!-- 일상생활배상책임 -->
-        <div class="input-grid">
-          <div class="input-label">일상생활배상책임</div>
-          <select class="select-field" id="liability_insurance">
-            <option value="X">X</option>
-            <option value="O">O</option>
-          </select>
-        </div>
-        
-        <!-- 간병인일당 -->
-        <div class="input-grid">
-          <div class="input-label">간병인일당</div>
-          <select class="select-field" id="caregiver_insurance">
-            <option value="X">X</option>
-            <option value="O">O</option>
-          </select>
-        </div>
-        
-        <div id="caregiverDetails" class="insurance-details" style="display:none;">
-          <div class="input-grid">
-            <div class="input-label">간병 형태</div>
-            <select class="select-field" id="caregiver_type">
-              <option value="지원">지원</option>
-              <option value="사용">사용</option>
-            </select>
-          </div>
-          
-          <div id="caregiverSupport" class="insurance-details" style="display:none;">
-            <div class="input-grid">
-              <div class="input-label">지원 내용</div>
-              <div style="text-align:center; font-weight:600; color:#0c5460; background:#fff; padding:8px 12px; border:1px solid var(--border); border-radius:8px;">외국인 간병인</div>
-            </div>
-          </div>
-          
-          <div id="caregiverUsage" class="insurance-details">
-            <div class="input-grid">
-              <div class="input-label">요양병원 외</div>
-              <input class="input-field" id="caregiver_outside" type="number" placeholder="만원" min="0">
-            </div>
-            
-            <div class="input-grid">
-              <div class="input-label">요양병원</div>
-              <input class="input-field" id="caregiver_nursing_home" type="number" placeholder="만원" min="0">
-            </div>
-            
-            <div class="input-grid">
-              <div class="input-label">간호간병통합</div>
-              <input class="input-field" id="caregiver_integrated" type="number" placeholder="만원" min="0">
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- 저장 버튼 -->
-      <button class="save-btn" onclick="saveAnalysis()">저장하기</button>
-      
-      <!-- 뒤로가기 버튼 -->
-      <button class="secondary-btn menu-btn" onclick="goHome()">뒤로가기</button>
-        
-        <div class="example-grid">
-          <div class="example-label">혈전용해+혈전제거+중환자실</div>
-          <div class="example-value" id="example_comprehensive">0만원</div>
-        </div>
-      </div>
-      
-      <!-- 5대 필수 보험 -->
-      <div class="insurance-section">
-        <div class="insurance-title">5대 필수 보험</div>
-        
-        <div class="insurance-grid">
-          <div class="insurance-item">
-            <div class="insurance-label">실손의료비</div>
-            <select class="select-field" id="medical_insurance">
-              <option value="O">O</option>
-              <option value="X">X</option>
-            </select>
-          </div>
-          
-          <div class="insurance-item">
-            <div class="insurance-label">화재보험</div>
-            <select class="select-field" id="fire_insurance">
-              <option value="O">O</option>
-              <option value="X">X</option>
-            </select>
-          </div>
-          
-          <div class="insurance-item">
-            <div class="insurance-label">운전자</div>
-            <select class="select-field" id="driver_insurance">
-              <option value="O">O</option>
-              <option value="X">X</option>
-            </select>
-          </div>
-          
-          <div class="insurance-item">
-            <div class="insurance-label">일상생활배상책임</div>
-            <select class="select-field" id="liability_insurance">
-              <option value="O">O</option>
-              <option value="X">X</option>
-            </select>
-          </div>
-          
-          <div class="insurance-item">
-            <div class="insurance-label">간병인일당</div>
-            <select class="select-field" id="caregiver_insurance">
-              <option value="지원">지원</option>
-              <option value="사용">사용</option>
-            </select>
-          </div>
-        </div>
-        
-        <!-- 실손의료비 한도 -->
-        <div style="margin-top:12px;">
-          <div class="limit-grid">
-            <div class="insurance-label">(질병)입원한도</div>
-            <input class="input-field" id="disease_inpatient_limit" type="text" placeholder="한도">
-          </div>
-          
-          <div class="limit-grid">
-            <div class="insurance-label">(질병)통원한도</div>
-            <input class="input-field" id="disease_outpatient_limit" type="text" placeholder="한도">
-          </div>
-          
-          <div class="limit-grid">
-            <div class="insurance-label">(상해)입원한도</div>
-            <input class="input-field" id="injury_inpatient_limit" type="text" placeholder="한도">
-          </div>
-          
-          <div class="limit-grid">
-            <div class="insurance-label">(상해)통원한도</div>
-            <input class="input-field" id="injury_outpatient_limit" type="text" placeholder="한도">
-          </div>
-        </div>
-        
-        <!-- 운전자보험 세부 -->
-        <div style="margin-top:12px;">
-          <div class="limit-grid">
-            <div class="insurance-label">형사합의금</div>
-            <input class="input-field" id="criminal_settlement" type="text" placeholder="금액">
-          </div>
-          
-          <div class="limit-grid">
-            <div class="insurance-label">변호사선임비</div>
-            <input class="input-field" id="lawyer_fee" type="text" placeholder="금액">
-          </div>
-        </div>
-        
-        <!-- 간병인일당 세부 -->
-        <div style="margin-top:12px;">
-          <div class="limit-grid">
-            <div class="insurance-label">요양병원 외</div>
-            <div style="text-align:center; font-weight:600; color:#0c5460;">15만</div>
-          </div>
-          
-          <div class="limit-grid">
-            <div class="insurance-label">요양병원</div>
-            <div style="text-align:center; font-weight:600; color:#0c5460;">3만</div>
-          </div>
-          
-          <div class="limit-grid">
-            <div class="insurance-label">간호간병통합</div>
-            <div style="text-align:center; font-weight:600; color:#0c5460;">7만</div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- 보험료 -->
+    </div>
+
+    <!-- 기타 보장 섹션 -->
+    <div class="card">
+      <div class="section-title">기타 보장</div>
       <div class="input-section">
-        <div class="input-grid">
-          <div class="input-label">보험료</div>
-          <input class="input-field" id="insurance_premium" type="number" placeholder="월 보험료" min="0">
+        
+        <div class="row">
+          <label class="label">(질병)입원한도 <span class="unit">(만원)</span></label>
+          <input type="number" id="J5" placeholder="0" data-formula="">
         </div>
+        
+        <div class="row">
+          <label class="label">(질병)통원한도 <span class="unit">(일)</span></label>
+          <input type="number" id="J6" placeholder="0" data-formula="">
+        </div>
+        
+        <div class="row">
+          <label class="label">(상해)입원한도 <span class="unit">(만원)</span></label>
+          <input type="number" id="J7" placeholder="0" data-formula="">
+        </div>
+        
+        <div class="row">
+          <label class="label">(상해)통원한도 <span class="unit">(일)</span></label>
+          <input type="number" id="J8" placeholder="0" data-formula="">
+        </div>
+        
+        <div class="row">
+          <label class="label">형사합의금 <span class="unit">(만원)</span></label>
+          <input type="number" id="J11" placeholder="0" data-formula="">
+        </div>
+        
+        <div class="row">
+          <label class="label">변호사선임비 <span class="unit">(만원)</span></label>
+          <input type="number" id="J12" placeholder="0" data-formula="">
+        </div>
+        
+        <div class="row">
+          <label class="label">요양병원 외 <span class="unit">(만원)</span></label>
+          <input type="number" id="J16" placeholder="0" data-formula="">
+        </div>
+        
+        <div class="row">
+          <label class="label">요양병원 <span class="unit">(만원)</span></label>
+          <input type="number" id="J17" placeholder="0" data-formula="">
+        </div>
+        
+        <div class="row">
+          <label class="label">간호간병통합 <span class="unit">(만원)</span></label>
+          <input type="number" id="J18" placeholder="0" data-formula="">
+        </div>
+        
+        <div class="row">
+          <label class="label">생활비 지원 <span class="unit">(만원)</span></label>
+          <input type="number" id="I21" placeholder="0" data-formula="">
+        </div>
+        
+        <div class="row">
+          <label class="label">기타 보장 <span class="unit">(만원)</span></label>
+          <input type="number" id="I24" placeholder="0" data-formula="">
+        </div>
+        
       </div>
+    </div>
+
+    <!-- 버튼 영역 -->
+    <div class="card">
+      <button id="saveImageBtn">이미지로 저장하기</button>
+      <button id="loadFromMenuBtn" class="secondary">불러오기</button>
+      <button id="backToMenuBtn" class="secondary">뒤로가기</button>
       
-      <!-- 저장 버튼 -->
-      <button class="save-btn" onclick="saveAnalysis()">저장하기</button>
-      
-      <!-- 뒤로가기 버튼 -->
-      <button class="secondary-btn menu-btn" onclick="goHome()">뒤로가기</button>
-        <div class="example-grid">
-          <div class="example-label">중입자치료</div>
-          <div class="example-value" id="example_heavy_ion">0만원</div>
-        </div>
-      </div>
-      
-      <div class="example-section">
-        <div class="example-title">뇌경색 또는 심근경색 치료 보장 예시</div>
-        
-        <div class="example-grid">
-          <div class="example-label">스텐트</div>
-          <div class="example-value" id="example_stent">0만원</div>
-        </div>
-        
-        <div class="example-grid">
-          <div class="example-label">스텐트+혈전용해</div>
-          <div class="example-value" id="example_stent_thrombolysis">0만원</div>
-        </div>
-        
-        <div class="example-grid">
-          <div class="example-label">혈전용해+혈전제거+중환자실</div>
-          <div class="example-value" id="example_comprehensive">0만원</div>
-        </div>
-      </div>
-      
-      <!-- 5대 필수 보험 -->
-      <div class="insurance-section">
-        <div class="insurance-title">5대 필수 보험</div>
-        
-        <div class="insurance-grid">
-          <div class="insurance-item">
-            <div class="insurance-label">실손의료비</div>
-            <select class="select-field" id="medical_insurance">
-              <option value="O">O</option>
-              <option value="X">X</option>
-            </select>
-          </div>
-          
-          <div class="insurance-item">
-            <div class="insurance-label">화재보험</div>
-            <select class="select-field" id="fire_insurance">
-              <option value="O">O</option>
-              <option value="X">X</option>
-            </select>
-          </div>
-          
-          <div class="insurance-item">
-            <div class="insurance-label">운전자</div>
-            <select class="select-field" id="driver_insurance">
-              <option value="O">O</option>
-              <option value="X">X</option>
-            </select>
-          </div>
-          
-          <div class="insurance-item">
-            <div class="insurance-label">일상생활배상책임</div>
-            <select class="select-field" id="liability_insurance">
-              <option value="O">O</option>
-              <option value="X">X</option>
-            </select>
-          </div>
-          
-          <div class="insurance-item">
-            <div class="insurance-label">간병인일당</div>
-            <select class="select-field" id="caregiver_insurance">
-              <option value="지원">지원</option>
-              <option value="사용">사용</option>
-            </select>
-          </div>
-        </div>
-        
-        <!-- 실손의료비 한도 -->
-        <div style="margin-top:12px;">
-          <div class="limit-grid">
-            <div class="insurance-label">(질병)입원한도</div>
-            <input class="input-field" id="disease_inpatient_limit" type="text" placeholder="한도">
-          </div>
-          
-          <div class="limit-grid">
-            <div class="insurance-label">(질병)통원한도</div>
-            <input class="input-field" id="disease_outpatient_limit" type="text" placeholder="한도">
-          </div>
-          
-          <div class="limit-grid">
-            <div class="insurance-label">(상해)입원한도</div>
-            <input class="input-field" id="injury_inpatient_limit" type="text" placeholder="한도">
-          </div>
-          
-          <div class="limit-grid">
-            <div class="insurance-label">(상해)통원한도</div>
-            <input class="input-field" id="injury_outpatient_limit" type="text" placeholder="한도">
-          </div>
-        </div>
-        
-        <!-- 운전자보험 세부 -->
-        <div style="margin-top:12px;">
-          <div class="limit-grid">
-            <div class="insurance-label">형사합의금</div>
-            <input class="input-field" id="criminal_settlement" type="text" placeholder="금액">
-          </div>
-          
-          <div class="limit-grid">
-            <div class="insurance-label">변호사선임비</div>
-            <input class="input-field" id="lawyer_fee" type="text" placeholder="금액">
-          </div>
-        </div>
-        
-        <!-- 간병인일당 세부 -->
-        <div style="margin-top:12px;">
-          <div class="limit-grid">
-            <div class="insurance-label">요양병원 외</div>
-            <div style="text-align:center; font-weight:600; color:#0c5460;">15만</div>
-          </div>
-          
-          <div class="limit-grid">
-            <div class="insurance-label">요양병원</div>
-            <div style="text-align:center; font-weight:600; color:#0c5460;">3만</div>
-          </div>
-          
-          <div class="limit-grid">
-            <div class="insurance-label">간호간병통합</div>
-            <div style="text-align:center; font-weight:600; color:#0c5460;">7만</div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- 보험료 -->
-      <div class="input-section">
-        <div class="input-grid">
-          <div class="input-label">보험료</div>
-          <input class="input-field" id="insurance_premium" type="number" placeholder="월 보험료" min="0">
-        </div>
-      </div>
-      
-      <!-- 저장 버튼 -->
-      <button class="save-btn" onclick="saveAnalysis()">저장하기</button>
-      
-      <!-- 뒤로가기 버튼 -->
-      <button class="secondary-btn menu-btn" onclick="goHome()">뒤로가기</button>
+      <div id="statusMessage" class="meta"></div>
     </div>
   </section>
 
   <!-- 불러오기 화면 -->
   <section id="loadScreen" class="screen" style="display:none;">
-    <div class="app-title">저장된 분석 불러오기</div>
+    <div class="app-title">저장된 보장분석</div>
     <div class="card">
-      <h2 style="text-align:center;">저장된 고객 목록</h2>
-      
-      <div id="savedAnalysisList" class="saved-list">
-        <!-- 저장된 분석 목록이 여기에 표시됩니다 -->
+      <h2 style="margin-bottom:1rem;">저장된 목록</h2>
+      <div id="savedList">
+        <!-- 저장된 항목들이 여기에 표시됩니다 -->
       </div>
-      
-      <!-- 뒤로가기 버튼 -->
-      <button class="secondary-btn menu-btn" onclick="goHome()">뒤로가기</button>
-      
-      <div class="meta">저장된 분석을 선택하면 해당 내용을 불러올 수 있습니다.</div>
+      <button id="backToMenuFromLoadBtn" class="secondary" style="margin-top:20px;">뒤로가기</button>
     </div>
   </section>
+
+<script>
+let currentScreen = 'menu';
+let savedData = JSON.parse(localStorage.getItem('insuranceAnalysisData')) || [];
+
+// 화면 전환 함수
+function hideAllScreens() {
+  document.getElementById("menuScreen").style.display = "none";
+  document.getElementById("inputScreen").style.display = "none";
+  document.getElementById("loadScreen").style.display = "none";
+}
+
+function navigateToScreen(screen) {
+  currentScreen = screen;
+  hideAllScreens();
+  
+  switch(screen) {
+    case 'menu':
+      document.getElementById("menuScreen").style.display = "flex";
+      break;
+    case 'input':
+      document.getElementById("inputScreen").style.display = "flex";
+      setupFormCalculations();
+      break;
+    case 'load':
+      document.getElementById("loadScreen").style.display = "flex";
+      displaySavedList();
+      break;
+  }
+}
+
+// 홈으로 이동
+function goHome() {
+  navigateToScreen('menu');
+}
+
+// 계산 필드 설정
+function setupFormCalculations() {
+  // G16 값이 변경될 때 G17, G18, G19 자동 계산
+  const g16Input = document.getElementById('G16');
+  const g17Input = document.getElementById('G17');
+  const g18Input = document.getElementById('G18');
+  const g19Input = document.getElementById('G19');
+  
+  g16Input.addEventListener('input', function() {
+    const value = parseFloat(this.value) || 0;
+    g17Input.value = value;
+    g18Input.value = value;
+    g19Input.value = value / 2;
+  });
+}
+
+// 데이터 저장
+function saveData() {
+  const customerName = document.getElementById('customerName').value.trim();
+  
+  if (!customerName) {
+    showMessage('고객명을 입력해주세요.', 'error');
+    return;
+  }
+  
+  const data = {
+    id: Date.now(),
+    customerName: customerName,
+    timestamp: new Date().toLocaleString('ko-KR'),
+    values: {}
+  };
+  
+  // 모든 입력 필드 값 저장
+  const inputFields = [
+    'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14',
+    'G5', 'G6', 'G7', 'G8', 'G9', 'G10', 'G11', 'G12', 'G13', 'G14', 'G15', 'G16', 'G17', 'G18', 'G19', 'G20', 'G21', 'G22', 'G23', 'G24',
+    'J5', 'J6', 'J7', 'J8', 'J11', 'J12', 'J16', 'J17', 'J18', 'I21', 'I24'
+  ];
+  
+  inputFields.forEach(fieldId => {
+    const field = document.getElementById(fieldId);
+    if (field) {
+      data.values[fieldId] = parseFloat(field.value) || 0;
+    }
+  });
+  
+  // 기존 데이터에서 같은 고객명 찾아서 업데이트 또는 새로 추가
+  const existingIndex = savedData.findIndex(item => item.customerName === customerName);
+  if (existingIndex >= 0) {
+    savedData[existingIndex] = data;
+  } else {
+    savedData.push(data);
+  }
+  
+  localStorage.setItem('insuranceAnalysisData', JSON.stringify(savedData));
+  
+  showMessage('저장되었습니다!', 'success');
+  
+  // 이미지 생성 및 다운로드
+  generateAndDownloadImage(data);
+}
+
+// 데이터 불러오기
+function loadData(id) {
+  const data = savedData.find(item => item.id === id);
+  if (!data) {
+    showMessage('데이터를 찾을 수 없습니다.', 'error');
+    return;
+  }
+  
+  // 고객명 설정
+  document.getElementById('customerName').value = data.customerName;
+  
+  // 모든 필드 값 설정
+  Object.keys(data.values).forEach(fieldId => {
+    const field = document.getElementById(fieldId);
+    if (field) {
+      field.value = data.values[fieldId];
+    }
+  });
+  
+  // 계산 필드 업데이트
+  setupFormCalculations();
+  const event = new Event('input');
+  document.getElementById('G16').dispatchEvent(event);
+  
+  navigateToScreen('input');
+  showMessage(`${data.customerName}의 데이터를 불러왔습니다.`, 'success');
+}
+
+// 저장된 목록 표시
+function displaySavedList() {
+  const savedList = document.getElementById('savedList');
+  
+  if (savedData.length === 0) {
+    savedList.innerHTML = '<div class="meta">저장된 보장분석이 없습니다.</div>';
+    return;
+  }
+  
+  savedList.innerHTML = savedData.map(item => `
+    <div class="saved-item" onclick="loadData(${item.id})">
+      <div class="saved-item-title">${item.customerName}님의 보장분석</div>
+      <div class="saved-item-date">${item.timestamp}</div>
+    </div>
+  `).join('');
+}
+
+// 메시지 표시
+function showMessage(message, type = 'info') {
+  const statusMessage = document.getElementById('statusMessage');
+  statusMessage.textContent = message;
+  statusMessage.className = `meta ${type}`;
+  
+  setTimeout(() => {
+    statusMessage.textContent = '';
+    statusMessage.className = 'meta';
+  }, 3000);
+}
+
+// 이미지 생성 및 다운로드
+function generateAndDownloadImage(data) {
+  // Canvas 생성
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  
+  // 캔버스 크기 설정 (A4 비율)
+  canvas.width = 800;
+  canvas.height = 1200;
+  
+  // 배경 설정
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  // 제목
+  ctx.fillStyle = '#ff7f00';
+  ctx.font = 'bold 28px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText(`${data.customerName}님의 한 장 요약 보장분석`, canvas.width / 2, 50);
+  
+  // 구분선
+  ctx.strokeStyle = '#ff7f00';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(50, 70);
+  ctx.lineTo(canvas.width - 50, 70);
+  ctx.stroke();
+  
+  let yPos = 120;
+  
+  // 섹션별 데이터 표시
+  const sections = [
+    {
+      title: '암 관련 보장',
+      fields: [
+        { id: 'C5', label: '일반암진단비', unit: '만원' },
+        { id: 'C6', label: '통합암진단비', unit: '만원' },
+        { id: 'C7', label: '전이암진단비', unit: '만원' },
+        { id: 'C8', label: '암특정치료비', unit: '만원' },
+        { id: 'C9', label: '암특정치료비(비급여)', unit: '만원' },
+        { id: 'C10', label: '표적항암치료비', unit: '만원' },
+        { id: 'C11', label: '중입자치료비', unit: '만원' },
+        { id: 'C12', label: '암수술비', unit: '만원' },
+        { id: 'C13', label: '다빈치로봇수술비', unit: '만원' },
+        { id: 'C14', label: '1-5종수술비(5종)', unit: '만원' }
+      ]
+    },
+    {
+      title: '뇌혈관/심장 관련 보장',
+      fields: [
+        { id: 'G5', label: '뇌혈관질환진단비', unit: '만원' },
+        { id: 'G6', label: '뇌졸중진단비', unit: '만원' },
+        { id: 'G7', label: '허혈성심장질환진단비', unit: '만원' },
+        { id: 'G8', label: '심근경색진단비', unit: '만원' },
+        { id: 'G11', label: '허혈성심장질환수술비', unit: '만원' },
+        { id: 'G16', label: '주요순환계(수술)', unit: '만원' },
+        { id: 'G21', label: '1-5종수술비(3종)', unit: '만원' },
+        { id: 'G22', label: '1-5종수술비(5종)', unit: '만원' },
+        { id: 'G23', label: '124대질병수술비(특정10대)', unit: '만원' },
+        { id: 'G24', label: '7대기관수술비(뇌/심) 관혈', unit: '만원' }
+      ]
+    },
+    {
+      title: '기타 보장',
+      fields: [
+        { id: 'J5', label: '(질병)입원한도', unit: '만원' },
+        { id: 'J6', label: '(질병)통원한도', unit: '일' },
+        { id: 'J7', label: '(상해)입원한도', unit: '만원' },
+        { id: 'J8', label: '(상해)통원한도', unit: '일' },
+        { id: 'J11', label: '형사합의금', unit: '만원' },
+        { id: 'J12', label: '변호사선임비', unit: '만원' },
+        { id: 'J16', label: '요양병원 외', unit: '만원' },
+        { id: 'J17', label: '요양병원', unit: '만원' },
+        { id: 'J18', label: '간호간병통합', unit: '만원' },
+        { id: 'I21', label: '생활비 지원', unit: '만원' }
+      ]
+    }
+  ];
+  
+  sections.forEach(section => {
+    // 섹션 제목
+    ctx.fillStyle = '#ff7f00';
+    ctx.font = 'bold 20px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText(section.title, 50, yPos);
+    yPos += 35;
+    
+    // 구분선
+    ctx.strokeStyle = '#ff7f00';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(50, yPos - 10);
+    ctx.lineTo(canvas.width - 50, yPos - 10);
+    ctx.stroke();
+    
+    // 필드별 데이터
+    ctx.fillStyle = '#333';
+    ctx.font = '16px Arial';
+    
+    section.fields.forEach(field => {
+      const value = data.values[field.id] || 0;
+      if (value > 0) {
+        ctx.textAlign = 'left';
+        ctx.fillText(field.label, 70, yPos);
+        ctx.textAlign = 'right';
+        ctx.fillText(`${value.toLocaleString()} ${field.unit}`, canvas.width - 70, yPos);
+        yPos += 25;
+      }
+    });
+    
+    yPos += 20;
+  });
+  
+  // 생성 일시
+  ctx.fillStyle = '#666';
+  ctx.font = '12px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText(`생성일시: ${data.timestamp}`, canvas.width / 2, canvas.height - 30);
+  
+  // 이미지 다운로드
+  canvas.toBlob(function(blob) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${data.customerName}_보장분석_${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 'image/png');
+}
+
+// 이벤트 리스너 설정
+document.addEventListener('DOMContentLoaded', () => {
+  // 메뉴 버튼들
+  document.getElementById('inputMenuBtn').addEventListener('click', () => navigateToScreen('input'));
+  document.getElementById('loadMenuBtn').addEventListener('click', () => navigateToScreen('load'));
+  
+  // 입력 화면 버튼들
+  document.getElementById('saveImageBtn').addEventListener('click', saveData);
+  document.getElementById('loadFromMenuBtn').addEventListener('click', () => navigateToScreen('load'));
+  document.getElementById('backToMenuBtn').addEventListener('click', () => navigateToScreen('menu'));
+  
+  // 불러오기 화면 버튼들
+  document.getElementById('backToMenuFromLoadBtn').addEventListener('click', () => navigateToScreen('menu'));
+  
+  // 초기 화면 설정
+  navigateToScreen('menu');
+});
+
+</script>
 
 </body>
 </html>
