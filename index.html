@@ -166,7 +166,6 @@
       border-radius: 8px;
       padding: 15px;
       margin-bottom: 20px;
-      overflow-x: auto;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
@@ -257,6 +256,36 @@
       color: #2196f3;
     }
 
+    /* 간병인일당 특수 UI */
+    .caregiver-section {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+
+    .radio-group {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 10px;
+    }
+
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .caregiver-inputs {
+      display: none;
+      margin-top: 10px;
+    }
+
+    .caregiver-inputs.active {
+      display: block;
+    }
+
     /* 조건부 서식 */
     .status-good { background-color: #d4edda !important; border-color: #28a745 !important; }
     .status-warning { background-color: #fff3cd !important; border-color: #ffc107 !important; }
@@ -317,9 +346,9 @@
         <div style="font-size: 16px; margin-top: 10px;">님의 한 장 요약 보장분석</div>
       </div>
 
-      <!-- 암관련보장 -->
+      <!-- 암 섹션 -->
       <div class="input-section">
-        <div class="section-header">암관련보장</div>
+        <div class="section-header">암</div>
         <div class="input-row">
           <div class="input-label">일반암진단비</div>
           <input type="number" id="C5" class="input-field" placeholder="0">
@@ -372,9 +401,9 @@
         </div>
       </div>
 
-      <!-- 뇌혈관/심장관련보장 -->
+      <!-- 2대 중대질환 섹션 -->
       <div class="input-section">
-        <div class="section-header">뇌혈관/심장관련보장</div>
+        <div class="section-header">2대 중대질환</div>
         <div class="input-row">
           <div class="input-label">뇌혈관질환진단비</div>
           <input type="number" id="G5" class="input-field" placeholder="0">
@@ -477,92 +506,93 @@
         </div>
       </div>
 
-      <!-- 의료실비 -->
+      <!-- 5대 필수 보험 섹션 -->
       <div class="input-section">
-        <div class="section-header">의료실비</div>
-        <div class="input-row">
-          <div class="input-label">(질병)입원한도</div>
-          <input type="number" id="J5" class="input-field" placeholder="0">
-          <span class="input-unit">만원</span>
+        <div class="section-header">5대 필수 보험</div>
+        
+        <!-- 실손의료비 -->
+        <div style="margin-bottom: 15px;">
+          <div style="font-weight: 600; margin-bottom: 10px; color: #555;">실손의료비</div>
+          <div class="input-row">
+            <div class="input-label">(질병)입원한도</div>
+            <input type="number" id="J5" class="input-field" placeholder="0">
+            <span class="input-unit">만원</span>
+          </div>
+          <div class="input-row">
+            <div class="input-label">(질병)통원한도</div>
+            <input type="number" id="J6" class="input-field" placeholder="0">
+            <span class="input-unit">일</span>
+          </div>
+          <div class="input-row">
+            <div class="input-label">(상해)입원한도</div>
+            <input type="number" id="J7" class="input-field" placeholder="0">
+            <span class="input-unit">만원</span>
+          </div>
+          <div class="input-row">
+            <div class="input-label">(상해)통원한도</div>
+            <input type="number" id="J8" class="input-field" placeholder="0">
+            <span class="input-unit">일</span>
+          </div>
         </div>
-        <div class="input-row">
-          <div class="input-label">(질병)통원한도</div>
-          <input type="number" id="J6" class="input-field" placeholder="0">
-          <span class="input-unit">일</span>
-        </div>
-        <div class="input-row">
-          <div class="input-label">(상해)입원한도</div>
-          <input type="number" id="J7" class="input-field" placeholder="0">
-          <span class="input-unit">만원</span>
-        </div>
-        <div class="input-row">
-          <div class="input-label">(상해)통원한도</div>
-          <input type="number" id="J8" class="input-field" placeholder="0">
-          <span class="input-unit">일</span>
-        </div>
-      </div>
 
-      <!-- 운전자 -->
-      <div class="input-section">
-        <div class="section-header">운전자</div>
-        <div class="input-row">
-          <div class="input-label">형사합의금</div>
-          <input type="number" id="J11" class="input-field" placeholder="0">
-          <span class="input-unit">만원</span>
+        <!-- 운전자 -->
+        <div style="margin-bottom: 15px;">
+          <div style="font-weight: 600; margin-bottom: 10px; color: #555;">운전자</div>
+          <div class="input-row">
+            <div class="input-label">형사합의금</div>
+            <input type="number" id="J11" class="input-field" placeholder="0">
+            <span class="input-unit">만원</span>
+          </div>
+          <div class="input-row">
+            <div class="input-label">변호사선임비</div>
+            <input type="number" id="J12" class="input-field" placeholder="0">
+            <span class="input-unit">만원</span>
+          </div>
         </div>
-        <div class="input-row">
-          <div class="input-label">변호사선임비</div>
-          <input type="number" id="J12" class="input-field" placeholder="0">
-          <span class="input-unit">만원</span>
-        </div>
-        <div class="input-row">
-          <div class="input-label">간병인일당</div>
-          <input type="number" id="J13" class="input-field" placeholder="0">
-          <span class="input-unit">만원</span>
-        </div>
-      </div>
 
-      <!-- 간병비 -->
-      <div class="input-section">
-        <div class="section-header">간병비</div>
-        <div class="input-row">
-          <div class="input-label">요양병원 외</div>
-          <input type="number" id="J16" class="input-field" placeholder="0">
-          <span class="input-unit">만원</span>
+        <!-- 간병인일당 -->
+        <div class="caregiver-section">
+          <div style="font-weight: 600; margin-bottom: 10px; color: #555;">간병인일당</div>
+          <div class="radio-group">
+            <div class="radio-option">
+              <input type="radio" id="caregiverSupport" name="caregiver" value="support">
+              <label for="caregiverSupport">지원</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="caregiverUse" name="caregiver" value="use">
+              <label for="caregiverUse">사용</label>
+            </div>
+          </div>
+          <div id="caregiverInputs" class="caregiver-inputs">
+            <div class="input-row">
+              <div class="input-label">요양병원 외</div>
+              <input type="number" id="J16" class="input-field" placeholder="0">
+              <span class="input-unit">만원</span>
+            </div>
+            <div class="input-row">
+              <div class="input-label">요양병원</div>
+              <input type="number" id="J17" class="input-field" placeholder="0">
+              <span class="input-unit">만원</span>
+            </div>
+            <div class="input-row">
+              <div class="input-label">간호간병통합</div>
+              <input type="number" id="J18" class="input-field" placeholder="0">
+              <span class="input-unit">만원</span>
+            </div>
+          </div>
         </div>
-        <div class="input-row">
-          <div class="input-label">요양병원</div>
-          <input type="number" id="J17" class="input-field" placeholder="0">
-          <span class="input-unit">만원</span>
-        </div>
-        <div class="input-row">
-          <div class="input-label">간호간병통합</div>
-          <input type="number" id="J18" class="input-field" placeholder="0">
-          <span class="input-unit">만원</span>
-        </div>
-      </div>
 
-      <!-- 기타 -->
-      <div class="input-section">
-        <div class="section-header">기타</div>
+        <!-- 일상생활배상책임 -->
         <div class="input-row">
-          <div class="input-label">일상생활배상책임 (보장액)</div>
+          <div class="input-label">일상생활배상책임</div>
           <input type="number" id="I21" class="input-field" placeholder="0">
           <span class="input-unit">만원</span>
         </div>
+
+        <!-- 화재벌금 -->
         <div class="input-row">
-          <div class="input-label">일상생활배상책임 (자기부담금)</div>
-          <input type="number" id="J21" class="input-field" placeholder="0">
-          <span class="input-unit">만원</span>
-        </div>
-        <div class="input-row">
-          <div class="input-label">화재벌금 (보장액)</div>
+          <div class="input-label">화재벌금</div>
           <input type="number" id="I24" class="input-field" placeholder="0">
-          <span class="input-unit">만원</span>
-        </div>
-        <div class="input-row">
-          <div class="input-label">화재벌금 (자기부담금)</div>
-          <input type="number" id="J24" class="input-field" placeholder="0">
           <span class="input-unit">만원</span>
         </div>
       </div>
@@ -638,6 +668,24 @@ function setupFormCalculations() {
       applyConditionalFormatting();
     });
   });
+
+  // 간병인일당 라디오 버튼 이벤트
+  const caregiverRadios = document.querySelectorAll('input[name="caregiver"]');
+  caregiverRadios.forEach(radio => {
+    radio.addEventListener('change', function() {
+      const caregiverInputs = document.getElementById('caregiverInputs');
+      if (this.value === 'use') {
+        caregiverInputs.classList.add('active');
+      } else {
+        caregiverInputs.classList.remove('active');
+        // 지원 선택시 입력 필드들 초기화
+        document.getElementById('J16').value = '';
+        document.getElementById('J17').value = '';
+        document.getElementById('J18').value = '';
+      }
+      applyConditionalFormatting();
+    });
+  });
   
   applyConditionalFormatting();
 }
@@ -662,7 +710,7 @@ function updateCalculatedFields() {
 // 조건부 서식 적용
 function applyConditionalFormatting() {
   // 1보다 큰 값은 좋음, 작으면 나쁨으로 표시
-  const greaterThanOneIds = ['J5', 'J6', 'J7', 'J8', 'J16', 'J17', 'J18', 'I21', 'J21', 'I24', 'J24'];
+  const greaterThanOneIds = ['J5', 'J6', 'J7', 'J8', 'J16', 'J17', 'J18', 'I21', 'I24'];
   greaterThanOneIds.forEach(id => {
     const input = document.getElementById(id);
     if (!input) return;
@@ -676,6 +724,17 @@ function applyConditionalFormatting() {
       input.classList.add('status-poor');
     }
   });
+  
+  // 간병인일당 지원/사용 조건부 서식
+  const caregiverSupport = document.getElementById('caregiverSupport');
+  const caregiverUse = document.getElementById('caregiverUse');
+  const caregiverSection = document.querySelector('.caregiver-section');
+  
+  if (caregiverSupport && caregiverSupport.checked) {
+    caregiverSection.style.backgroundColor = '#f8d7da';
+  } else {
+    caregiverSection.style.backgroundColor = '#f8f9fa';
+  }
   
   // J11 특별 조건 (형사합의금)
   const j11Input = document.getElementById('J11');
@@ -722,7 +781,8 @@ function saveData() {
     id: Date.now(),
     customerName: customerName,
     timestamp: new Date().toLocaleString('ko-KR'),
-    values: {}
+    values: {},
+    caregiverOption: document.querySelector('input[name="caregiver"]:checked')?.value || 'none'
   };
   
   // 모든 입력 필드 값 저장
@@ -730,7 +790,7 @@ function saveData() {
     'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14',
     'G5', 'G6', 'G7', 'G8', 'G9', 'G10', 'G11', 'G12', 'G13', 'G14', 
     'G15', 'G16', 'G17', 'G18', 'G19', 'G20', 'G21', 'G22', 'G23', 'G24',
-    'J5', 'J6', 'J7', 'J8', 'J11', 'J12', 'J13', 'J16', 'J17', 'J18', 'I21', 'J21', 'I24', 'J24'
+    'J5', 'J6', 'J7', 'J8', 'J11', 'J12', 'J16', 'J17', 'J18', 'I21', 'I24'
   ];
   
   inputFields.forEach(fieldId => {
@@ -751,53 +811,37 @@ function saveData() {
   localStorage.setItem('insuranceAnalysisData', JSON.stringify(savedData));
   showMessage('저장되었습니다!', 'success');
   
-  // 엑셀 스타일 이미지 생성
-  generateExcelStyleImage(data);
+  // 엑셀과 동일한 가로형 이미지 생성
+  generateHorizontalExcelImage(data);
 }
 
-// 엑셀 스타일 이미지 생성 (모든 항목 표시, 입력값 반영)
-function generateExcelStyleImage(data) {
+// 엑셀과 동일한 가로형 이미지 생성
+function generateHorizontalExcelImage(data) {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   
-  canvas.width = 1200;
-  canvas.height = 1600;
+  // 가로형 캔버스 크기
+  canvas.width = 1400;
+  canvas.height = 1000;
   
   // 배경
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   
-  // 헤더 섹션
-  ctx.fillStyle = '#ff7f00';
-  ctx.fillRect(50, 30, canvas.width - 100, 80);
-  
-  // 헤더 텍스트
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 28px "Noto Sans KR", Arial';
-  ctx.textAlign = 'center';
-  ctx.fillText(`${data.customerName}님의 한 장 요약 보장분석`, canvas.width / 2, 80);
-  
-  let yPos = 150;
-  
-  // 테이블 헤더
-  ctx.fillStyle = '#f5f5f5';
-  ctx.fillRect(50, yPos, 300, 40);
-  ctx.fillRect(350, yPos, 200, 40);
-  ctx.fillRect(550, yPos, 300, 40);
-  ctx.fillRect(850, yPos, 200, 40);
-  
+  // 제목
   ctx.fillStyle = '#333';
-  ctx.font = 'bold 16px "Noto Sans KR", Arial';
+  ctx.font = 'bold 24px "Noto Sans KR", Arial';
   ctx.textAlign = 'center';
-  ctx.fillText('암', 200, yPos + 25);
-  ctx.fillText('보장내용', 450, yPos + 25);
-  ctx.fillText('뇌혈관/심장', 700, yPos + 25);
-  ctx.fillText('보장내용', 950, yPos + 25);
+  ctx.fillText(`(${data.customerName})님의 한 장 요약 보장분석`, canvas.width / 2, 40);
   
-  yPos += 50;
+  let yPos = 80;
   
-  // 데이터 항목들 - 모든 항목 표시 (입력값 0이어도 표시)
-  const cancerItems = [
+  // 메인 섹션들 배치
+  const sectionWidth = 350;
+  const sectionSpacing = 50;
+  
+  // 암 섹션
+  drawSection(ctx, 50, yPos, sectionWidth, '암', [
     { id: 'C5', label: '일반암진단비' },
     { id: 'C6', label: '통합암진단비' },
     { id: 'C7', label: '전이암진단비' },
@@ -808,9 +852,10 @@ function generateExcelStyleImage(data) {
     { id: 'C12', label: '암수술비' },
     { id: 'C13', label: '다빈치로봇수술비' },
     { id: 'C14', label: '1-5종수술비(5종)' }
-  ];
+  ], data.values);
   
-  const heartItems = [
+  // 2대 중대질환 섹션
+  drawSection(ctx, 450, yPos, sectionWidth, '2대 중대질환', [
     { id: 'G5', label: '뇌혈관질환진단비' },
     { id: 'G6', label: '뇌졸중진단비' },
     { id: 'G7', label: '허혈성심장질환진단비' },
@@ -819,171 +864,56 @@ function generateExcelStyleImage(data) {
     { id: 'G10', label: '뇌졸중수술비' },
     { id: 'G11', label: '허혈성심장질환수술비' },
     { id: 'G12', label: '심근경색수술비' },
+    { id: 'G13', label: '뇌졸중혈전용해' },
+    { id: 'G14', label: '심근경색혈전용해' },
+    { id: 'G15', label: '2대특정치료비' },
     { id: 'G16', label: '주요순환계(수술)' },
-    { id: 'G17', label: '주요순환계(혈전제거)' }
-  ];
+    { id: 'G17', label: '주요순환계(혈전제거)' },
+    { id: 'G18', label: '주요순환계(혈전용해)' },
+    { id: 'G19', label: '주요순환계(중환자실)' },
+    { id: 'G20', label: '혈전제거치료비' },
+    { id: 'G21', label: '1-5종수술비(3종)' },
+    { id: 'G22', label: '1-5종수술비(5종)' },
+    { id: 'G23', label: '124대질병수술비(특정10대)' },
+    { id: 'G24', label: '7대기관수술비(뇌/심) 관혈' }
+  ], data.values);
   
-  const maxRows = Math.max(cancerItems.length, heartItems.length);
-  
-  ctx.font = '14px "Noto Sans KR", Arial';
-  
-  for (let i = 0; i < maxRows; i++) {
-    // 행 배경
-    const bgColor = i % 2 === 0 ? '#ffffff' : '#f8f9fa';
-    ctx.fillStyle = bgColor;
-    ctx.fillRect(50, yPos, canvas.width - 100, 35);
-    
-    // 테두리
-    ctx.strokeStyle = '#ddd';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(50, yPos, 300, 35);
-    ctx.strokeRect(350, yPos, 200, 35);
-    ctx.strokeRect(550, yPos, 300, 35);
-    ctx.strokeRect(850, yPos, 200, 35);
-    
-    // 암 관련 데이터
-    if (i < cancerItems.length) {
-      const cancerItem = cancerItems[i];
-      const cancerValue = data.values[cancerItem.id] || 0;
-      
-      // 라벨
-      ctx.fillStyle = '#333';
-      ctx.textAlign = 'left';
-      ctx.fillText(cancerItem.label, 60, yPos + 22);
-      
-      // 값과 막대그래프
-      ctx.textAlign = 'right';
-      ctx.fillText(`${cancerValue.toLocaleString()}만원`, 540, yPos + 22);
-      
-      // 막대그래프
-      if (cancerValue > 0) {
-        const barWidth = Math.min((cancerValue / 10000) * 150, 150);
-        let barColor = '#dc3545';
-        if (cancerValue >= 3000) barColor = '#28a745';
-        else if (cancerValue >= 1000) barColor = '#ffc107';
-        
-        ctx.fillStyle = barColor;
-        ctx.fillRect(360, yPos + 10, barWidth, 15);
-      }
-    }
-    
-    // 뇌혈관/심장 관련 데이터
-    if (i < heartItems.length) {
-      const heartItem = heartItems[i];
-      const heartValue = data.values[heartItem.id] || 0;
-      
-      // 라벨
-      ctx.fillStyle = '#333';
-      ctx.textAlign = 'left';
-      ctx.fillText(heartItem.label, 560, yPos + 22);
-      
-      // 값과 막대그래프
-      ctx.textAlign = 'right';
-      ctx.fillText(`${heartValue.toLocaleString()}만원`, 1040, yPos + 22);
-      
-      // 막대그래프
-      if (heartValue > 0) {
-        const barWidth = Math.min((heartValue / 10000) * 150, 150);
-        let barColor = '#dc3545';
-        if (heartValue >= 3000) barColor = '#28a745';
-        else if (heartValue >= 1000) barColor = '#ffc107';
-        
-        ctx.fillStyle = barColor;
-        ctx.fillRect(860, yPos + 10, barWidth, 15);
-      }
-    }
-    
-    yPos += 35;
-  }
-  
-  yPos += 30;
-  
-  // 의료실비/운전자 섹션
-  ctx.fillStyle = '#ff7f00';
-  ctx.fillRect(50, yPos, canvas.width - 100, 40);
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 18px "Noto Sans KR", Arial';
-  ctx.textAlign = 'center';
-  ctx.fillText('의료실비 / 운전자 / 간병비', canvas.width / 2, yPos + 25);
-  
-  yPos += 50;
-  
-  const otherItems = [
+  // 5대 필수 보험 섹션
+  drawSection(ctx, 850, yPos, sectionWidth, '5대 필수 보험', [
     { id: 'J5', label: '(질병)입원한도', unit: '만원' },
     { id: 'J6', label: '(질병)통원한도', unit: '일' },
+    { id: 'J7', label: '(상해)입원한도', unit: '만원' },
+    { id: 'J8', label: '(상해)통원한도', unit: '일' },
     { id: 'J11', label: '형사합의금', unit: '만원' },
     { id: 'J12', label: '변호사선임비', unit: '만원' },
-    { id: 'J16', label: '요양병원 외', unit: '만원' },
-    { id: 'J17', label: '요양병원', unit: '만원' }
-  ];
+    { label: '간병인일당', special: 'caregiver' },
+    { id: 'I21', label: '일상생활배상책임', unit: '만원' },
+    { id: 'I24', label: '화재벌금', unit: '만원' }
+  ], data.values, data.caregiverOption);
   
-  otherItems.forEach(item => {
-    const value = data.values[item.id] || 0;
-    
-    // 행 배경
-    ctx.fillStyle = '#f8f9fa';
-    ctx.fillRect(50, yPos, canvas.width - 100, 35);
-    
-    // 테두리
-    ctx.strokeStyle = '#ddd';
-    ctx.strokeRect(50, yPos, 400, 35);
-    ctx.strokeRect(450, yPos, 200, 35);
-    ctx.strokeRect(650, yPos, 300, 35);
-    
-    // 조건부 서식 배경
-    let bgColor = '#ffffff';
-    if (item.id === 'J11') {
-      if (value >= 20000) bgColor = '#d4edda';
-      else if (value >= 10000) bgColor = '#fff3cd';
-      else if (value > 0) bgColor = '#f8d7da';
-    } else if (item.id === 'J12') {
-      if (value >= 5000) bgColor = '#d4edda';
-      else if (value >= 3000) bgColor = '#fff3cd';
-      else if (value > 0) bgColor = '#f8d7da';
-    } else {
-      if (value > 1) bgColor = '#d4edda';
-      else if (value > 0) bgColor = '#f8d7da';
-    }
-    
-    ctx.fillStyle = bgColor;
-    ctx.fillRect(451, yPos + 1, 198, 33);
-    
-    // 텍스트
-    ctx.fillStyle = '#333';
-    ctx.font = '14px "Noto Sans KR", Arial';
-    ctx.textAlign = 'left';
-    ctx.fillText(item.label, 60, yPos + 22);
-    
-    ctx.textAlign = 'center';
-    ctx.fillText(`${value.toLocaleString()}${item.unit}`, 550, yPos + 22);
-    
-    // 상태 텍스트
-    let statusText = '미보장';
-    if (item.id === 'J11') {
-      if (value >= 20000) statusText = '적정';
-      else if (value >= 10000) statusText = '부족';
-      else if (value > 0) statusText = '미흡';
-    } else if (item.id === 'J12') {
-      if (value >= 5000) statusText = '적정';
-      else if (value >= 3000) statusText = '부족';
-      else if (value > 0) statusText = '미흡';
-    } else {
-      if (value > 1) statusText = '적정';
-      else if (value > 0) statusText = '미흡';
-    }
-    
-    ctx.fillText(statusText, 800, yPos + 22);
-    
-    yPos += 35;
-  });
+  // 치료 보장 예시 섹션들
+  yPos = 650;
   
-  // 하단 안내문
-  yPos += 50;
-  ctx.fillStyle = '#666';
-  ctx.font = '12px "Noto Sans KR", Arial';
-  ctx.textAlign = 'center';
-  ctx.fillText('본 분석표는 고객님의 보험 가입 현황을 토대로 작성되었으며, 실제 보장내용과 차이가 있을 수 있습니다.', canvas.width / 2, yPos);
-  ctx.fillText(`생성일시: ${data.timestamp}`, canvas.width / 2, yPos + 20);
+  // 일반암 치료 보장 예시
+  drawTreatmentExample(ctx, 50, yPos, 300, '일반암 치료 보장 예시', [
+    { label: '다빈치로봇수술', amount: '3,500만' },
+    { label: '1개 부위 전이+표적', amount: '4,000만' },
+    { label: '중입자치료', amount: '7,000만' }
+  ]);
+  
+  // 뇌경색 치료 보장 예시
+  drawTreatmentExample(ctx, 400, yPos, 300, '뇌경색 치료 보장 예시', [
+    { label: '스텐트', amount: '3,200만' },
+    { label: '스텐트+혈전용해', amount: '3,200만' },
+    { label: '혈전용해+혈전제거+중환자실', amount: '3,200만' }
+  ]);
+  
+  // 급성심근경색 치료 보장 예시
+  drawTreatmentExample(ctx, 750, yPos, 300, '급성심근경색 치료 보장 예시', [
+    { label: '스텐트', amount: '4,200만' },
+    { label: '스텐트+혈전용해', amount: '4,200만' },
+    { label: '혈전용해+혈전제거+중환자실', amount: '4,200만' }
+  ]);
   
   // 이미지 다운로드
   canvas.toBlob(function(blob) {
@@ -996,8 +926,157 @@ function generateExcelStyleImage(data) {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
-    showMessage('엑셀 스타일 분석표 이미지가 다운로드되었습니다!', 'success');
+    showMessage('가로형 보장분석표 이미지가 다운로드되었습니다!', 'success');
   }, 'image/png');
+}
+
+// 섹션 그리기 함수
+function drawSection(ctx, x, y, width, title, items, values, caregiverOption) {
+  // 섹션 헤더
+  ctx.fillStyle = '#f0f0f0';
+  ctx.fillRect(x, y, width, 30);
+  ctx.strokeStyle = '#333';
+  ctx.strokeRect(x, y, width, 30);
+  
+  ctx.fillStyle = '#333';
+  ctx.font = 'bold 16px "Noto Sans KR", Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText(title, x + width/2, y + 20);
+  
+  let itemY = y + 40;
+  
+  items.forEach(item => {
+    if (item.special === 'caregiver') {
+      // 간병인일당 특수 처리
+      const bgColor = caregiverOption === 'support' ? '#ffcccc' : '#ffffff';
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(x, itemY, width, 25);
+      
+      ctx.strokeStyle = '#ddd';
+      ctx.strokeRect(x, itemY, width, 25);
+      
+      ctx.fillStyle = '#333';
+      ctx.font = '12px "Noto Sans KR", Arial';
+      ctx.textAlign = 'left';
+      ctx.fillText(item.label, x + 10, itemY + 16);
+      
+      ctx.textAlign = 'right';
+      const statusText = caregiverOption === 'support' ? '지원' : 
+                        caregiverOption === 'use' ? '사용' : '-';
+      ctx.fillText(statusText, x + width - 10, itemY + 16);
+      
+      itemY += 25;
+      
+      if (caregiverOption === 'use') {
+        const caregiverItems = [
+          { id: 'J16', label: '요양병원 외' },
+          { id: 'J17', label: '요양병원' },
+          { id: 'J18', label: '간호간병통합' }
+        ];
+        
+        caregiverItems.forEach(subItem => {
+          const value = values[subItem.id] || 0;
+          const barColor = getBarColor(value);
+          
+          // 막대그래프 배경
+          ctx.fillStyle = '#f8f8f8';
+          ctx.fillRect(x + 5, itemY, width - 10, 20);
+          
+          // 막대그래프
+          if (value > 0) {
+            const barWidth = Math.min((value / 100) * (width - 100), width - 100);
+            ctx.fillStyle = barColor;
+            ctx.fillRect(x + 5, itemY, barWidth, 20);
+          }
+          
+          ctx.strokeStyle = '#ddd';
+          ctx.strokeRect(x + 5, itemY, width - 10, 20);
+          
+          // 텍스트
+          ctx.fillStyle = '#333';
+          ctx.font = '11px "Noto Sans KR", Arial';
+          ctx.textAlign = 'left';
+          ctx.fillText(subItem.label, x + 10, itemY + 14);
+          
+          ctx.textAlign = 'right';
+          ctx.fillText(`${value}만`, x + width - 10, itemY + 14);
+          
+          itemY += 20;
+        });
+      }
+    } else {
+      // 일반 항목
+      const value = values[item.id] || 0;
+      const barColor = getBarColor(value);
+      
+      // 막대그래프 배경
+      ctx.fillStyle = '#f8f8f8';
+      ctx.fillRect(x, itemY, width, 25);
+      
+      // 막대그래프
+      if (value > 0) {
+        const barWidth = Math.min((value / 10000) * (width - 100), width - 100);
+        ctx.fillStyle = barColor;
+        ctx.fillRect(x, itemY, barWidth, 25);
+      }
+      
+      ctx.strokeStyle = '#ddd';
+      ctx.strokeRect(x, itemY, width, 25);
+      
+      // 텍스트
+      ctx.fillStyle = '#333';
+      ctx.font = '12px "Noto Sans KR", Arial';
+      ctx.textAlign = 'left';
+      ctx.fillText(item.label, x + 10, itemY + 16);
+      
+      ctx.textAlign = 'right';
+      const unit = item.unit || '만원';
+      ctx.fillText(`${value.toLocaleString()}${unit}`, x + width - 10, itemY + 16);
+      
+      itemY += 25;
+    }
+  });
+}
+
+// 치료 보장 예시 그리기
+function drawTreatmentExample(ctx, x, y, width, title, examples) {
+  // 헤더
+  ctx.fillStyle = '#e8f5e8';
+  ctx.fillRect(x, y, width, 30);
+  ctx.strokeStyle = '#333';
+  ctx.strokeRect(x, y, width, 30);
+  
+  ctx.fillStyle = '#333';
+  ctx.font = 'bold 14px "Noto Sans KR", Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText(title, x + width/2, y + 20);
+  
+  let exampleY = y + 40;
+  
+  examples.forEach(example => {
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(x, exampleY, width, 25);
+    ctx.strokeStyle = '#ddd';
+    ctx.strokeRect(x, exampleY, width, 25);
+    
+    ctx.fillStyle = '#333';
+    ctx.font = '12px "Noto Sans KR", Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText(example.label, x + 10, exampleY + 16);
+    
+    ctx.textAlign = 'right';
+    ctx.fillText(example.amount, x + width - 10, exampleY + 16);
+    
+    exampleY += 25;
+  });
+}
+
+// 막대그래프 색상 결정
+function getBarColor(value) {
+  if (value >= 3000) return '#28a745';  // 초록색
+  if (value >= 1000) return '#ffc107';  // 노란색
+  if (value > 0) return '#dc3545';      // 빨간색
+  return '#f8f8f8';                     // 회색
 }
 
 // 데이터 불러오기
@@ -1018,6 +1097,12 @@ function loadData(id) {
       field.value = data.values[fieldId];
     }
   });
+  
+  // 간병인일당 옵션 설정
+  if (data.caregiverOption) {
+    const caregiverRadio = document.getElementById(data.caregiverOption === 'support' ? 'caregiverSupport' : 'caregiverUse');
+    if (caregiverRadio) caregiverRadio.checked = true;
+  }
   
   // 계산 필드 업데이트
   setupFormCalculations();
