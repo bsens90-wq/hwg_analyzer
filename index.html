@@ -504,12 +504,393 @@
       }
     }
   </style>
+  <script>
+    let currentScreen = 'menu';
+
+    // 화면 전환 함수들을 먼저 정의
+    function hideAllScreens() {
+      document.getElementById("menuScreen").style.display = "none";
+      document.getElementById("inputScreen").style.display = "none";
+      document.getElementById("loadScreen").style.display = "none";
+    }
+
+    function showInputScreen() {
+      hideAllScreens();
+      document.getElementById("inputScreen").style.display = "flex";
+      currentScreen = 'input';
+      
+      setTimeout(() => {
+        addInputListeners();
+        updateExamples();
+      }, 100);
+    }
+
+    function showLoadScreen() {
+      hideAllScreens();
+      document.getElementById("loadScreen").style.display = "flex";
+      currentScreen = 'load';
+      setTimeout(() => {
+        loadSavedAnalyses();
+      }, 100);
+    }
+
+    function goHome() {
+      hideAllScreens();
+      document.getElementById("menuScreen").style.display = "flex";
+      currentScreen = 'menu';
+    }
+
+    // 입력 필드 이벤트 리스너
+    function addInputListeners() {
+      const inputFields = document.querySelectorAll('.input-field[type="number"]');
+      inputFields.forEach(field => {
+        field.addEventListener('input', updateExamples);
+      });
+    }
+
+    // 예시 계산 업데이트
+    function updateExamples() {
+      // 다빈치로봇수술 = 암수술비 + 다빈치로봇수술비
+      const robotSurgery = (getValue('cancer_surgery') || 0) + (getValue('cancer_robot_surgery') || 0);
+      document.getElementById('example_robot_surgery').textContent = robotSurgery + '만원';
+      
+      // 1개 부위 전이+표적 = 전이암진단비 + 표적항암치료비
+      const metastaticTargeted = (getValue('cancer_metastatic') || 0) + (getValue('cancer_targeted') || 0);
+      document.getElementById('example_metastatic_targeted').textContent = metastaticTargeted + '만원';
+      
+      // 중입자치료 = 중입자치료비
+      const heavyIon = getValue('cancer_heavy_ion') || 0;
+      document.getElementById('example_heavy_ion').textContent = heavyIon + '만원';
+      
+      // 스텐트 = 주요순환계(수술)
+      const stent = getValue('circulatory_surgery') || 0;
+      document.getElementById('example_stent').textContent = stent + '만원';
+      
+      // 스텐트+혈전용해 = 주요순환계(수술) + 주요순환계(혈전용해)
+      const stentThrombolysis = (getValue('circulatory_surgery') || 0) + (getValue('circulatory_thrombolysis') || 0);
+      document.getElementById('example_stent_thrombolysis').textContent = stentThrombolysis + '만원';
+      
+      // 혈전용해+혈전제거+중환자실 = 주요순환계(혈전용해) + 주요순환계(혈전제거) + 주요순환계(중환자실)
+      const comprehensive = (getValue('circulatory_thrombolysis') || 0) + 
+                           (getValue('circulatory_thrombectomy') || 0) + 
+                           (getValue('circulatory_icu') || 0);
+      document.getElementById('example_comprehensive').textContent = comprehensive + '만원';
+    }
+
+    // 입력값 가져오기 헬퍼 함수
+    function getValue(fieldId) {
+      const field = document.getElementById(fieldId);
+      return field ? parseInt(field.value) || 0 : 0;
+    }
+
+    function getTextValue(fieldId) {
+      const field = document.getElementById(fieldId);
+      return field ? field.value || '' : '';
+    }
+
+    function getSelectValue(fieldId) {
+      const field = document.getElementById(fieldId);
+      return field ? field.value || '' : '';
+    }
+
+    // 분석 저장
+    function saveAnalysis() {
+      const customerName = document.getElementById('customerName').value.trim();
+      
+      if (!customerName) {
+        alert('고객명을 입력해주세요.');
+        return;
+      }
+      
+      // 모든 입력값 수집
+      const analysisData = {
+        customerName: customerName,
+        timestamp: new Date().toISOString(),
+        data: {
+          // 암 보장
+          cancer_general: getValue('cancer_general'),
+          cancer_integrated: getValue('cancer_integrated'),
+          cancer_metastatic: getValue('cancer_metastatic'),
+          cancer_treatment: getValue('cancer_treatment'),
+          cancer_treatment_non: getValue('cancer_treatment_non'),
+          cancer_targeted: getValue('cancer_targeted'),
+          cancer_heavy_ion: getValue('cancer_heavy_ion'),
+          cancer_surgery: getValue('cancer_surgery'),
+          cancer_robot_surgery: getValue('cancer_robot_surgery'),
+          cancer_surgery_5type: getValue('cancer_surgery_5type'),
+          
+          // 뇌 관련
+          brain_diagnosis: getValue('brain_diagnosis'),
+          stroke_diagnosis: getValue('stroke_diagnosis'),
+          
+          // 심장 관련
+          heart_ischemic_diagnosis: getValue('heart_ischemic_diagnosis'),
+          heart_infarction_diagnosis: getValue('heart_infarction_diagnosis'),
+          
+          // 치료비
+          major2_treatment: getValue('major2_treatment'),
+          circulatory_surgery: getValue('circulatory_surgery'),
+          circulatory_thrombectomy: getValue('circulatory_thrombectomy'),
+          circulatory_thrombolysis: getValue('circulatory_thrombolysis'),
+          circulatory_icu: getValue('circulatory_icu'),
+          thrombectomy_treatment: getValue('thrombectomy_treatment'),
+          thrombolysis_treatment: getValue('thrombolysis_treatment'),
+          brain_heart_surgery: getValue('brain_heart_surgery'),
+          surgery_3type: getValue('surgery_3type'),
+          surgery_5type: getValue('surgery_5type'),
+          disease_124_surgery: getValue('disease_124_surgery'),
+          organ_7_surgery: getValue('organ_7_surgery'),
+          
+          // 5대 필수 보험
+          medical_insurance: getSelectValue('medical_insurance'),
+          fire_insurance: getSelectValue('fire_insurance'),
+          driver_insurance: getSelectValue('driver_insurance'),
+          liability_insurance: getSelectValue('liability_insurance'),
+          caregiver_insurance: getSelectValue('caregiver_insurance'),
+          
+          // 한도
+          disease_inpatient_limit: getTextValue('disease_inpatient_limit'),
+          disease_outpatient_limit: getTextValue('disease_outpatient_limit'),
+          injury_inpatient_limit: getTextValue('injury_inpatient_limit'),
+          injury_outpatient_limit: getTextValue('injury_outpatient_limit'),
+          criminal_settlement: getTextValue('criminal_settlement'),
+          lawyer_fee: getTextValue('lawyer_fee'),
+          
+          // 보험료
+          insurance_premium: getValue('insurance_premium')
+        }
+      };
+      
+      // 로컬 스토리지에 저장
+      const savedAnalyses = JSON.parse(localStorage.getItem('coverageAnalyses') || '[]');
+      const analysisId = Date.now().toString();
+      analysisData.id = analysisId;
+      
+      savedAnalyses.push(analysisData);
+      localStorage.setItem('coverageAnalyses', JSON.stringify(savedAnalyses));
+      
+      // 이미지 생성 및 다운로드
+      generateAndDownloadImage(analysisData);
+      
+      alert(`${customerName}님의 보장분석이 저장되었습니다.`);
+    }
+
+    // 이미지 생성 및 다운로드
+    function generateAndDownloadImage(analysisData) {
+      // Canvas 생성
+      const canvas = document.createElement('canvas');
+      canvas.width = 800;
+      canvas.height = 1200;
+      const ctx = canvas.getContext('2d');
+      
+      // 배경색
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // 헤더
+      ctx.fillStyle = '#ff7f00';
+      ctx.font = 'bold 24px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${analysisData.customerName}님의 한 장 요약 보장분석`, canvas.width/2, 50);
+      
+      let y = 100;
+      
+      // 암 보장 섹션
+      drawSection(ctx, '암 보장', y);
+      y += 40;
+      
+      const cancerItems = [
+        ['일반암진단비', analysisData.data.cancer_general],
+        ['통합암진단비', analysisData.data.cancer_integrated],
+        ['전이암진단비', analysisData.data.cancer_metastatic],
+        ['암특정치료비', analysisData.data.cancer_treatment],
+        ['암특정치료비(비급여)', analysisData.data.cancer_treatment_non],
+        ['표적항암치료비', analysisData.data.cancer_targeted],
+        ['중입자치료비', analysisData.data.cancer_heavy_ion],
+        ['암수술비', analysisData.data.cancer_surgery],
+        ['다빈치로봇수술비', analysisData.data.cancer_robot_surgery],
+        ['1-5종수술비(5종)', analysisData.data.cancer_surgery_5type]
+      ];
+      
+      cancerItems.forEach(([label, value]) => {
+        drawItem(ctx, label, value, y);
+        y += 25;
+      });
+      
+      y += 20;
+      
+      // 2대 중대질환 섹션
+      drawSection(ctx, '2대 중대질환', y);
+      y += 40;
+      
+      const majorDiseaseItems = [
+        ['뇌혈관질환 진단비', analysisData.data.brain_diagnosis],
+        ['뇌졸중 진단비', analysisData.data.stroke_diagnosis],
+        ['허혈성심장질환 진단비', analysisData.data.heart_ischemic_diagnosis],
+        ['급성심근경색 진단비', analysisData.data.heart_infarction_diagnosis],
+        ['2대특정치료비', analysisData.data.major2_treatment],
+        ['주요순환계(수술)', analysisData.data.circulatory_surgery],
+        ['주요순환계(혈전제거)', analysisData.data.circulatory_thrombectomy],
+        ['주요순환계(혈전용해)', analysisData.data.circulatory_thrombolysis],
+        ['주요순환계(중환자실)', analysisData.data.circulatory_icu]
+      ];
+      
+      majorDiseaseItems.forEach(([label, value]) => {
+        drawItem(ctx, label, value, y);
+        y += 25;
+      });
+      
+      y += 20;
+      
+      // 5대 필수 보험
+      drawSection(ctx, '5대 필수 보험', y);
+      y += 40;
+      
+      const insuranceItems = [
+        ['실손의료비', analysisData.data.medical_insurance],
+        ['화재보험', analysisData.data.fire_insurance],
+        ['운전자', analysisData.data.driver_insurance],
+        ['일상생활배상책임', analysisData.data.liability_insurance],
+        ['간병인일당', analysisData.data.caregiver_insurance]
+      ];
+      
+      insuranceItems.forEach(([label, value]) => {
+        drawItem(ctx, label, value, y);
+        y += 25;
+      });
+      
+      // 보험료
+      y += 20;
+      drawItem(ctx, '월 보험료', analysisData.data.insurance_premium + '만원', y);
+      
+      // 푸터
+      ctx.fillStyle = '#666666';
+      ctx.font = '12px Arial';
+      ctx.textAlign = 'center';
+      const date = new Date(analysisData.timestamp).toLocaleString('ko-KR');
+      ctx.fillText(`생성일시: ${date}`, canvas.width/2, canvas.height - 20);
+      
+      // 이미지 다운로드
+      const link = document.createElement('a');
+      link.download = `${analysisData.customerName}_보장분석_${new Date().toISOString().slice(0,10)}.png`;
+      link.href = canvas.toDataURL();
+      link.click();
+    }
+    
+    function drawSection(ctx, title, y) {
+      ctx.fillStyle = '#ff7f00';
+      ctx.fillRect(50, y - 20, 700, 30);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 16px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(title, 400, y);
+    }
+    
+    function drawItem(ctx, label, value, y) {
+      // 라벨 배경
+      ctx.fillStyle = '#f8f9fa';
+      ctx.fillRect(50, y - 15, 500, 20);
+      ctx.strokeStyle = '#e6e6e6';
+      ctx.strokeRect(50, y - 15, 500, 20);
+      
+      // 값 배경
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(550, y - 15, 200, 20);
+      ctx.strokeRect(550, y - 15, 200, 20);
+      
+      // 텍스트
+      ctx.fillStyle = '#333333';
+      ctx.font = '14px Arial';
+      ctx.textAlign = 'left';
+      ctx.fillText(label, 60, y);
+      
+      ctx.fillStyle = '#ff7f00';
+      ctx.font = 'bold 14px Arial';
+      ctx.textAlign = 'center';
+      const displayValue = (typeof value === 'number' && value > 0) ? value + '만원' : 
+                          (value && value !== '' && value !== '0') ? value : '-';
+      ctx.fillText(displayValue, 650, y);
+    }
+
+    // 저장된 분석 불러오기
+    function loadSavedAnalyses() {
+      const savedAnalyses = JSON.parse(localStorage.getItem('coverageAnalyses') || '[]');
+      const listElement = document.getElementById('savedAnalysisList');
+      
+      if (savedAnalyses.length === 0) {
+        listElement.innerHTML = '<div class="hint" style="text-align:center; color:#666; padding:20px;">저장된 분석이 없습니다.</div>';
+        return;
+      }
+      
+      // 최신 순으로 정렬
+      savedAnalyses.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      
+      listElement.innerHTML = savedAnalyses.map(analysis => {
+        const date = new Date(analysis.timestamp).toLocaleString('ko-KR');
+        return `
+          <div class="saved-item" onclick="loadAnalysis('${analysis.id}')">
+            <div class="saved-info">
+              <div class="saved-name">${analysis.customerName}</div>
+              <div class="saved-date">${date}</div>
+            </div>
+            <button class="delete-btn" onclick="event.stopPropagation(); deleteAnalysis('${analysis.id}')">삭제</button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 특정 분석 불러오기
+    function loadAnalysis(analysisId) {
+      const savedAnalyses = JSON.parse(localStorage.getItem('coverageAnalyses') || '[]');
+      const analysis = savedAnalyses.find(a => a.id === analysisId);
+      
+      if (!analysis) {
+        alert('해당 분석을 찾을 수 없습니다.');
+        return;
+      }
+      
+      // 입력 화면으로 이동
+      showInputScreen();
+      
+      // 모든 값 설정
+      setTimeout(() => {
+        document.getElementById('customerName').value = analysis.customerName;
+        
+        Object.keys(analysis.data).forEach(key => {
+          const field = document.getElementById(key);
+          if (field) {
+            field.value = analysis.data[key] || '';
+          }
+        });
+        
+        // 예시 업데이트
+        updateExamples();
+        
+        alert(`${analysis.customerName}님의 분석을 불러왔습니다.`);
+      }, 100);
+    }
+
+    // 분석 삭제
+    function deleteAnalysis(analysisId) {
+      if (!confirm('정말로 삭제하시겠습니까?')) {
+        return;
+      }
+      
+      const savedAnalyses = JSON.parse(localStorage.getItem('coverageAnalyses') || '[]');
+      const filteredAnalyses = savedAnalyses.filter(a => a.id !== analysisId);
+      
+      localStorage.setItem('coverageAnalyses', JSON.stringify(filteredAnalyses));
+      loadSavedAnalyses();
+      
+      alert('삭제되었습니다.');
+    }
+  </script>
 </head>
 <body>
   <div class="header-fixed">
     <div></div>
     <div class="header-center">
-      <div class="logo-container" id="logoBtn">
+      <div class="logo-container" onclick="goHome()">
         <div class="logo-main">보장분석</div>
       </div>
     </div>
@@ -522,12 +903,12 @@
     <div class="card">
       <h2 style="margin-bottom:1.5rem; text-align:center;">메뉴 선택</h2>
       
-      <button class="menu-btn" id="inputMenuBtn">
+      <button class="menu-btn" onclick="showInputScreen()">
         <span style="display:block; margin-bottom:4px;">입력하기</span>
         <span style="font-size:14px; opacity:0.8;">새로운 보장분석 작성</span>
       </button>
       
-      <button class="menu-btn" id="loadMenuBtn">
+      <button class="menu-btn" onclick="showLoadScreen()">
         <span style="display:block; margin-bottom:4px;">불러오기</span>
         <span style="font-size:14px; opacity:0.8;">저장된 분석 불러오기</span>
       </button>
