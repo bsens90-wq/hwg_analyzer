@@ -509,35 +509,48 @@
 
     // 화면 전환 함수들을 먼저 정의
     function hideAllScreens() {
-      document.getElementById("menuScreen").style.display = "none";
-      document.getElementById("inputScreen").style.display = "none";
-      document.getElementById("loadScreen").style.display = "none";
+      const menuScreen = document.getElementById("menuScreen");
+      const inputScreen = document.getElementById("inputScreen");
+      const loadScreen = document.getElementById("loadScreen");
+      
+      if (menuScreen) menuScreen.style.display = "none";
+      if (inputScreen) inputScreen.style.display = "none";
+      if (loadScreen) loadScreen.style.display = "none";
     }
 
     function showInputScreen() {
       hideAllScreens();
-      document.getElementById("inputScreen").style.display = "flex";
-      currentScreen = 'input';
-      
-      setTimeout(() => {
-        addInputListeners();
-        updateExamples();
-      }, 100);
+      const inputScreen = document.getElementById("inputScreen");
+      if (inputScreen) {
+        inputScreen.style.display = "flex";
+        currentScreen = 'input';
+        
+        setTimeout(() => {
+          addInputListeners();
+          updateExamples();
+        }, 100);
+      }
     }
 
     function showLoadScreen() {
       hideAllScreens();
-      document.getElementById("loadScreen").style.display = "flex";
-      currentScreen = 'load';
-      setTimeout(() => {
-        loadSavedAnalyses();
-      }, 100);
+      const loadScreen = document.getElementById("loadScreen");
+      if (loadScreen) {
+        loadScreen.style.display = "flex";
+        currentScreen = 'load';
+        setTimeout(() => {
+          loadSavedAnalyses();
+        }, 100);
+      }
     }
 
     function goHome() {
       hideAllScreens();
-      document.getElementById("menuScreen").style.display = "flex";
-      currentScreen = 'menu';
+      const menuScreen = document.getElementById("menuScreen");
+      if (menuScreen) {
+        menuScreen.style.display = "flex";
+        currentScreen = 'menu';
+      }
     }
 
     // 입력 필드 이벤트 리스너
@@ -550,31 +563,39 @@
 
     // 예시 계산 업데이트
     function updateExamples() {
+      // 요소 존재 확인
+      const robotSurgeryEl = document.getElementById('example_robot_surgery');
+      const metastaticTargetedEl = document.getElementById('example_metastatic_targeted');
+      const heavyIonEl = document.getElementById('example_heavy_ion');
+      const stentEl = document.getElementById('example_stent');
+      const stentThrombolysisEl = document.getElementById('example_stent_thrombolysis');
+      const comprehensiveEl = document.getElementById('example_comprehensive');
+      
       // 다빈치로봇수술 = 암수술비 + 다빈치로봇수술비
       const robotSurgery = (getValue('cancer_surgery') || 0) + (getValue('cancer_robot_surgery') || 0);
-      document.getElementById('example_robot_surgery').textContent = robotSurgery + '만원';
+      if (robotSurgeryEl) robotSurgeryEl.textContent = robotSurgery + '만원';
       
       // 1개 부위 전이+표적 = 전이암진단비 + 표적항암치료비
       const metastaticTargeted = (getValue('cancer_metastatic') || 0) + (getValue('cancer_targeted') || 0);
-      document.getElementById('example_metastatic_targeted').textContent = metastaticTargeted + '만원';
+      if (metastaticTargetedEl) metastaticTargetedEl.textContent = metastaticTargeted + '만원';
       
       // 중입자치료 = 중입자치료비
       const heavyIon = getValue('cancer_heavy_ion') || 0;
-      document.getElementById('example_heavy_ion').textContent = heavyIon + '만원';
+      if (heavyIonEl) heavyIonEl.textContent = heavyIon + '만원';
       
       // 스텐트 = 주요순환계(수술)
       const stent = getValue('circulatory_surgery') || 0;
-      document.getElementById('example_stent').textContent = stent + '만원';
+      if (stentEl) stentEl.textContent = stent + '만원';
       
       // 스텐트+혈전용해 = 주요순환계(수술) + 주요순환계(혈전용해)
       const stentThrombolysis = (getValue('circulatory_surgery') || 0) + (getValue('circulatory_thrombolysis') || 0);
-      document.getElementById('example_stent_thrombolysis').textContent = stentThrombolysis + '만원';
+      if (stentThrombolysisEl) stentThrombolysisEl.textContent = stentThrombolysis + '만원';
       
       // 혈전용해+혈전제거+중환자실 = 주요순환계(혈전용해) + 주요순환계(혈전제거) + 주요순환계(중환자실)
       const comprehensive = (getValue('circulatory_thrombolysis') || 0) + 
                            (getValue('circulatory_thrombectomy') || 0) + 
                            (getValue('circulatory_icu') || 0);
-      document.getElementById('example_comprehensive').textContent = comprehensive + '만원';
+      if (comprehensiveEl) comprehensiveEl.textContent = comprehensive + '만원';
     }
 
     // 입력값 가져오기 헬퍼 함수
@@ -816,6 +837,11 @@
     function loadSavedAnalyses() {
       const savedAnalyses = JSON.parse(localStorage.getItem('coverageAnalyses') || '[]');
       const listElement = document.getElementById('savedAnalysisList');
+      
+      if (!listElement) {
+        console.error('savedAnalysisList 요소를 찾을 수 없습니다.');
+        return;
+      }
       
       if (savedAnalyses.length === 0) {
         listElement.innerHTML = '<div class="hint" style="text-align:center; color:#666; padding:20px;">저장된 분석이 없습니다.</div>';
