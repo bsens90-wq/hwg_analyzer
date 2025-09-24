@@ -1,352 +1,4 @@
-// 계산 필드 설정 - 엑셀 수식 및 조건부 서식 구현
-function setupFormCalculations() {
-  // 모든 입력 필드에 이벤트 리스너 추가
-  const allInputs = document.querySelectorAll('.excel-table input[type="number"]');
-  allInputs.forEach(input => {
-    input.addEventListener('input', function() {
-      updateCalculatedFields();
-      applyConditionalFormatting();
-    });
-    input.addEventListener('change', function() {
-      updateCalculatedFields();
-      applyConditionalFormatting();
-    });
-  });
-  
-  // 초기 조건부 서식 적용
-  applyConditionalFormatting();
-}
-
-// 계산 필드 업데이트 (G16 기반 계산)
-function updateCalculatedFields() {
-  // G16 값을 기반으로 계산된 필드들 업데이트
-  const g16Value = parseFloat(document.getElementById('G16')?.value) || 0;
-  
-  // G17 = G16 (주요순환계 혈전제거)
-  const g17Input = document.getElementById('G17');
-  if (g17Input) g17Input.value = g16Value;
-  
-  // G18 = G16 (주요순환계 혈전용해)
-  const g18Input = document.getElementById('G18');
-  if (g18Input) g18Input.value = g16Value;
-  
-  // G19 = G16/2 (주요순환계 중환자실)
-  const g19Input = document.getElementById('G19');
-  if (g19Input) g19Input.value = Math.floor(g16Value / 2);
-}
-
-// 막대그래프 업데이트 함수
-function updateBarChart(barId, value) {
-  const barFill = document.getElementById(`bar-${barId}`);
-  
-  if (!barFill) return;
-  
-  // 값에 따른 색상 및 너비 설정
-  let color, width;
-  
-  if (value >= 100) {
-    color = 'bar-green';
-    width = '100%';
-  } else if (value >= 30) {
-    color = 'bar-yellow';
-    width = `${Math.min(value, 100)}%`;
-  } else if (value > 0) {
-    color = 'bar-red';
-    width = `${Math.max(value, 10)}%`; // 최소 10% 너비
-  } else {
-    color = '';
-    width = '0%';
-  }
-  
-  // 기존 색상 클래스 제거
-  barFill.classList.remove('bar-green', 'bar-yellow', 'bar-red');
-  
-  // 새로운 색상 및 너비 적용
-  if (color) barFill.classList.add(color);
-  barFill.style.width = width;
-}
-
-// 엑셀 조건부 서식 적용 함수
-function applyConditionalFormatting() {
-  // B5:B14 막대그래프 (암 관련)
-  const cancerInputs = ['C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14'];
-  cancerInputs.forEach((inputId, index) => {
-    const input = document.getElementById(inputId);
-    const value = parseFloat(input?.value) || 0;
-    const barId = `B${index + 5}`;
-    updateBarChart(barId, value);
-  });
-  
-  // F5:F24 막대그래프 (뇌혈관/심장 관련)
-  const heartInputs = ['G5', 'G6', 'G7', 'G8', 'G9', 'G10', 'G11', 'G12', 'G13', 'G14', 
-                      'G15', 'G16', 'G17', 'G18', 'G19', 'G20', 'G21', 'G22', 'G23', 'G24'];
-  heartInputs.forEach((inputId, index) => {
-    let value;
-    if (inputId === 'G17' || inputId === 'G18') {
-      value = parseFloat(document.getElementById('G16')?.value) || 0;
-    } else if (inputId === 'G19') {
-      value = Math.floor((parseFloat(document.getElementById('G16')?.value) || 0) / 2);
-    } else {
-      const input = document.getElementById(inputId);
-      value = parseFloat(input?.value) || 0;
-    }
-    const barId = `F${index + 5}`;
-    updateBarChart(barId, value);
-  });
-  
-  // 셀 채우기 서식 적용
-  applyCellFillFormatting();
-}
-
-// 셀 채우기 서식 적용
-function applyCellFillFormatting() {
-  // J5:J8, J16:J18 - 1보다 크면 녹색, 작으면 빨간색
-  const greaterThanOneIds = ['J5', 'J6', 'J7', 'J8', 'J16', 'J17', 'J18'];
-  greaterThanOneIds.forEach(id => {
-    const input = document.getElementById(id);
-    const cell = input?.parentNode;
-    if (!input || !cell) return;
-    
-    const value = parseFloat(input.value) || 0;
-    
-    // 기존 클래스 제거
-    cell.classList.remove('fill-green', 'fill-red');
-    
-    // 조건에 따른 클래스 추가
-    if (value > 1) {
-      cell.classList.add('fill-green');
-    } else {
-      cell.classList.add('fill-red');
-    }
-  });
-  
-  // I21, J21, I24, J24 - 1보다 크면 녹색, 작으면 빨간색
-  const specialIds = ['I21', 'J21', 'I24', 'J24'];
-  specialIds.forEach(id => {
-    const input = document.getElementById(id);
-    const cell = input?.parentNode;
-    if (!input || !cell) return;
-    
-    const value = parseFloat(input.value) || 0;
-    
-    // 기존 클래스 제거
-    cell.classList.remove('fill-green', 'fill-red');
-    
-    // 조건에 따른 클래스 추가
-    if (value > 1) {
-      cell.classList.add('fill-green');
-    } else {
-      cell.classList.add('fill-red');
-    }
-  });
-  
-  // J11 - 20000 이상이면 녹색, 10000 이상이면 겨자색, 10000 미만이면 빨간색
-  const j11Input = document.getElementById('J11');
-  const j11Cell = j11Input?.parentNode;
-  if (j11Input && j11Cell) {
-    const value = parseFloat(j11Input.value) || 0;
-    
-    // 기존 클래스 제거
-    j11Cell.classList.remove('fill-green', 'fill-yellow', 'fill-red');
-    
-    // 조건에 따른 클래스 추가
-    if (value >= 20000) {
-      j11Cell.classList.add('fill-green');
-    } else if (value >= 10000) {
-      j11Cell.classList.add('fill-yellow');
-    } else {
-      j11Cell.classList.add('fill-red');
-    }
-  }
-  
-  // J12 - 5000 이상이면 녹색, 3000 이상이면 겨자색, 3000 미만이면 빨간색
-  const j12Input = document.getElementById('J12');
-  const j12Cell = j12Input?.parentNode;
-  if (j12Input && j12Cell) {
-    const value = parseFloat(j12Input.value) || 0;
-    
-    // 기존 클래스 제거
-    j12Cell.classList.remove('fill-green', 'fill-yellow', 'fill-red');
-    
-    // 조건에 따른 클래스 추가
-    if (value >= 5000) {
-      j12Cell.classList.add('fill-green');
-    } else if (value >= 3000) {
-      j12Cell.classList.add('fill-yellow');
-    } else {
-      j12Cell.classList.add('fill-red');
-    }
-  }
-}기 조건부 서식 적용
-  applyConditionalFormatting();
-}
-
-// 계산 필드 업데이트 (G16 기반 계산)
-function updateCalculatedFields() {
-  // G16 값을 기반으로 F16~F19 막대그래프 업데이트
-  const g16Value = parseFloat(document.getElementById('G16')?.value) || 0;
-  
-  // F17 = F16 (G17 = G16)
-  updateBarChart('F17', g16Value);
-  document.getElementById('text-F17').textContent = g16Value || '-';
-  
-  // F18 = F16 (G18 = G16)
-  updateBarChart('F18', g16Value);
-  document.getElementById('text-F18').textContent = g16Value || '-';
-  
-  // F19 = F16/2 (G19 = G16/2)
-  const g19Value = Math.floor(g16Value / 2);
-  updateBarChart('F19', g19Value);
-  document.getElementById('text-F19').textContent = g19Value || '-';
-}
-
-// 막대그래프 업데이트 함수
-function updateBarChart(barId, value) {
-  const barFill = document.getElementById(`bar-${barId}`);
-  const barText = document.getElementById(`text-${barId}`);
-  
-  if (!barFill || !barText) return;
-  
-  // 값에 따른 색상 및 너비 설정
-  let color, width;
-  
-  if (value >= 100) {
-    color = 'bar-green';
-    width = '100%';
-  } else if (value >= 30) {
-    color = 'bar-yellow';
-    width = `${Math.min(value, 100)}%`;
-  } else if (value > 0) {
-    color = 'bar-red';
-    width = `${Math.max(value, 10)}%`; // 최소 10% 너비
-  } else {
-    color = '';
-    width = '0%';
-  }
-  
-  // 기존 색상 클래스 제거
-  barFill.classList.remove('bar-green', 'bar-yellow', 'bar-red');
-  
-  // 새로운 색상 및 너비 적용
-  if (color) barFill.classList.add(color);
-  barFill.style.width = width;
-  
-  // 텍스트 업데이트
-  barText.textContent = value > 0 ? `${value}%` : '-';
-}
-
-// 엑셀 조건부 서식 적용 함수
-function applyConditionalFormatting() {
-  // B5:B14 막대그래프 (암 관련)
-  const cancerInputs = ['C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14'];
-  cancerInputs.forEach((inputId, index) => {
-    const input = document.getElementById(inputId);
-    const value = parseFloat(input?.value) || 0;
-    const barId = `B${index + 5}`;
-    updateBarChart(barId, value);
-  });
-  
-  // F5:F24 막대그래프 (뇌혈관/심장 관련)
-  const heartInputs = ['G5', 'G6', 'G7', 'G8', 'G9', 'G10', 'G11', 'G12', 'G13', 'G14', 
-                      'G15', 'G16', 'G17', 'G18', 'G19', 'G20', 'G21', 'G22', 'G23', 'G24'];
-  heartInputs.forEach((inputId, index) => {
-    let value;
-    if (inputId === 'G17' || inputId === 'G18') {
-      value = parseFloat(document.getElementById('G16')?.value) || 0;
-    } else if (inputId === 'G19') {
-      value = Math.floor((parseFloat(document.getElementById('G16')?.value) || 0) / 2);
-    } else {
-      const input = document.getElementById(inputId);
-      value = parseFloat(input?.value) || 0;
-    }
-    const barId = `F${index + 5}`;
-    updateBarChart(barId, value);
-  });
-  
-  // 셀 채우기 서식 적용
-  applyCellFillFormatting();
-}
-
-// 셀 채우기 서식 적용
-function applyCellFillFormatting() {
-  // J5:J8, J16:J18 - 1보다 크면 녹색, 작으면 빨간색
-  const greaterThanOneIds = ['J5', 'J6', 'J7', 'J8', 'J16', 'J17', 'J18'];
-  greaterThanOneIds.forEach(id => {
-    const input = document.getElementById(id);
-    const cell = input?.parentNode;
-    if (!input || !cell) return;
-    
-    const value = parseFloat(input.value) || 0;
-    
-    // 기존 클래스 제거
-    cell.classList.remove('fill-green', 'fill-red');
-    
-    // 조건에 따른 클래스 추가
-    if (value > 1) {
-      cell.classList.add('fill-green');
-    } else {
-      cell.classList.add('fill-red');
-    }
-  });
-  
-  // I21, J21, I24, J24 - 1보다 크면 녹색, 작으면 빨간색
-  const specialIds = ['I21', 'J21', 'I24', 'J24'];
-  specialIds.forEach(id => {
-    const input = document.getElementById(id);
-    const cell = input?.parentNode;
-    if (!input || !cell) return;
-    
-    const value = parseFloat(input.value) || 0;
-    
-    // 기존 클래스 제거
-    cell.classList.remove('fill-green', 'fill-red');
-    
-    // 조건에 따른 클래스 추가
-    if (value > 1) {
-      cell.classList.add('fill-green');
-    } else {
-      cell.classList.add('fill-red');
-    }
-  });
-  
-  // J11 - 20000 이상이면 녹색, 10000 이상이면 겨자색, 10000 미만이면 빨간색
-  const j11Input = document.getElementById('J11');
-  const j11Cell = j11Input?.parentNode;
-  if (j11Input && j11Cell) {
-    const value = parseFloat(j11Input.value) || 0;
-    
-    // 기존 클래스 제거
-    j11Cell.classList.remove('fill-green', 'fill-yellow', 'fill-red');
-    
-    // 조건에 따른 클래스 추가
-    if (value >= 20000) {
-      j11Cell.classList.add('fill-green');
-    } else if (value >= 10000) {
-      j11Cell.classList.add('fill-yellow');
-    } else {
-      j11Cell.classList.add('fill-red');
-    }
-  }
-  
-  // J12 - 5000 이상이면 녹색, 3000 이상이면 겨자색, 3000 미만이면 빨간색
-  const j12Input = document.getElementById('J12');
-  const j12Cell = j12Input?.parentNode;
-  if (j12Input && j12Cell) {
-    const value = parseFloat(j12Input.value) || 0;
-    
-    // 기존 클래스 제거
-    j12Cell.classList.remove('fill-green', 'fill-yellow', 'fill-red');
-    
-    // 조건에 따른 클래스 추가
-    if (value >= 5000) {
-      j12Cell.classList.add('fill-green');
-    } else if (value >= 3000) {
-      j12Cell.classList.add('fill-yellow');
-    } else {
-      j12Cell.classList.add('fill-red');
-    }
-  }
-}<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
@@ -1123,7 +775,171 @@ function setupFormCalculations() {
     });
   });
   
-  // 초
+  // 초기 조건부 서식 적용
+  applyConditionalFormatting();
+}
+
+// 계산 필드 업데이트 (G16 기반 계산)
+function updateCalculatedFields() {
+  // G16 값을 기반으로 계산된 필드들 업데이트
+  const g16Value = parseFloat(document.getElementById('G16')?.value) || 0;
+  
+  // G17 = G16 (주요순환계 혈전제거)
+  const g17Input = document.getElementById('G17');
+  if (g17Input) g17Input.value = g16Value;
+  
+  // G18 = G16 (주요순환계 혈전용해)
+  const g18Input = document.getElementById('G18');
+  if (g18Input) g18Input.value = g16Value;
+  
+  // G19 = G16/2 (주요순환계 중환자실)
+  const g19Input = document.getElementById('G19');
+  if (g19Input) g19Input.value = Math.floor(g16Value / 2);
+}
+
+// 막대그래프 업데이트 함수
+function updateBarChart(barId, value) {
+  const barFill = document.getElementById(`bar-${barId}`);
+  
+  if (!barFill) return;
+  
+  // 값에 따른 색상 및 너비 설정
+  let color, width;
+  
+  if (value >= 100) {
+    color = 'bar-green';
+    width = '100%';
+  } else if (value >= 30) {
+    color = 'bar-yellow';
+    width = `${Math.min(value, 100)}%`;
+  } else if (value > 0) {
+    color = 'bar-red';
+    width = `${Math.max(value, 10)}%`; // 최소 10% 너비
+  } else {
+    color = '';
+    width = '0%';
+  }
+  
+  // 기존 색상 클래스 제거
+  barFill.classList.remove('bar-green', 'bar-yellow', 'bar-red');
+  
+  // 새로운 색상 및 너비 적용
+  if (color) barFill.classList.add(color);
+  barFill.style.width = width;
+}
+
+// 엑셀 조건부 서식 적용 함수
+function applyConditionalFormatting() {
+  // B5:B14 막대그래프 (암 관련)
+  const cancerInputs = ['C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14'];
+  cancerInputs.forEach((inputId, index) => {
+    const input = document.getElementById(inputId);
+    const value = parseFloat(input?.value) || 0;
+    const barId = `B${index + 5}`;
+    updateBarChart(barId, value);
+  });
+  
+  // F5:F24 막대그래프 (뇌혈관/심장 관련)
+  const heartInputs = ['G5', 'G6', 'G7', 'G8', 'G9', 'G10', 'G11', 'G12', 'G13', 'G14', 
+                      'G15', 'G16', 'G17', 'G18', 'G19', 'G20', 'G21', 'G22', 'G23', 'G24'];
+  heartInputs.forEach((inputId, index) => {
+    let value;
+    if (inputId === 'G17' || inputId === 'G18') {
+      value = parseFloat(document.getElementById('G16')?.value) || 0;
+    } else if (inputId === 'G19') {
+      value = Math.floor((parseFloat(document.getElementById('G16')?.value) || 0) / 2);
+    } else {
+      const input = document.getElementById(inputId);
+      value = parseFloat(input?.value) || 0;
+    }
+    const barId = `F${index + 5}`;
+    updateBarChart(barId, value);
+  });
+  
+  // 셀 채우기 서식 적용
+  applyCellFillFormatting();
+}
+
+// 셀 채우기 서식 적용
+function applyCellFillFormatting() {
+  // J5:J8, J16:J18 - 1보다 크면 녹색, 작으면 빨간색
+  const greaterThanOneIds = ['J5', 'J6', 'J7', 'J8', 'J16', 'J17', 'J18'];
+  greaterThanOneIds.forEach(id => {
+    const input = document.getElementById(id);
+    const cell = input?.parentNode;
+    if (!input || !cell) return;
+    
+    const value = parseFloat(input.value) || 0;
+    
+    // 기존 클래스 제거
+    cell.classList.remove('fill-green', 'fill-red');
+    
+    // 조건에 따른 클래스 추가
+    if (value > 1) {
+      cell.classList.add('fill-green');
+    } else {
+      cell.classList.add('fill-red');
+    }
+  });
+  
+  // I21, J21, I24, J24 - 1보다 크면 녹색, 작으면 빨간색
+  const specialIds = ['I21', 'J21', 'I24', 'J24'];
+  specialIds.forEach(id => {
+    const input = document.getElementById(id);
+    const cell = input?.parentNode;
+    if (!input || !cell) return;
+    
+    const value = parseFloat(input.value) || 0;
+    
+    // 기존 클래스 제거
+    cell.classList.remove('fill-green', 'fill-red');
+    
+    // 조건에 따른 클래스 추가
+    if (value > 1) {
+      cell.classList.add('fill-green');
+    } else {
+      cell.classList.add('fill-red');
+    }
+  });
+  
+  // J11 - 20000 이상이면 녹색, 10000 이상이면 겨자색, 10000 미만이면 빨간색
+  const j11Input = document.getElementById('J11');
+  const j11Cell = j11Input?.parentNode;
+  if (j11Input && j11Cell) {
+    const value = parseFloat(j11Input.value) || 0;
+    
+    // 기존 클래스 제거
+    j11Cell.classList.remove('fill-green', 'fill-yellow', 'fill-red');
+    
+    // 조건에 따른 클래스 추가
+    if (value >= 20000) {
+      j11Cell.classList.add('fill-green');
+    } else if (value >= 10000) {
+      j11Cell.classList.add('fill-yellow');
+    } else {
+      j11Cell.classList.add('fill-red');
+    }
+  }
+  
+  // J12 - 5000 이상이면 녹색, 3000 이상이면 겨자색, 3000 미만이면 빨간색
+  const j12Input = document.getElementById('J12');
+  const j12Cell = j12Input?.parentNode;
+  if (j12Input && j12Cell) {
+    const value = parseFloat(j12Input.value) || 0;
+    
+    // 기존 클래스 제거
+    j12Cell.classList.remove('fill-green', 'fill-yellow', 'fill-red');
+    
+    // 조건에 따른 클래스 추가
+    if (value >= 5000) {
+      j12Cell.classList.add('fill-green');
+    } else if (value >= 3000) {
+      j12Cell.classList.add('fill-yellow');
+    } else {
+      j12Cell.classList.add('fill-red');
+    }
+  }
+}
 
 // 데이터 저장 및 이미지 생성
 function saveData() {
