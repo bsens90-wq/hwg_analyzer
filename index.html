@@ -1038,50 +1038,114 @@
 
   // DOM 로드 완료 시 초기화
   document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM 로드 완료');
+    
+    // 모든 화면 요소가 존재하는지 확인
+    const screens = ['menu', 'input', 'load', 'preview'];
+    screens.forEach(function(name) {
+      const element = document.getElementById(name + 'Screen');
+      if (element) {
+        console.log(name + 'Screen 요소 발견됨');
+      } else {
+        console.error(name + 'Screen 요소를 찾을 수 없습니다');
+      }
+    });
+    
+    // 메인 버튼들 존재 확인
+    const mainButtons = ['inputMenuBtn', 'loadMenuBtn'];
+    mainButtons.forEach(function(id) {
+      const element = document.getElementById(id);
+      if (element) {
+        console.log(id + ' 버튼 발견됨');
+      } else {
+        console.error(id + ' 버튼을 찾을 수 없습니다');
+      }
+    });
+    
     initializeApp();
     loadSavedData();
     setupEventListeners();
+    
+    console.log('초기화 완료');
   });
 
   // 앱 초기화
   function initializeApp() {
+    console.log('앱 초기화 시작');
     showScreen('menu');
+    console.log('앱 초기화 완료');
   }
 
   // 이벤트 리스너 설정
   function setupEventListeners() {
     // 메뉴 버튼들
-    document.getElementById('inputMenuBtn').addEventListener('click', function() {
-      showScreen('input');
-    });
-    document.getElementById('loadMenuBtn').addEventListener('click', function() {
-      showScreen('load');
-      displaySavedList();
-    });
+    const inputMenuBtn = document.getElementById('inputMenuBtn');
+    const loadMenuBtn = document.getElementById('loadMenuBtn');
+    
+    if (inputMenuBtn) {
+      inputMenuBtn.addEventListener('click', function() {
+        console.log('입력하기 버튼 클릭됨');
+        showScreen('input');
+      });
+    } else {
+      console.error('inputMenuBtn 요소를 찾을 수 없습니다');
+    }
+    
+    if (loadMenuBtn) {
+      loadMenuBtn.addEventListener('click', function() {
+        console.log('불러오기 버튼 클릭됨');
+        showScreen('load');
+        displaySavedList();
+      });
+    } else {
+      console.error('loadMenuBtn 요소를 찾을 수 없습니다');
+    }
     
     // 뒤로가기 버튼들
-    document.getElementById('backToMenuBtn').addEventListener('click', function() {
-      showScreen('menu');
-    });
-    document.getElementById('backToMenuFromLoadBtn').addEventListener('click', function() {
-      showScreen('menu');
-    });
-    document.getElementById('backToMenuFromPreviewBtn').addEventListener('click', function() {
-      showScreen('menu');
-    });
-    document.getElementById('editDataBtn').addEventListener('click', function() {
-      loadCurrentDataToForm();
-      showScreen('input');
-    });
+    const backToMenuBtn = document.getElementById('backToMenuBtn');
+    const backToMenuFromLoadBtn = document.getElementById('backToMenuFromLoadBtn');
+    const backToMenuFromPreviewBtn = document.getElementById('backToMenuFromPreviewBtn');
+    const editDataBtn = document.getElementById('editDataBtn');
+    
+    if (backToMenuBtn) {
+      backToMenuBtn.addEventListener('click', function() {
+        console.log('뒤로가기 버튼 클릭됨');
+        showScreen('menu');
+      });
+    }
+    
+    if (backToMenuFromLoadBtn) {
+      backToMenuFromLoadBtn.addEventListener('click', function() {
+        console.log('불러오기에서 뒤로가기 버튼 클릭됨');
+        showScreen('menu');
+      });
+    }
+    
+    if (backToMenuFromPreviewBtn) {
+      backToMenuFromPreviewBtn.addEventListener('click', function() {
+        console.log('미리보기에서 뒤로가기 버튼 클릭됨');
+        showScreen('menu');
+      });
+    }
+    
+    if (editDataBtn) {
+      editDataBtn.addEventListener('click', function() {
+        console.log('수정하기 버튼 클릭됨');
+        loadCurrentDataToForm();
+        showScreen('input');
+      });
+    }
     
     // 이미지 업로드 관련
     const imageUploadArea = document.getElementById('imageUploadArea');
     const imageInput = document.getElementById('imageInput');
     
-    imageUploadArea.addEventListener('click', function() {
-      imageInput.click();
-    });
-    imageInput.addEventListener('change', handleImageUpload);
+    if (imageUploadArea && imageInput) {
+      imageUploadArea.addEventListener('click', function() {
+        console.log('이미지 업로드 영역 클릭됨');
+        imageInput.click();
+      });
+      imageInput.addEventListener('change', handleImageUpload);
     
     // 드래그 앤 드롭
     imageUploadArea.addEventListener('dragover', handleDragOver);
@@ -1122,15 +1186,34 @@
 
   // 화면 전환
   function showScreen(screenName) {
+    console.log('화면 전환 요청:', screenName);
+    
     const screens = ['menu', 'input', 'load', 'preview'];
+    let transitionSuccess = false;
+    
     screens.forEach(function(name) {
       const element = document.getElementById(name + 'Screen');
       if (element) {
-        element.classList.toggle('hidden', name !== screenName);
+        const shouldShow = name === screenName;
+        element.classList.toggle('hidden', !shouldShow);
+        
+        if (shouldShow) {
+          console.log(name + 'Screen 표시됨');
+          transitionSuccess = true;
+        } else {
+          console.log(name + 'Screen 숨겨짐');
+        }
+      } else {
+        console.error(name + 'Screen 요소를 찾을 수 없습니다');
       }
     });
     
+    if (!transitionSuccess) {
+      console.error('화면 전환 실패: ' + screenName + 'Screen을 찾을 수 없습니다');
+    }
+    
     if (screenName === 'input' && !currentData.customerName) {
+      console.log('입력 폼 초기화 중...');
       resetInputForm();
     }
   }
