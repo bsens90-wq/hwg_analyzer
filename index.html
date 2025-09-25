@@ -375,6 +375,9 @@
       background: #f0f0f0;
       border-radius: 4px;
       overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     
     .progress-bar {
@@ -395,6 +398,13 @@
       background: #dc3545;
     }
     
+    .no-coverage-x {
+      color: #dc3545;
+      font-weight: 900;
+      font-size: 12px;
+      line-height: 1;
+    }
+    
     .coverage-name.no-coverage {
       color: #dc3545;
     }
@@ -406,6 +416,28 @@
     
     .coverage-value.insufficient-coverage {
       color: #dc3545;
+    }
+    
+    .coverage-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 8px 0;
+      padding: 4px 0;
+      border-bottom: 1px dotted #ccc;
+      font-size: 11px;
+    }
+    
+    .coverage-name {
+      flex: 1;
+      padding-right: 10px;
+    }
+    
+    .coverage-value {
+      font-weight: 600;
+      color: var(--hanwha);
+      min-width: 60px;
+      text-align: right;
     }
     .examples-container {
       display: flex;
@@ -1046,8 +1078,39 @@ function calculateProgressPercentage(currentValue, standardAmount) {
 }
 
 // 진행률 바 생성 (암, 2대중대질환용)
-function generateProgressBar(percentage) {
-  if (percentage === 0) return '';
+function generateProgressBar(percentage, value) {
+  // 값이 0이면 빨간색 X 표시
+  if (value === 0) {
+    return `
+      <div class="coverage-progress">
+        <div class="no-coverage-x">✗</div>
+      </div>
+    `;
+  }
+  
+  let colorClass = 'progress-red';
+  if (percentage >= 100) colorClass = 'progress-green';
+  else if (percentage >= 30) colorClass = 'progress-yellow';
+  
+  const width = Math.min(percentage, 100);
+  
+  return `
+    <div class="coverage-progress">
+      <div class="progress-bar ${colorClass}" style="width: ${width}%"></div>
+    </div>
+  `;
+}
+
+// 5대 필수보험용 진행률 바 생성
+function generateEssentialProgressBar(percentage, value) {
+  // 값이 0이면 빨간색 X 표시
+  if (value === 0) {
+    return `
+      <div class="coverage-progress">
+        <div class="no-coverage-x">✗</div>
+      </div>
+    `;
+  }
   
   let colorClass = 'progress-red';
   if (percentage >= 100) colorClass = 'progress-green';
@@ -1346,8 +1409,8 @@ function generatePreview(data) {
         
         <div class="subsection">
           <div class="subsection-title">운전자</div>
-          ${generateEssentialCoverageItem(data.coverages, 'criminalSettlement', '형사합의금', '만원')}
-          ${generateEssentialCoverageItem(data.coverages, 'lawyerAppointment', '변호사선임비', '만원')}
+          ${generateEssentialCoverageItem(data.coverages, 'criminalSettlement', '형사합의금', '만원', true)}
+          ${generateEssentialCoverageItem(data.coverages, 'lawyerAppointment', '변호사선임비', '만원', true)}
         </div>
         
         <div class="subsection">
@@ -1430,10 +1493,10 @@ function generateCoverageItems(coverages, items) {
     const percentage = calculateProgressPercentage(value, item.standardAmount);
     
     let nameClass = '';
-    if (value === 0) nameClass = 'coverage-name no-coverage';
+    if (value === 0) nameClass = 'no-coverage';
     
     const displayValue = value ? `${value}만원` : '0만원';
-    const progressBar = generateProgressBar(percentage);
+    const progressBar = generateProgressBar(percentage, value);
     
     return `
       <div class="coverage-item">
@@ -1445,8 +1508,8 @@ function generateCoverageItems(coverages, items) {
   }).join('');
 }
 
-// 5대 필수보험 항목 생성 (색상 표시)
-function generateEssentialCoverageItem(coverages, key, name, unit) {
+// 5대 필수보험 항목 생성 (색상 표시 및 진행률 바)
+function generateEssentialCoverageItem(coverages, key, name, unit, isDriverSection = false) {
   const coverage = coverages[key];
   const value = coverage ? parseInt(coverage.value) : 0;
   
@@ -1468,9 +1531,16 @@ function generateEssentialCoverageItem(coverages, key, name, unit) {
   
   const displayValue = value ? `${value}${unit}` : `0${unit}`;
   
+  // 운전자 구역이면 진행률 바 추가
+  let progressBar = '';
+  if (isDriverSection) {
+    progressBar = generateEssentialProgressBar(percentage, value);
+  }
+  
   return `
     <div class="coverage-item">
       <div class="coverage-name ${nameClass}">${name}</div>
+      ${progressBar}
       <div class="coverage-value ${valueClass}">${displayValue}</div>
     </div>
   `;
@@ -1631,141 +1701,178 @@ function downloadImage() {
       <title>보장분석지 - ${currentData.customerName}</title>
       <meta charset="UTF-8">
       <style>
+        * {
+          box-sizing: border-box;
+        }
+        
         body { 
           margin: 0; 
-          padding: 20px; 
+          padding: 15px; 
           font-family: Arial, "Noto Sans KR", sans-serif;
           color: #333;
+          font-size: 11px;
         }
+        
         @media print { 
-          body { margin: 0; padding: 10px; } 
+          body { 
+            margin: 0; 
+            padding: 10px; 
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          
+          .sections-container {
+            break-inside: avoid;
+            page-break-inside: avoid;
+          }
+          
+          .section {
+            break-inside: avoid;
+            page-break-inside: avoid;
+          }
         }
+        
         @page { 
           size: A4 landscape; 
-          margin: 10mm; 
+          margin: 8mm;
         }
         
         .print-header {
           text-align: center;
-          font-size: 20px;
+          font-size: 18px;
           font-weight: 700;
-          margin-bottom: 30px;
+          margin-bottom: 25px;
           color: #ff7f00;
         }
         
         .sections-container {
-          display: flex;
-          gap: 20px;
-          margin-bottom: 30px;
+          display: flex !important;
+          gap: 15px;
+          margin-bottom: 25px;
+          width: 100%;
         }
         
         .section {
           flex: 1;
           border: 1px solid #333;
-          padding: 15px;
+          padding: 12px;
+          min-height: 300px;
         }
         
         .section-title {
           text-align: center;
           font-weight: 700;
-          font-size: 16px;
-          margin-bottom: 15px;
-          padding: 10px;
-          background: #ff7f00;
-          color: white;
-          margin: -15px -15px 15px -15px;
+          font-size: 14px;
+          margin-bottom: 12px;
+          padding: 8px;
+          background: #ff7f00 !important;
+          color: white !important;
+          margin: -12px -12px 12px -12px;
         }
         
         .coverage-item {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin: 8px 0;
-          padding: 4px 0;
+          margin: 6px 0;
+          padding: 3px 0;
           border-bottom: 1px dotted #ccc;
-          font-size: 11px;
+          font-size: 10px;
         }
         
         .coverage-name {
           flex: 1;
-          padding-right: 10px;
+          padding-right: 8px;
         }
         
         .coverage-value {
           font-weight: 600;
           color: #ff7f00;
-          min-width: 60px;
+          min-width: 50px;
           text-align: right;
         }
         
         .coverage-progress {
-          margin: 3px 8px;
-          height: 8px;
+          margin: 2px 6px;
+          height: 6px;
           background: #f0f0f0;
-          border-radius: 4px;
+          border-radius: 3px;
           overflow: hidden;
-          min-width: 60px;
+          min-width: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
         
         .progress-bar {
           height: 100%;
-          border-radius: 4px;
+          border-radius: 3px;
         }
         
-        .progress-green { background: #28a745; }
-        .progress-yellow { background: #ffc107; }
-        .progress-red { background: #dc3545; }
+        .progress-green { background: #28a745 !important; }
+        .progress-yellow { background: #ffc107 !important; }
+        .progress-red { background: #dc3545 !important; }
         
-        .coverage-name.no-coverage { color: #dc3545; }
-        .coverage-value.full-coverage { color: #28a745; font-weight: 700; }
-        .coverage-value.insufficient-coverage { color: #dc3545; }
+        .no-coverage-x {
+          color: #dc3545 !important;
+          font-weight: 900;
+          font-size: 10px;
+          line-height: 1;
+        }
+        
+        .coverage-name.no-coverage { color: #dc3545 !important; }
+        .coverage-value.full-coverage { color: #28a745 !important; font-weight: 700; }
+        .coverage-value.insufficient-coverage { color: #dc3545 !important; }
         
         .subsection {
-          margin-bottom: 20px;
+          margin-bottom: 15px;
           border: 1px solid #ddd;
-          padding: 10px;
+          padding: 8px;
         }
         
         .subsection-title {
           font-weight: 600;
-          font-size: 12px;
-          margin-bottom: 8px;
+          font-size: 10px;
+          margin-bottom: 6px;
           text-align: center;
           background: #f8f9fa;
-          padding: 5px;
+          padding: 4px;
           border: 1px solid #ddd;
-          margin: -10px -10px 10px -10px;
+          margin: -8px -8px 8px -8px;
         }
         
         .examples-container {
-          display: flex;
-          gap: 20px;
-          margin-top: 20px;
+          display: flex !important;
+          gap: 15px;
+          margin-top: 15px;
+          width: 100%;
+          break-inside: avoid;
+          page-break-inside: avoid;
         }
         
         .example-section {
           flex: 1;
           border: 1px solid #333;
-          padding: 10px;
+          padding: 8px;
         }
         
         .example-title {
           font-weight: 700;
-          font-size: 12px;
-          margin-bottom: 10px;
+          font-size: 10px;
+          margin-bottom: 8px;
           text-align: center;
-          padding: 5px;
+          padding: 4px;
           background: #f0f0f0;
           border: 1px solid #333;
-          margin: -10px -10px 10px -10px;
+          margin: -8px -8px 8px -8px;
         }
         
         .example-item {
           display: flex;
           justify-content: space-between;
-          margin: 5px 0;
-          font-size: 10px;
-          padding: 3px 0;
+          margin: 4px 0;
+          font-size: 9px;
+          padding: 2px 0;
           border-bottom: 1px dotted #ccc;
         }
         
@@ -1776,18 +1883,6 @@ function downloadImage() {
         .example-value {
           font-weight: 600;
           color: #ff7f00;
-        }
-        
-        /* 반응형 처리 */
-        @media (max-width: 768px) {
-          .sections-container {
-            flex-direction: column;
-            gap: 10px;
-          }
-          .examples-container {
-            flex-direction: column;
-            gap: 10px;
-          }
         }
       </style>
     </head>
