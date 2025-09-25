@@ -448,7 +448,7 @@
       </div>
       
       <div class="row">
-        <button id="ocrProcessBtn" disabled>자동 스캔 중</button>
+        <button id="ocrProcessBtn" disabled>자동 스캔하기</button>
         <div id="ocrStatus" class="hint"></div>
       </div>
       
@@ -1655,8 +1655,8 @@ async function generateAndDownloadImage(data) {
           
           <div class="subsection">
             <div class="subsection-title">실손의료비</div>
-            ${generateEssentialItemForPrint(data.coverages, 'diseaseHospitalization', '(질병)입원한도', '만원/일', false)}
-            ${generateEssentialItemForPrint(data.coverages, 'injuryHospitalization', '(상해)입원한도', '만원/일', false)}
+            ${generateEssentialItemForPrint(data.coverages, 'diseaseHospitalization', '(질병)입원한도', '만원', false)}
+            ${generateEssentialItemForPrint(data.coverages, 'injuryHospitalization', '(상해)입원한도', '만원', false)}
           </div>
           
           <div class="subsection">
@@ -1670,9 +1670,9 @@ async function generateAndDownloadImage(data) {
             ${data.caregiverOption === 'support' ? 
               '<div class="coverage-item"><div class="coverage-name">외국 간병인 현물지원</div><div class="coverage-value">-</div></div>' :
               `
-              ${generateEssentialItemForPrint(data.coverages, 'nursingHospitalOut', '요양병원 외', '만원/일', false)}
-              ${generateEssentialItemForPrint(data.coverages, 'nursingHospitalIn', '요양병원', '만원/일', false)}
-              ${generateEssentialItemForPrint(data.coverages, 'nursingCareIntegrated', '간호간병통합', '만원/일', false)}
+              ${generateEssentialItemForPrint(data.coverages, 'nursingHospitalOut', '요양병원 외', '만원', false)}
+              ${generateEssentialItemForPrint(data.coverages, 'nursingHospitalIn', '요양병원', '만원', false)}
+              ${generateEssentialItemForPrint(data.coverages, 'nursingCareIntegrated', '간호간병통합', '만원', false)}
               `
             }
           </div>
