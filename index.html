@@ -1365,16 +1365,52 @@ function extractCoverageAmounts(text) {
       return;
     }
 
-    const match = text.match(config.extractPattern);
+    // 기본 패턴 시도
+    let match = text.match(config.extractPattern);
     if (match && match[1]) {
       let amount = match[1].replace(/,/g, '');
       if (amount && !isNaN(amount)) {
         element.value = amount;
         console.log(`✅ ${config.name} 추출 성공: ${amount}만원`);
+        return;
       }
-    } else {
-      console.log(`❌ ${config.name} 패턴 매칭 실패: ${config.extractPattern}`);
     }
+
+    // 대안 패턴들 시도 (공백이나 특수문자 변화에 대응)
+    const alternativePatterns = [];
+    
+    if (key === 'ischemicHeartDiagnosis') {
+      alternativePatterns.push(
+        /허혈성심장질환\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
+        /허혈성심질환\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
+        /허혈성.*심.*질환\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
+      );
+    } else if (key === 'diseaseHospitalization') {
+      alternativePatterns.push(
+        /질병.*입원.*실손\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
+        /질병입원실손\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
+      );
+    } else if (key === 'injuryHospitalization') {
+      alternativePatterns.push(
+        /상해.*입원.*실손\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
+        /상해입원실손\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
+      );
+    }
+
+    // 대안 패턴들 시도
+    for (const altPattern of alternativePatterns) {
+      const altMatch = text.match(altPattern);
+      if (altMatch && altMatch[1]) {
+        let amount = altMatch[1].replace(/,/g, '');
+        if (amount && !isNaN(amount)) {
+          element.value = amount;
+          console.log(`✅ ${config.name} 대안패턴 추출 성공: ${amount}만원`);
+          return;
+        }
+      }
+    }
+
+    console.log(`❌ ${config.name} 패턴 매칭 실패`);
   });
 
   // 추가 디버깅: 특정 키워드가 포함된 라인 찾기
