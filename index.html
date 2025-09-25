@@ -1242,12 +1242,14 @@ async function parseOCRResult(apiResult) {
 
 // 고객 정보 추출
 function extractCustomerInfo(text) {
-  // 이름 추출 (다양한 패턴 시도)
+  // 이름 추출 (손덕령님의 한 장 요약 보장분석 형태)
   const namePatterns = [
+    /([가-힣]{2,4})님의\s*한\s*장\s*요약\s*보장분석/,
+    /손덕령님의/,
+    /^([가-힣]{2,4})님/m,
     /성명[:\s]*([가-힣]{2,4})/,
     /이름[:\s]*([가-힣]{2,4})/,
     /고객명[:\s]*([가-힣]{2,4})/,
-    /^([가-힣]{2,4})\s*님/m,
     /계약자[:\s]*([가-힣]{2,4})/,
     /피보험자[:\s]*([가-힣]{2,4})/
   ];
@@ -1256,90 +1258,101 @@ function extractCustomerInfo(text) {
     const match = text.match(pattern);
     if (match) {
       document.getElementById('customerName').value = match[1];
+      console.log(`고객명 추출 성공: ${match[1]}`);
       break;
     }
   }
 
-  // 생년월일 추출
+  // 생년월일 추출 (생년월일 yy-mm-dd 형태)
   const birthPatterns = [
-    /생년월일[:\s]*(\d{4}[.\-/]\d{1,2}[.\-/]\d{1,2})/,
-    /생일[:\s]*(\d{4}[.\-/]\d{1,2}[.\-/]\d{1,2})/,
-    /(\d{4}[.\-/]\d{1,2}[.\-/]\d{1,2})/
+    /생년월일\s*(\d{2}-\d{1,2}-\d{1,2})/,
+    /생년월일\s*(\d{4}-\d{1,2}-\d{1,2})/,
+    /생년월일\s*(\d{2}\.\d{1,2}\.\d{1,2})/,
+    /생년월일\s*(\d{4}\.\d{1,2}\.\d{1,2})/,
+    /(\d{2}-\d{1,2}-\d{1,2})\s*\/\s*상황일/,
+    /(\d{4}-\d{1,2}-\d{1,2})/
   ];
 
   for (const pattern of birthPatterns) {
     const match = text.match(pattern);
     if (match) {
-      const date = match[1].replace(/[-/]/g, '.');
+      let date = match[1];
+      // yy-mm-dd 형태를 yyyy.mm.dd로 변환
+      if (date.length === 8 && date.includes('-')) {
+        const parts = date.split('-');
+        if (parts[0].length === 2) {
+          // 20xx년으로 가정
+          date = `20${parts[0]}.${parts[1]}.${parts[2]}`;
+        }
+      } else {
+        date = date.replace(/[-]/g, '.');
+      }
       document.getElementById('birthDate').value = date;
+      console.log(`생년월일 추출 성공: ${date}`);
       break;
     }
   }
 }
 
-// 담보 금액 추출 (실제 양식 기준으로 정교화)
+// 담보 금액 추출 (실제 양식에서 추출 가능한 항목만)
 function extractCoverageAmounts(text) {
-  // 실제 양식의 담보명과 매칭 패턴 - "항목명 A / B만원" 형태에서 A 값 추출
+  // 실제 양식에서 추출 가능한 항목들의 정확한 패턴
   const coveragePatterns = {
-    // 암 관련 - A / B만원 형태에서 A 값 추출
+    // 큰병보장 섹션에서 추출
     generalCancer: {
-      patterns: ['일반암'],
+      name: '일반암진단비',
       extractPattern: /일반암\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
     },
     totalCancer: {
-      patterns: ['통합암'],
+      name: '통합암진단비', 
       extractPattern: /통합암\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
     },
     targetTherapy: {
-      patterns: ['표적항암약물'],
+      name: '표적항암치료비',
       extractPattern: /표적항암약물\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
     },
-    
-    // 2대 중대질환 - A / B만원 형태에서 A 값 추출
     cerebrovascularDiagnosis: {
-      patterns: ['뇌혈관질환'],
+      name: '뇌혈관질환진단비',
       extractPattern: /뇌혈관질환\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
     },
     strokeDiagnosis: {
-      patterns: ['뇌졸중'],
+      name: '뇌졸중진단비',
       extractPattern: /뇌졸중\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
     },
     ischemicHeartDiagnosis: {
-      patterns: ['허혈성심질환'],
+      name: '허혈성심장질환진단비',
       extractPattern: /허혈성심질환\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
     },
     myocardialInfarctionDiagnosis: {
-      patterns: ['급성심근경색증'],
+      name: '심근경색진단비',
       extractPattern: /급성심근경색증\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
     },
     
-    // 5대 필수보험 - A / B만원 형태에서 A 값 추출
+    // 의료보장 섹션에서 추출
     diseaseHospitalization: {
-      patterns: ['질병입원실손'],
-      extractPattern: /질병입원실손\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
+      name: '(질병)입원한도',
+      extractPattern: /질병입원\s*실손\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
     },
     injuryHospitalization: {
-      patterns: ['상해입원실손'],
-      extractPattern: /상해입원실손\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
+      name: '(상해)입원한도',
+      extractPattern: /상해입원\s*실손\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
     },
     
-    // 운전자 관련 - A만원 형태에서 A 값 추출
+    // 생활보장 섹션에서 추출 - 만원 표기 방식
     criminalSettlement: {
-      patterns: ['대인형사합의지원금'],
+      name: '형사합의금',
       extractPattern: /대인형사합의지원금\s*([0-9,]+)만원/i
     },
     lawyerAppointment: {
-      patterns: ['변호사선임비용'],
+      name: '변호사선임비',
       extractPattern: /변호사선임비용\s*([0-9,]+)만원/i
     },
-    
-    // 기타 - A만원 형태에서 A 값 추출
     dailyLifeLiability: {
-      patterns: ['일상생활배상책임'],
+      name: '일상생활배상책임',
       extractPattern: /일상생활배상책임\s*([0-9,]+)만원/i
     },
     fireFine: {
-      patterns: ['화재벌금'],
+      name: '화재벌금',
       extractPattern: /화재벌금\s*([0-9,]+)만원/i
     }
   };
@@ -1347,21 +1360,38 @@ function extractCoverageAmounts(text) {
   // 각 담보별로 금액 추출 시도
   Object.entries(coveragePatterns).forEach(([key, config]) => {
     const element = document.getElementById(key);
-    if (!element) return;
+    if (!element) {
+      console.log(`요소를 찾을 수 없음: ${key}`);
+      return;
+    }
 
-    // 정규식 패턴으로 추출
     const match = text.match(config.extractPattern);
     if (match && match[1]) {
       let amount = match[1].replace(/,/g, '');
       if (amount && !isNaN(amount)) {
         element.value = amount;
-        console.log(`${key} 추출 성공: ${amount}`);
+        console.log(`✅ ${config.name} 추출 성공: ${amount}만원`);
       }
+    } else {
+      console.log(`❌ ${config.name} 패턴 매칭 실패: ${config.extractPattern}`);
+    }
+  });
+
+  // 추가 디버깅: 특정 키워드가 포함된 라인 찾기
+  const lines = text.split('\n');
+  const keywords = ['일반암', '통합암', '표적항암약물', '뇌혈관질환', '뇌졸중', '허혈성심질환', '급성심근경색증', '질병입원', '상해입원', '대인형사합의지원금', '변호사선임비용', '일상생활배상책임', '화재벌금'];
+  
+  keywords.forEach(keyword => {
+    const matchingLines = lines.filter(line => line.includes(keyword));
+    if (matchingLines.length > 0) {
+      console.log(`🔍 "${keyword}" 포함 라인:`, matchingLines);
     }
   });
   
-  // 디버깅을 위해 OCR 텍스트 로그
-  console.log('OCR 전체 텍스트:', text);
+  // 전체 OCR 텍스트 로그
+  console.log('📄 OCR 전체 텍스트:');
+  console.log(text);
+  console.log('📏 텍스트 길이:', text.length);
 }
 
 // 샘플 데이터 채우기 (테스트용 - 백업으로 유지)
