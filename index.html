@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>OCR 보장분석지 변환기</title>
+  <title>보장분석 한 장 요약</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,">
   <style>
@@ -413,43 +413,42 @@
 
   <!-- 메뉴 화면 -->
   <section id="menuScreen" class="screen">
-    <div class="app-title">보장분석지 OCR 변환기</div>
+    <div class="app-title">보장분석 한 장 요약</div>
     <div class="card">
       <h2 style="margin-bottom:1.5rem; text-align:center;">메뉴 선택</h2>
       
       <button id="inputMenuBtn" style="margin-bottom:1rem;">
         <span style="font-size:18px; display:block; margin-bottom:4px;">입력하기</span>
-        <span style="font-size:14px; opacity:0.8;">이미지 촬영/업로드 → OCR 인식 → 데이터 입력</span>
+        <span style="font-size:14px; opacity:0.8;">보장분석지 촬영/업로드</span>
       </button>
       
       <button id="loadMenuBtn" style="margin-bottom:1rem;">
         <span style="font-size:18px; display:block; margin-bottom:4px;">불러오기</span>
-        <span style="font-size:14px; opacity:0.8;">저장된 보장분석지 목록에서 선택</span>
+        <span style="font-size:14px; opacity:0.8;">저장된 보장분석 목록에서 선택</span>
       </button>
       
       <div class="meta" style="margin-top:2rem; text-align:center;">
-        Google Vision API를 활용한 한글 OCR 서비스
+        Copyright 2025 하세봉 all rights reserved.
       </div>
     </div>
   </section>
 
   <!-- 입력 화면 -->
   <section id="inputScreen" class="screen hidden">
-    <div class="app-title">보장분석지 입력하기</div>
+    <div class="app-title">보장금액 입력하기</div>
     <div class="card wide">
       <div class="row">
         <div class="image-upload-area" id="imageUploadArea">
           <div id="uploadText">
-            📸 보장분석지 이미지를 클릭하여 업로드하거나<br>
-            드래그 앤 드롭하세요
-          </div>
+            여기를 터치하세요<br>
+                      </div>
           <img id="imagePreview" class="image-preview hidden" alt="미리보기">
           <input type="file" id="imageInput" accept="image/*" style="display:none;">
         </div>
       </div>
       
       <div class="row">
-        <button id="ocrProcessBtn" disabled>OCR 인식 시작</button>
+        <button id="ocrProcessBtn" disabled>자동 스캔 중</button>
         <div id="ocrStatus" class="hint"></div>
       </div>
       
@@ -524,21 +523,21 @@
                   <th style="width:60%;">요양병원 외</th>
                   <td class="unit-column">
                     <input type="text" id="nursingHospitalOut" placeholder="0">
-                    <span class="unit-text">만원/일</span>
+                    <span class="unit-text">만원</span>
                   </td>
                 </tr>
                 <tr>
                   <th>요양병원</th>
                   <td class="unit-column">
                     <input type="text" id="nursingHospitalIn" placeholder="0">
-                    <span class="unit-text">만원/일</span>
+                    <span class="unit-text">만원</span>
                   </td>
                 </tr>
                 <tr>
                   <th>간호간병통합</th>
                   <td class="unit-column">
                     <input type="text" id="nursingCareIntegrated" placeholder="0">
-                    <span class="unit-text">만원/일</span>
+                    <span class="unit-text">만원</span>
                   </td>
                 </tr>
               </table>
@@ -556,7 +555,7 @@
 
   <!-- 불러오기 화면 -->
   <section id="loadScreen" class="screen hidden">
-    <div class="app-title">저장된 보장분석지 불러오기</div>
+    <div class="app-title">저장된 보장분석 불러오기</div>
     <div class="card">
       <div class="row">
         <input type="text" id="searchInput" placeholder="고객명으로 검색...">
@@ -940,7 +939,7 @@ async function processOCR() {
 
   // 일일 한도 체크 (50회)
   if (dailyRequestCount >= 50) {
-    alert('일일 OCR 사용 한도(50회)를 초과했습니다. 내일 다시 시도해주세요.');
+    alert('일일 사용 한도(50회)를 초과했습니다. 내일 다시 시도해주세요.');
     return;
   }
   
