@@ -343,6 +343,60 @@
       top: -9999px;
       width: 1200px;
     }
+    
+    /* 진행률 바 스타일 */
+    .coverage-progress {
+      margin: 1px 6px;
+      height: 6px;
+      background: #f0f0f0;
+      border-radius: 3px;
+      overflow: hidden;
+      position: relative;
+      min-width: 25px;
+      display: inline-block;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+    
+    .progress-green {
+      background: #28a745;
+    }
+    
+    .progress-yellow {
+      background: #ffc107;
+    }
+    
+    .progress-red {
+      background: #dc3545;
+    }
+    
+    .no-coverage-x {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #dc3545;
+      font-weight: 900;
+      font-size: 8px;
+      line-height: 1;
+    }
+    
+    .coverage-name.no-coverage {
+      color: #dc3545;
+    }
+    
+    .coverage-value.full-coverage {
+      color: #28a745;
+      font-weight: 700;
+    }
+    
+    .coverage-value.insufficient-coverage {
+      color: #dc3545;
+    }
   </style>
 </head>
 <body>
@@ -989,55 +1043,124 @@ function extractCoverageAmounts(text) {
   const coveragePatterns = {
     generalCancer: {
       name: '일반암진단비',
-      extractPattern: /일반암\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
+      extractPattern: /일반암\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
+      alternativePatterns: [
+        /일반암.*진단비?\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
+        /일반암\s*([0-9,]+)만원/i
+      ]
     },
     totalCancer: {
       name: '통합암진단비', 
-      extractPattern: /통합암\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
+      extractPattern: /통합암\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
+      alternativePatterns: [
+        /통합암.*진단비?\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
+        /통합암\s*([0-9,]+)만원/i
+      ]
     },
     targetTherapy: {
       name: '표적항암치료비',
-      extractPattern: /표적항암약물\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
+      extractPattern: /표적항암약물\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
+      alternativePatterns: [
+        /표적항암.*치료비?\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
+        /표적항암약물\s*([0-9,]+)만원/i,
+        /표적항암\s*([0-9,]+)만원/i
+      ]
     },
     cerebrovascularDiagnosis: {
       name: '뇌혈관질환진단비',
-      extractPattern: /뇌혈관질환\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
+      extractPattern: /뇌혈관질환\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
+      alternativePatterns: [
+        /뇌혈관.*질환.*진단비?\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
+        /뇌.*혈관.*질환\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
+        /뇌혈관질환\s*([0-9,]+)만원/i,
+        /뇌혈관\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
+      ]
     },
     strokeDiagnosis: {
       name: '뇌졸중진단비',
-      extractPattern: /뇌졸중\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
+      extractPattern: /뇌졸중\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
+      alternativePatterns: [
+        /뇌졸중.*진단비?\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
+        /뇌졸중\s*([0-9,]+)만원/i
+      ]
     },
     ischemicHeartDiagnosis: {
       name: '허혈성심장질환진단비',
-      extractPattern: /허혈성심질환\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
+      extractPattern: /허혈성심질환\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
+      alternativePatterns: [
+        /허혈성심장질환\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
+        /허혈성.*심.*질환\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
+        /허혈성심질환\s*([0-9,]+)만원/i,
+        /허혈성심장질환\s*([0-9,]+)만원/i
+      ]
     },
     myocardialInfarctionDiagnosis: {
       name: '심근경색진단비',
-      extractPattern: /급성심근경색증\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
+      extractPattern: /급성심근경색증\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
+      alternativePatterns: [
+        /급성심근경색\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
+        /심근경색증\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
+        /심근경색\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
+        /급성심근경색증\s*([0-9,]+)만원/i
+      ]
     },
     diseaseHospitalization: {
       name: '(질병)입원한도',
-      extractPattern: /질병입원\s*실손\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
+      extractPattern: /질병입원\s*실손\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
+      alternativePatterns: [
+        /질병.*입원.*실손\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
+        /질병입원실손\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
+        /질병입원\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
+      ]
     },
     injuryHospitalization: {
       name: '(상해)입원한도',
-      extractPattern: /상해입원\s*실손\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
+      extractPattern: /상해입원\s*실손\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
+      alternativePatterns: [
+        /상해.*입원.*실손\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
+        /상해입원실손\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
+        /상해입원\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
+      ]
     },
     criminalSettlement: {
       name: '형사합의금',
-      extractPattern: /대인형사합의지원금\s*([0-9,]+)만원/i
+      extractPattern: /대인형사합의지원금\s*([0-9,]+)만원/i,
+      alternativePatterns: [
+        /대인.*형사.*합의.*지원금\s*([0-9,]+)만원/i,
+        /형사.*합의.*지원금\s*([0-9,]+)만원/i,
+        /대인형사합의\s*([0-9,]+)만원/i,
+        /형사합의금\s*([0-9,]+)만원/i,
+        /대인형사합의지원금\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
+        /형사합의\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
+      ]
     },
     lawyerAppointment: {
       name: '변호사선임비',
-      extractPattern: /변호사선임비용\s*([0-9,]+)만원/i
+      extractPattern: /변호사선임비용\s*([0-9,]+)만원/i,
+      alternativePatterns: [
+        /변호사.*선임.*비용\s*([0-9,]+)만원/i,
+        /변호사선임비\s*([0-9,]+)만원/i,
+        /변호사선임\s*([0-9,]+)만원/i,
+        /변호사선임비용\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
+        /변호사\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
+      ]
     },
     dailyLifeLiability: {
       name: '일상생활배상책임',
-      extractPattern: /일상생활배상책임\s*([0-9,]+)만원/i
+      extractPattern: /일상생활배상책임\s*([0-9,]+)만원/i,
+      alternativePatterns: [
+        /일상생활.*배상책임\s*([0-9,]+)만원/i,
+        /일상생활배상\s*([0-9,]+)만원/i,
+        /일상생활배상책임\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
+      ]
     },
     fireFine: {
       name: '화재벌금',
-      extractPattern: /화재벌금\s*([0-9,]+)만원/i
+      extractPattern: /화재벌금\s*([0-9,]+)만원/i,
+      alternativePatterns: [
+        /화재.*벌금\s*([0-9,]+)만원/i,
+        /화재벌금\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
+      ]
     }
   };
 
@@ -1049,15 +1172,43 @@ function extractCoverageAmounts(text) {
       return;
     }
 
-    const match = text.match(config.extractPattern);
+    // 기본 패턴 시도
+    let match = text.match(config.extractPattern);
     if (match && match[1]) {
       let amount = match[1].replace(/,/g, '');
       if (amount && !isNaN(amount)) {
         element.value = amount;
         console.log(`✅ ${config.name} 추출 성공: ${amount}만원`);
+        return;
       }
-    } else {
-      console.log(`❌ ${config.name} 패턴 매칭 실패`);
+    }
+
+    // 대안 패턴들 시도
+    if (config.alternativePatterns) {
+      for (const altPattern of config.alternativePatterns) {
+        const altMatch = text.match(altPattern);
+        if (altMatch && altMatch[1]) {
+          let amount = altMatch[1].replace(/,/g, '');
+          if (amount && !isNaN(amount)) {
+            element.value = amount;
+            console.log(`✅ ${config.name} 대안패턴 추출 성공: ${amount}만원`);
+            return;
+          }
+        }
+      }
+    }
+
+    console.log(`❌ ${config.name} 패턴 매칭 실패`);
+  });
+
+  // 추가 디버깅: 특정 키워드가 포함된 라인 찾기
+  const lines = text.split('\n');
+  const keywords = ['뇌혈관', '형사합의', '변호사선임', '대인형사', '변호사'];
+  
+  keywords.forEach(keyword => {
+    const matchingLines = lines.filter(line => line.includes(keyword));
+    if (matchingLines.length > 0) {
+      console.log(`🔍 "${keyword}" 포함 라인:`, matchingLines);
     }
   });
 }
@@ -1103,12 +1254,43 @@ async function saveAndDownloadImage() {
   // 저장
   saveDataToStorage(currentData);
   
-  // 이미지 생성 및 다운로드
+  // 표준금액 대비 진행률 계산
+function calculateProgressPercentage(currentValue, standardAmount) {
+  if (!currentValue || currentValue == 0 || !standardAmount) return 0;
+  return (parseInt(currentValue) / standardAmount) * 100;
+}
+
+// 진행률 바 생성
+function generateProgressBar(percentage, value) {
+  // 값이 0이면 빨간색 X 표시
+  if (value === 0) {
+    return `
+      <div class="coverage-progress">
+        <div class="no-coverage-x">✗</div>
+      </div>
+    `;
+  }
+  
+  let colorClass = 'progress-red';
+  if (percentage >= 100) colorClass = 'progress-green';
+  else if (percentage >= 30) colorClass = 'progress-yellow';
+  
+  const width = Math.min(percentage, 100);
+  
+  return `
+    <div class="coverage-progress">
+      <div class="progress-bar ${colorClass}" style="width: ${width}%"></div>
+    </div>
+  `;
+}
+
+// 이미지 생성 및 다운로드
   await generateAndDownloadImage(currentData);
   
   alert('이미지가 저장되었습니다!');
 }
 
+// 이미지 생성 및 다운로드
 // 이미지 생성 및 다운로드
 async function generateAndDownloadImage(data) {
   const container = document.getElementById('hiddenPrintContainer');
@@ -1158,11 +1340,48 @@ async function generateAndDownloadImage(data) {
           flex: 1;
           padding-right: 8px;
         }
+        .coverage-name.no-coverage {
+          color: #dc3545;
+        }
         .coverage-value {
           font-weight: 600;
           color: #ff7f00;
           min-width: 60px;
           text-align: right;
+        }
+        .coverage-value.full-coverage {
+          color: #28a745;
+          font-weight: 700;
+        }
+        .coverage-value.insufficient-coverage {
+          color: #dc3545;
+        }
+        .coverage-progress {
+          margin: 1px 6px;
+          height: 6px;
+          background: #f0f0f0;
+          border-radius: 3px;
+          overflow: hidden;
+          position: relative;
+          min-width: 25px;
+          display: inline-block;
+        }
+        .progress-bar {
+          height: 100%;
+          border-radius: 3px;
+        }
+        .progress-green { background: #28a745; }
+        .progress-yellow { background: #ffc107; }
+        .progress-red { background: #dc3545; }
+        .no-coverage-x {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          color: #dc3545;
+          font-weight: 900;
+          font-size: 8px;
+          line-height: 1;
         }
         .subsection {
           margin-bottom: 15px;
@@ -1236,14 +1455,14 @@ async function generateAndDownloadImage(data) {
           
           <div class="subsection">
             <div class="subsection-title">실손의료비</div>
-            ${generateEssentialItemForPrint(data.coverages, 'diseaseHospitalization', '(질병)입원한도', '만원/일')}
-            ${generateEssentialItemForPrint(data.coverages, 'injuryHospitalization', '(상해)입원한도', '만원/일')}
+            ${generateEssentialItemForPrint(data.coverages, 'diseaseHospitalization', '(질병)입원한도', '만원/일', false)}
+            ${generateEssentialItemForPrint(data.coverages, 'injuryHospitalization', '(상해)입원한도', '만원/일', false)}
           </div>
           
           <div class="subsection">
             <div class="subsection-title">운전자</div>
-            ${generateEssentialItemForPrint(data.coverages, 'criminalSettlement', '형사합의금', '만원')}
-            ${generateEssentialItemForPrint(data.coverages, 'lawyerAppointment', '변호사선임비', '만원')}
+            ${generateEssentialItemForPrint(data.coverages, 'criminalSettlement', '형사합의금', '만원', true)}
+            ${generateEssentialItemForPrint(data.coverages, 'lawyerAppointment', '변호사선임비', '만원', true)}
           </div>
           
           <div class="subsection">
@@ -1251,21 +1470,21 @@ async function generateAndDownloadImage(data) {
             ${data.caregiverOption === 'support' ? 
               '<div class="coverage-item"><div class="coverage-name">외국 간병인 현물지원</div><div class="coverage-value">-</div></div>' :
               `
-              ${generateEssentialItemForPrint(data.coverages, 'nursingHospitalOut', '요양병원 외', '만원/일')}
-              ${generateEssentialItemForPrint(data.coverages, 'nursingHospitalIn', '요양병원', '만원/일')}
-              ${generateEssentialItemForPrint(data.coverages, 'nursingCareIntegrated', '간호간병통합', '만원/일')}
+              ${generateEssentialItemForPrint(data.coverages, 'nursingHospitalOut', '요양병원 외', '만원/일', false)}
+              ${generateEssentialItemForPrint(data.coverages, 'nursingHospitalIn', '요양병원', '만원/일', false)}
+              ${generateEssentialItemForPrint(data.coverages, 'nursingCareIntegrated', '간호간병통합', '만원/일', false)}
               `
             }
           </div>
           
           <div class="subsection">
             <div class="subsection-title">일상생활배상책임</div>
-            ${generateEssentialItemForPrint(data.coverages, 'dailyLifeLiability', '일상생활배상책임', '만원')}
+            ${generateEssentialItemForPrint(data.coverages, 'dailyLifeLiability', '일상생활배상책임', '만원', false)}
           </div>
           
           <div class="subsection">
             <div class="subsection-title">화재벌금</div>
-            ${generateEssentialItemForPrint(data.coverages, 'fireFine', '화재벌금', '만원')}
+            ${generateEssentialItemForPrint(data.coverages, 'fireFine', '화재벌금', '만원', false)}
           </div>
         </div>
       </div>
@@ -1329,16 +1548,23 @@ async function generateAndDownloadImage(data) {
   container.innerHTML = '';
 }
 
-// 인쇄용 담보 항목 생성
+// 인쇄용 담보 항목 생성 (진행률 바 포함)
 function generateCoverageItemsForPrint(coverages, items) {
   return items.map(item => {
     const coverage = coverages[item.key];
     const value = coverage ? parseInt(coverage.value) : 0;
+    const percentage = calculateProgressPercentage(value, item.standardAmount);
+    
+    let nameClass = '';
+    if (value === 0) nameClass = 'no-coverage';
+    
     const displayValue = value ? `${value}만원` : '0만원';
+    const progressBar = generateProgressBar(percentage, value);
     
     return `
       <div class="coverage-item">
-        <div class="coverage-name">${item.name}</div>
+        <div class="coverage-name ${nameClass}">${item.name}</div>
+        ${progressBar}
         <div class="coverage-value">${displayValue}</div>
       </div>
     `;
@@ -1346,15 +1572,40 @@ function generateCoverageItemsForPrint(coverages, items) {
 }
 
 // 인쇄용 5대 필수보험 항목 생성
-function generateEssentialItemForPrint(coverages, key, name, unit) {
+function generateEssentialItemForPrint(coverages, key, name, unit, isDriverSection = false) {
   const coverage = coverages[key];
   const value = coverage ? parseInt(coverage.value) : 0;
+  
+  // 표준금액 찾기
+  const standardItem = AUTO_RECOGNITION_ITEMS.find(item => item.key === key) || 
+                       { standardAmount: 1000 };
+  const standardAmount = standardItem.standardAmount;
+  const percentage = calculateProgressPercentage(value, standardAmount);
+  
+  let nameClass = '';
+  let valueClass = '';
+  
+  if (value === 0) {
+    nameClass = 'no-coverage';
+  } else if (percentage >= 100) {
+    valueClass = 'full-coverage';
+  } else if (percentage < 30) {
+    valueClass = 'insufficient-coverage';
+  }
+  
   const displayValue = value ? `${value}${unit}` : `0${unit}`;
+  
+  // 운전자 구역이면 진행률 바 추가
+  let progressBar = '';
+  if (isDriverSection) {
+    progressBar = generateProgressBar(percentage, value);
+  }
   
   return `
     <div class="coverage-item">
-      <div class="coverage-name">${name}</div>
-      <div class="coverage-value">${displayValue}</div>
+      <div class="coverage-name ${nameClass}">${name}</div>
+      ${progressBar}
+      <div class="coverage-value ${valueClass}">${displayValue}</div>
     </div>
   `;
 }
