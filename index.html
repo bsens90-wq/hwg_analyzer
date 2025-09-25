@@ -1517,3 +1517,178 @@ async function saveAndDownloadImage() {
 }
 
 // 이미지 생성 및 다운로드 (변경 전/후 비교)
+  // 데이터 저장 및 이미지 다운로드
+async function saveAndDownloadImage() {
+  // ... 기존 코드 ...
+  
+  // 이미지 생성 및 다운로드
+  await generateAndDownloadImage(currentData);
+  
+  alert('이미지가 저장되었습니다!');
+}
+
+// 이미지 생성 및 다운로드 함수 추가
+async function generateAndDownloadImage(data) {
+  const container = document.getElementById('hiddenPrintContainer');
+  
+  // HTML 내용 생성 - 좌우 분할 레이아웃
+  container.innerHTML = `
+    <div style="background: white; padding: 15px; width: 1400px; font-family: Arial, sans-serif; display: flex; gap: 10px;">
+      <!-- 변경 전 섹션 -->
+      <div style="flex: 1; border: 2px solid #333; padding: 10px;">
+        <div style="text-align: center; font-size: 16px; font-weight: 700; margin-bottom: 15px; background: #f0f0f0; color: #333; padding: 8px;">
+          【변경 전】 ${data.customerName}님의 보장분석
+        </div>
+        <div>작성일: ${data.inputDate} | 생년월일: ${data.birthDate || ''}</div>
+      </div>
+      
+      <!-- 변경 후 섹션 -->
+      <div style="flex: 1; border: 2px solid #333; padding: 10px;">
+        <div style="text-align: center; font-size: 16px; font-weight: 700; margin-bottom: 15px; background: #ff7f00; color: white; padding: 8px;">
+          【변경 후】 ${data.customerName}님의 보장분석
+        </div>
+        <div>작성일: ${data.inputDate} | 생년월일: ${data.birthDate || ''}</div>
+      </div>
+    </div>
+  `;
+  
+  // html2canvas를 사용하여 이미지 생성
+  try {
+    const canvas = await html2canvas(container.firstElementChild, {
+      scale: 2,
+      logging: false,
+      useCORS: true,
+      backgroundColor: '#ffffff'
+    });
+    
+    // 캔버스를 이미지로 변환
+    canvas.toBlob(function(blob) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `보장분석_${data.customerName}_${new Date().getTime()}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+  } catch (error) {
+    console.error('이미지 생성 오류:', error);
+    alert('이미지 생성 중 오류가 발생했습니다.');
+  }
+  
+  // 컨테이너 비우기
+  container.innerHTML = '';
+}
+
+// 로컬 스토리지에 데이터 저장
+function saveDataToStorage(data) {
+  let savedData = JSON.parse(localStorage.getItem('ocrWarrantyData') || '[]');
+  
+  // 기존 고객 데이터가 있으면 업데이트, 없으면 추가
+  const existingIndex = savedData.findIndex(item => item.customerName === data.customerName);
+  
+  if (existingIndex >= 0) {
+    savedData[existingIndex] = data;
+  } else {
+    savedData.push(data);
+  }
+  
+  localStorage.setItem('ocrWarrantyData', JSON.stringify(savedData));
+  savedDataList = savedData;
+}
+
+// 저장된 데이터 로드
+function loadSavedData() {
+  savedDataList = JSON.parse(localStorage.getItem('ocrWarrantyData') || '[]');
+}
+
+// 저장된 데이터 목록 표시
+function displaySavedList() {
+  const savedList = document.getElementById('savedList');
+  
+  if (savedDataList.length === 0) {
+    savedList.innerHTML = '<div class="hint">저장된 보장분석지가 없습니다.</div>';
+    return;
+  }
+  
+  savedList.innerHTML = savedDataList.map(data => `
+    <div class="saved-item" onclick="loadSavedItem('${data.customerName}')">
+      <div class="saved-item-title">${data.customerName}</div>
+      <div class="saved-item-date">${data.inputDate}</div>
+    </div>
+  `).join('');
+}
+
+// 저장된 항목 필터링
+function filterSavedList() {
+  const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+  const filteredList = savedDataList.filter(data => 
+    data.customerName.toLowerCase().includes(searchTerm)
+  );
+  
+  const savedList = document.getElementById('savedList');
+  
+  if (filteredList.length === 0) {
+    savedList.innerHTML = '<div class="hint">검색 결과가 없습니다.</div>';
+    return;
+  }
+  
+  savedList.innerHTML = filteredList.map(data => `
+    <div class="saved-item" onclick="loadSavedItem('${data.customerName}')">
+      <div class="saved-item-title">${data.customerName}</div>
+      <div class="saved-item-date">${data.inputDate}</div>
+    </div>
+  `).join('');
+}
+
+// 저장된 항목 로드하여 입력 화면에 표시
+function loadSavedItem(customerName) {
+  const data = savedDataList.find(item => item.customerName === customerName);
+  if (!data) return;
+  
+  currentData = data;
+  
+  // 입력 화면으로 이동하고 데이터 로드
+  showScreen('input');
+  loadCurrentDataToForm();
+}
+
+// 현재 데이터를 폼에 로드
+function loadCurrentDataToForm() {
+  if (!currentData.customerName) return;
+  
+  document.getElementById('customerName').value = currentData.customerName;
+  document.getElementById('birthDate').value = currentData.birthDate || '';
+  
+  // 변경 전 담보 데이터 로드
+  if (currentData.coveragesBefore) {
+    Object.entries(currentData.coveragesBefore).forEach(([key, data]) => {
+      const input = document.getElementById(key + '_before');
+      if (input) {
+        input.value = data.value || '';
+      }
+    });
+  }
+  
+  // 변경 후 담보 데이터 로드
+  if (currentData.coveragesAfter) {
+    Object.entries(currentData.coveragesAfter).forEach(([key, data]) => {
+      const input = document.getElementById(key + '_after');
+      if (input) {
+        input.value = data.value || '';
+      }
+    });
+  }
+  
+  // 간병인 옵션 로드
+  if (currentData.caregiverOption) {
+    document.getElementById('caregiverUse').checked = currentData.caregiverOption === 'use';
+    document.getElementById('caregiverSupport').checked = currentData.caregiverOption === 'support';
+    handleCaregiverOptionChange();
+  }
+}
+</script>
+
+</body>
+</html>
