@@ -502,7 +502,7 @@
             <th colspan="2">간병인일당</th>
           </tr>
           <tr>
-            <th>간병인 옵션</th>
+            <th>간병인일당 종류 선택</th>
             <td>
               <div class="radio-group">
                 <label>
@@ -589,8 +589,8 @@ const AUTO_RECOGNITION_ITEMS = [
   { key: 'strokeDiagnosis', name: '뇌졸중진단비', standardAmount: 1000 },
   { key: 'ischemicHeartDiagnosis', name: '허혈성심장질환진단비', standardAmount: 1000 },
   { key: 'myocardialInfarctionDiagnosis', name: '심근경색진단비', standardAmount: 1000 },
-  { key: 'diseaseHospitalization', name: '(질병)입원한도', standardAmount: 1000 },
-  { key: 'injuryHospitalization', name: '(상해)입원한도', standardAmount: 1000 },
+  { key: 'diseaseHospitalization', name: '(실손)질병입원', standardAmount: 1000 },
+  { key: 'injuryHospitalization', name: '(실손)상해입원', standardAmount: 1000 },
   { key: 'criminalSettlement', name: '형사합의금', standardAmount: 1000 },
   { key: 'lawyerAppointment', name: '변호사선임비', standardAmount: 1000 },
   { key: 'dailyLifeLiability', name: '일상생활배상책임', standardAmount: 1000 },
@@ -1297,12 +1297,12 @@ function extractCoverageAmounts(text) {
       extractPattern: /급성심근경색증\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i
     },
     diseaseHospitalization: {
-      name: '(질병)입원한도',
+      name: '(실손)질병입원',
       keyword: '질병입원',
       extractPattern: /질병입원\s*실손\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i
     },
     injuryHospitalization: {
-      name: '(상해)입원한도',
+      name: '(실손)상해입원',
       keyword: '상해입원',
       extractPattern: /상해입원\s*실손\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i
     },
@@ -1655,8 +1655,8 @@ async function generateAndDownloadImage(data) {
           
           <div class="subsection">
             <div class="subsection-title">실손의료비</div>
-            ${generateEssentialItemForPrint(data.coverages, 'diseaseHospitalization', '(질병)입원한도', '만원', false)}
-            ${generateEssentialItemForPrint(data.coverages, 'injuryHospitalization', '(상해)입원한도', '만원', false)}
+            ${generateEssentialItemForPrint(data.coverages, 'diseaseHospitalization', '(실손)질병입원', '만원', false)}
+            ${generateEssentialItemForPrint(data.coverages, 'injuryHospitalization', '(실손)상해입원', '만원', false)}
           </div>
           
           <div class="subsection">
