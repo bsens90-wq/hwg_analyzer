@@ -118,6 +118,23 @@
       max-width:1200px;
     }
     h2{margin:0 0 .75rem 0}
+    h3 {
+      margin: 1.5rem 0 1rem 0;
+      color: var(--hanwha);
+      font-size: 18px;
+      font-weight: 700;
+      border-bottom: 2px solid var(--hanwha);
+      padding-bottom: 8px;
+    }
+    .section-notice {
+      background: #fff3e0;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-size: 14px;
+      color: #e65100;
+      border: 1px solid #ffcc80;
+    }
     .row{margin-bottom:.75rem}
     input, select, textarea{
       width:100%;
@@ -285,190 +302,6 @@
       color: var(--muted);
     }
     
-    /* 가로형 출력용 스타일 - 미리보기와 인쇄용 통합 */
-    .print-preview {
-      background: white;
-      border: 1px solid #ccc;
-      margin: 20px 0;
-      padding: 15px;
-      font-size: 9px;
-      min-height: 600px;
-      width: 100%;
-      max-width: 1200px;
-    }
-    
-    .print-header {
-      text-align: center;
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 20px;
-      color: var(--hanwha);
-    }
-    
-    .sections-container {
-      display: flex;
-      gap: 15px;
-      margin-bottom: 20px;
-    }
-    
-    .section {
-      flex: 1;
-      border: 1px solid #333;
-      padding: 10px;
-      min-height: 300px;
-    }
-    
-    .section-title {
-      text-align: center;
-      font-weight: 700;
-      font-size: 12px;
-      margin-bottom: 10px;
-      background: var(--hanwha);
-      color: white;
-      margin: -10px -10px 10px -10px;
-      padding: 8px;
-    }
-    
-    .coverage-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 4px 0;
-      padding: 2px 0;
-      border-bottom: 1px dotted #ccc;
-      font-size: 8px;
-      line-height: 1.2;
-    }
-    
-    .coverage-name {
-      flex: 1;
-      padding-right: 8px;
-      font-size: 8px;
-    }
-    
-    .coverage-value {
-      font-weight: 600;
-      color: var(--hanwha);
-      min-width: 45px;
-      text-align: right;
-      font-size: 8px;
-    }
-    
-    /* 5대 필수보험 서브섹션 */
-    .subsection {
-      margin-bottom: 12px;
-      border: 1px solid #ddd;
-      padding: 8px;
-    }
-    
-    .subsection-title {
-      font-weight: 600;
-      font-size: 8px;
-      margin-bottom: 6px;
-      text-align: center;
-      background: #f8f9fa;
-      padding: 4px;
-      border: 1px solid #ddd;
-      margin: -8px -8px 6px -8px;
-    }
-    
-    /* 출력용 진행률 바 스타일 */
-    .coverage-progress {
-      margin: 1px 6px;
-      height: 6px;
-      background: #f0f0f0;
-      border-radius: 3px;
-      overflow: hidden;
-      position: relative;
-      min-width: 25px;
-    }
-    
-    .progress-bar {
-      height: 100%;
-      border-radius: 3px;
-      transition: width 0.3s ease;
-    }
-    
-    .progress-green {
-      background: #28a745;
-    }
-    
-    .progress-yellow {
-      background: #ffc107;
-    }
-    
-    .progress-red {
-      background: #dc3545;
-    }
-    
-    .no-coverage-x {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: #dc3545;
-      font-weight: 900;
-      font-size: 8px;
-      line-height: 1;
-    }
-    
-    .coverage-name.no-coverage {
-      color: #dc3545;
-    }
-    
-    .coverage-value.full-coverage {
-      color: #28a745;
-      font-weight: 700;
-    }
-    
-    .coverage-value.insufficient-coverage {
-      color: #dc3545;
-    }
-    
-    .examples-container {
-      display: flex;
-      gap: 15px;
-      margin-top: 15px;
-    }
-    
-    .example-section {
-      flex: 1;
-      border: 1px solid #333;
-      padding: 8px;
-    }
-    
-    .example-title {
-      font-weight: 700;
-      font-size: 9px;
-      margin-bottom: 8px;
-      text-align: center;
-      padding: 4px;
-      background: #f0f0f0;
-      border: 1px solid #333;
-      margin: -8px -8px 8px -8px;
-    }
-    
-    .example-item {
-      display: flex;
-      justify-content: space-between;
-      margin: 3px 0;
-      font-size: 8px;
-      padding: 2px 0;
-      border-bottom: 1px dotted #ccc;
-      line-height: 1.2;
-    }
-    
-    .example-name {
-      flex: 1;
-      font-size: 8px;
-    }
-    
-    .example-value {
-      font-weight: 600;
-      color: var(--hanwha);
-      font-size: 8px;
-    }
-    
     /* 로딩 스피너 */
     .loading {
       display: inline-block;
@@ -497,24 +330,18 @@
         padding: 6px 8px;
         font-size: 14px;
       }
-      
-      .sections-container {
-        flex-direction: column;
-        gap: 10px;
-      }
-      
-      .examples-container {
-        flex-direction: column;
-        gap: 10px;
-      }
-      
-      .print-preview {
-        font-size: 9px;
-      }
     }
     
     .hidden {
       display: none;
+    }
+    
+    /* 숨겨진 출력용 컨테이너 */
+    #hiddenPrintContainer {
+      position: absolute;
+      left: -9999px;
+      top: -9999px;
+      width: 1200px;
     }
   </style>
 </head>
@@ -587,123 +414,14 @@
         </table>
       </div>
       
-      <!-- 자동 인식 담보 리스트 -->
+      <!-- 자동인식 담보 리스트 -->
       <div class="row">
-        <h3>자동 인식 담보 리스트</h3>
-        <div class="hint" style="color: #ff7f00; font-weight: 600; margin-bottom: 1rem;">
-          ⚠️ OCR 자동 인식 결과입니다. 오차가 있을 수 있으니 수기 교정 바랍니다.
+        <h3>자동인식 담보 리스트</h3>
+        <div class="section-notice">
+          ⚠️ 오차가 있을 수 있으니 수기 교정 바랍니다.
         </div>
-        
-        <!-- 암 관련 자동인식 항목 -->
-        <table class="input-table">
-          <tr class="section-header">
-            <th colspan="2">암 관련 담보 (자동인식)</th>
-          </tr>
-          <tr>
-            <th>일반암진단비</th>
-            <td class="unit-column">
-              <input type="text" id="generalCancer" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-          <tr>
-            <th>통합암진단비</th>
-            <td class="unit-column">
-              <input type="text" id="totalCancer" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-          <tr>
-            <th>표적항암치료비</th>
-            <td class="unit-column">
-              <input type="text" id="targetTherapy" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-        </table>
-        
-        <!-- 2대 중대질환 자동인식 항목 -->
-        <table class="input-table">
-          <tr class="section-header">
-            <th colspan="2">2대 중대질환 (자동인식)</th>
-          </tr>
-          <tr>
-            <th>뇌혈관질환진단비</th>
-            <td class="unit-column">
-              <input type="text" id="cerebrovascularDiagnosis" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-          <tr>
-            <th>뇌졸중진단비</th>
-            <td class="unit-column">
-              <input type="text" id="strokeDiagnosis" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-          <tr>
-            <th>허혈성심장질환진단비</th>
-            <td class="unit-column">
-              <input type="text" id="ischemicHeartDiagnosis" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-          <tr>
-            <th>심근경색진단비</th>
-            <td class="unit-column">
-              <input type="text" id="myocardialInfarctionDiagnosis" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-        </table>
-        
-        <!-- 5대 필수보험 자동인식 항목 -->
-        <table class="input-table">
-          <tr class="section-header">
-            <th colspan="2">5대 필수보험 (자동인식)</th>
-          </tr>
-          <tr>
-            <th>(질병)입원한도</th>
-            <td class="unit-column">
-              <input type="text" id="diseaseHospitalization" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-          <tr>
-            <th>(상해)입원한도</th>
-            <td class="unit-column">
-              <input type="text" id="injuryHospitalization" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-          <tr>
-            <th>형사합의금</th>
-            <td class="unit-column">
-              <input type="text" id="criminalSettlement" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-          <tr>
-            <th>변호사선임비</th>
-            <td class="unit-column">
-              <input type="text" id="lawyerAppointment" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-          <tr>
-            <th>일상생활배상책임</th>
-            <td class="unit-column">
-              <input type="text" id="dailyLifeLiability" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-          <tr>
-            <th>화재벌금</th>
-            <td class="unit-column">
-              <input type="text" id="fireFine" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
+        <table class="input-table" id="autoRecognitionTable">
+          <!-- 자동인식 항목들이 여기에 동적으로 생성됩니다 -->
         </table>
       </div>
       
@@ -711,185 +429,24 @@
       <div class="row">
         <h3>수동 입력 담보 리스트</h3>
         
-        <!-- 암 관련 수동입력 항목 -->
-        <table class="input-table">
+        <!-- 암 관련 담보 -->
+        <table class="input-table" id="manualCancerTable">
           <tr class="section-header">
-            <th colspan="2">암 관련 담보 (수동입력)</th>
-          </tr>
-          <tr>
-            <th>전이암진단비</th>
-            <td class="unit-column">
-              <input type="text" id="metastasisCancer" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-          <tr>
-            <th>암특정치료비</th>
-            <td class="unit-column">
-              <input type="text" id="cancerSpecificTreatment" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-          <tr>
-            <th>암특정치료비(비급여)</th>
-            <td class="unit-column">
-              <input type="text" id="cancerNonCoveredTreatment" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-          <tr>
-            <th>중입자치료비</th>
-            <td class="unit-column">
-              <input type="text" id="heavyIonTherapy" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-          <tr>
-            <th>암수술비</th>
-            <td class="unit-column">
-              <input type="text" id="cancerSurgery" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-          <tr>
-            <th>다빈치로봇수술비</th>
-            <td class="unit-column">
-              <input type="text" id="daVinciSurgery" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-          <tr>
-            <th>1-5종수술비(5종)</th>
-            <td class="unit-column">
-              <input type="text" id="surgery5Type" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
+            <th colspan="2">암 관련 담보</th>
           </tr>
         </table>
         
-        <!-- 2대 중대질환 수동입력 항목 -->
-        <table class="input-table">
+        <!-- 2대 중대질환 -->
+        <table class="input-table" id="manualMajorDiseaseTable">
           <tr class="section-header">
-            <th colspan="2">2대 중대질환 (수동입력)</th>
-          </tr>
-          <tr>
-            <th>뇌혈관질환수술비</th>
-            <td class="unit-column">
-              <input type="text" id="cerebrovascularSurgery" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-          <tr>
-            <th>뇌졸중수술비</th>
-            <td class="unit-column">
-              <input type="text" id="strokeSurgery" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-          <tr>
-            <th>허혈성심장질환수술비</th>
-            <td class="unit-column">
-              <input type="text" id="ischemicHeartSurgery" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-          <tr>
-            <th>심근경색수술비</th>
-            <td class="unit-column">
-              <input type="text" id="myocardialInfarctionSurgery" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-          <tr>
-            <th>뇌졸중혈전용해</th>
-            <td class="unit-column">
-              <input type="text" id="strokeThrombolysis" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-          <tr>
-            <th>심근경색혈전용해</th>
-            <td class="unit-column">
-              <input type="text" id="myocardialInfarctionThrombolysis" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-          <tr>
-            <th>2대특정치료비</th>
-            <td class="unit-column">
-              <input type="text" id="twoMajorTreatment" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-          <tr>
-            <th>주요순환계(수술)</th>
-            <td class="unit-column">
-              <input type="text" id="majorCirculatorySurgery" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-          <tr>
-            <th>주요순환계(혈전제거)</th>
-            <td class="unit-column">
-              <input type="text" id="majorCirculatoryThrombectomy" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-          <tr>
-            <th>주요순환계(혈전용해)</th>
-            <td class="unit-column">
-              <input type="text" id="majorCirculatoryThrombolysis" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-          <tr>
-            <th>주요순환계(중환자실)</th>
-            <td class="unit-column">
-              <input type="text" id="majorCirculatoryICU" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-          <tr>
-            <th>혈전제거치료비</th>
-            <td class="unit-column">
-              <input type="text" id="thrombectomyTreatment" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-          <tr>
-            <th>1-5종수술비(3종)</th>
-            <td class="unit-column">
-              <input type="text" id="surgery3Type" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-          <tr>
-            <th>1-5종수술비(5종)</th>
-            <td class="unit-column">
-              <input type="text" id="surgery5Type2" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-          <tr>
-            <th>124대질병수술비(특정10대)</th>
-            <td class="unit-column">
-              <input type="text" id="disease124Surgery" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
-          </tr>
-          <tr>
-            <th>7대기관수술비(뇌/심) 관혈</th>
-            <td class="unit-column">
-              <input type="text" id="sevenOrganSurgery" placeholder="0">
-              <span class="unit-text">만원</span>
-            </td>
+            <th colspan="2">2대 중대질환</th>
           </tr>
         </table>
         
-        <!-- 간병인일당 수동입력 항목 -->
+        <!-- 간병인일당 -->
         <table class="input-table">
           <tr class="section-header">
-            <th colspan="2">간병인일당 (수동입력)</th>
+            <th colspan="2">간병인일당</th>
           </tr>
           <tr>
             <th>간병인 옵션</th>
@@ -961,77 +518,71 @@
     </div>
   </section>
 
-  <!-- 미리보기/출력 화면 -->
-  <section id="previewScreen" class="screen hidden">
-    <div class="app-title">보장분석지 미리보기</div>
-    <div class="card wide">
-      <div id="printPreview" class="print-preview">
-        <!-- 출력용 보장분석지가 여기에 생성됩니다 -->
-      </div>
-      
-      <div class="row">
-        <button id="downloadImageBtn">이미지 다운로드</button>
-        <button id="editDataBtn" class="secondary">수정하기</button>
-        <button id="backToMenuFromPreviewBtn" class="secondary">메뉴로 돌아가기</button>
-      </div>
-    </div>
-  </section>
+  <!-- 숨겨진 출력용 컨테이너 -->
+  <div id="hiddenPrintContainer"></div>
 
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 <script>
 // 전역 변수
 let currentData = {};
 let savedDataList = [];
 
-// 담보 항목 정의 및 표준금액 설정
-const COVERAGE_ITEMS = {
-  cancer: [
-    { key: 'generalCancer', name: '일반암진단비', standardAmount: 1000 },
-    { key: 'totalCancer', name: '통합암진단비', standardAmount: 1000 },
-    { key: 'metastasisCancer', name: '전이암진단비', standardAmount: 1000 },
-    { key: 'cancerSpecificTreatment', name: '암특정치료비', standardAmount: 1000 },
-    { key: 'cancerNonCoveredTreatment', name: '암특정치료비(비급여)', standardAmount: 1000 },
-    { key: 'targetTherapy', name: '표적항암치료비', standardAmount: 1000 },
-    { key: 'heavyIonTherapy', name: '중입자치료비', standardAmount: 1000 },
-    { key: 'cancerSurgery', name: '암수술비', standardAmount: 1000 },
-    { key: 'daVinciSurgery', name: '다빈치로봇수술비', standardAmount: 1000 },
-    { key: 'surgery5Type', name: '1-5종수술비(5종)', standardAmount: 1000 }
-  ],
-  majorDisease: [
-    { key: 'cerebrovascularDiagnosis', name: '뇌혈관질환진단비', standardAmount: 1000 },
-    { key: 'strokeDiagnosis', name: '뇌졸중진단비', standardAmount: 1000 },
-    { key: 'ischemicHeartDiagnosis', name: '허혈성심장질환진단비', standardAmount: 1000 },
-    { key: 'myocardialInfarctionDiagnosis', name: '심근경색진단비', standardAmount: 1000 },
-    { key: 'cerebrovascularSurgery', name: '뇌혈관질환수술비', standardAmount: 1000 },
-    { key: 'strokeSurgery', name: '뇌졸중수술비', standardAmount: 1000 },
-    { key: 'ischemicHeartSurgery', name: '허혈성심장질환수술비', standardAmount: 1000 },
-    { key: 'myocardialInfarctionSurgery', name: '심근경색수술비', standardAmount: 1000 },
-    { key: 'strokeThrombolysis', name: '뇌졸중혈전용해', standardAmount: 1000 },
-    { key: 'myocardialInfarctionThrombolysis', name: '심근경색혈전용해', standardAmount: 1000 },
-    { key: 'twoMajorTreatment', name: '2대특정치료비', standardAmount: 1000 },
-    { key: 'majorCirculatorySurgery', name: '주요순환계(수술)', standardAmount: 1000 },
-    { key: 'majorCirculatoryThrombectomy', name: '주요순환계(혈전제거)', standardAmount: 1000 },
-    { key: 'majorCirculatoryThrombolysis', name: '주요순환계(혈전용해)', standardAmount: 1000 },
-    { key: 'majorCirculatoryICU', name: '주요순환계(중환자실)', standardAmount: 1000 },
-    { key: 'thrombectomyTreatment', name: '혈전제거치료비', standardAmount: 1000 },
-    { key: 'surgery3Type', name: '1-5종수술비(3종)', standardAmount: 1000 },
-    { key: 'surgery5Type2', name: '1-5종수술비(5종)', standardAmount: 1000 },
-    { key: 'disease124Surgery', name: '124대질병수술비(특정10대)', standardAmount: 1000 },
-    { key: 'sevenOrganSurgery', name: '7대기관수술비(뇌/심) 관혈', standardAmount: 1000 }
-  ]
-};
-
-// 5대 필수보험 표준금액 설정 (질병통원, 상해통원 제거)
-const ESSENTIAL_ITEMS = [
+// 자동인식 담보 항목 정의
+const AUTO_RECOGNITION_ITEMS = [
+  { key: 'generalCancer', name: '일반암진단비', standardAmount: 1000 },
+  { key: 'totalCancer', name: '통합암진단비', standardAmount: 1000 },
+  { key: 'targetTherapy', name: '표적항암치료비', standardAmount: 1000 },
+  { key: 'cerebrovascularDiagnosis', name: '뇌혈관질환진단비', standardAmount: 1000 },
+  { key: 'strokeDiagnosis', name: '뇌졸중진단비', standardAmount: 1000 },
+  { key: 'ischemicHeartDiagnosis', name: '허혈성심장질환진단비', standardAmount: 1000 },
+  { key: 'myocardialInfarctionDiagnosis', name: '심근경색진단비', standardAmount: 1000 },
   { key: 'diseaseHospitalization', name: '(질병)입원한도', standardAmount: 1000 },
   { key: 'injuryHospitalization', name: '(상해)입원한도', standardAmount: 1000 },
   { key: 'criminalSettlement', name: '형사합의금', standardAmount: 1000 },
   { key: 'lawyerAppointment', name: '변호사선임비', standardAmount: 1000 },
-  { key: 'nursingHospitalOut', name: '요양병원 외', standardAmount: 1000 },
-  { key: 'nursingHospitalIn', name: '요양병원', standardAmount: 1000 },
-  { key: 'nursingCareIntegrated', name: '간호간병통합', standardAmount: 1000 },
   { key: 'dailyLifeLiability', name: '일상생활배상책임', standardAmount: 1000 },
   { key: 'fireFine', name: '화재벌금', standardAmount: 1000 }
 ];
+
+// 수동입력 담보 항목 정의
+const MANUAL_CANCER_ITEMS = [
+  { key: 'metastasisCancer', name: '전이암진단비', standardAmount: 1000 },
+  { key: 'cancerSpecificTreatment', name: '암특정치료비', standardAmount: 1000 },
+  { key: 'cancerNonCoveredTreatment', name: '암특정치료비(비급여)', standardAmount: 1000 },
+  { key: 'heavyIonTherapy', name: '중입자치료비', standardAmount: 1000 },
+  { key: 'cancerSurgery', name: '암수술비', standardAmount: 1000 },
+  { key: 'daVinciSurgery', name: '다빈치로봇수술비', standardAmount: 1000 },
+  { key: 'surgery5Type', name: '1-5종수술비(5종)', standardAmount: 1000 }
+];
+
+const MANUAL_MAJOR_DISEASE_ITEMS = [
+  { key: 'cerebrovascularSurgery', name: '뇌혈관질환수술비', standardAmount: 1000 },
+  { key: 'strokeSurgery', name: '뇌졸중수술비', standardAmount: 1000 },
+  { key: 'ischemicHeartSurgery', name: '허혈성심장질환수술비', standardAmount: 1000 },
+  { key: 'myocardialInfarctionSurgery', name: '심근경색수술비', standardAmount: 1000 },
+  { key: 'strokeThrombolysis', name: '뇌졸중혈전용해', standardAmount: 1000 },
+  { key: 'myocardialInfarctionThrombolysis', name: '심근경색혈전용해', standardAmount: 1000 },
+  { key: 'twoMajorTreatment', name: '2대특정치료비', standardAmount: 1000 },
+  { key: 'majorCirculatorySurgery', name: '주요순환계(수술)', standardAmount: 1000 },
+  { key: 'majorCirculatoryThrombectomy', name: '주요순환계(혈전제거)', standardAmount: 1000 },
+  { key: 'majorCirculatoryThrombolysis', name: '주요순환계(혈전용해)', standardAmount: 1000 },
+  { key: 'majorCirculatoryICU', name: '주요순환계(중환자실)', standardAmount: 1000 },
+  { key: 'thrombectomyTreatment', name: '혈전제거치료비', standardAmount: 1000 },
+  { key: 'surgery3Type', name: '1-5종수술비(3종)', standardAmount: 1000 },
+  { key: 'surgery5Type2', name: '1-5종수술비(5종)', standardAmount: 1000 },
+  { key: 'disease124Surgery', name: '124대질병수술비(특정10대)', standardAmount: 1000 },
+  { key: 'sevenOrganSurgery', name: '7대기관수술비(뇌/심) 관혈', standardAmount: 1000 }
+];
+
+// 모든 담보 항목 통합
+const COVERAGE_ITEMS = {
+  cancer: [...AUTO_RECOGNITION_ITEMS.filter(item => 
+    ['generalCancer', 'totalCancer', 'targetTherapy'].includes(item.key)
+  ), ...MANUAL_CANCER_ITEMS],
+  majorDisease: [...AUTO_RECOGNITION_ITEMS.filter(item => 
+    ['cerebrovascularDiagnosis', 'strokeDiagnosis', 'ischemicHeartDiagnosis', 'myocardialInfarctionDiagnosis'].includes(item.key)
+  ), ...MANUAL_MAJOR_DISEASE_ITEMS]
+};
 
 // DOM 로드 완료 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
@@ -1043,9 +594,10 @@ document.addEventListener('DOMContentLoaded', function() {
 // 앱 초기화
 function initializeApp() {
   showScreen('menu');
+  createInputTables();
 }
 
-  // 이벤트 리스너 설정
+// 이벤트 리스너 설정
 function setupEventListeners() {
   // 메뉴 버튼들
   document.getElementById('inputMenuBtn').addEventListener('click', () => showScreen('input'));
@@ -1057,16 +609,10 @@ function setupEventListeners() {
   // 뒤로가기 버튼들
   document.getElementById('backToMenuBtn').addEventListener('click', () => showScreen('menu'));
   document.getElementById('backToMenuFromLoadBtn').addEventListener('click', () => showScreen('menu'));
-  document.getElementById('backToMenuFromPreviewBtn').addEventListener('click', () => showScreen('menu'));
-  document.getElementById('editDataBtn').addEventListener('click', () => {
-    loadCurrentDataToForm();
-    showScreen('input');
-  });
   
   // 이미지 업로드 관련
   const imageUploadArea = document.getElementById('imageUploadArea');
   const imageInput = document.getElementById('imageInput');
-  const imagePreview = document.getElementById('imagePreview');
   
   imageUploadArea.addEventListener('click', () => imageInput.click());
   imageInput.addEventListener('change', handleImageUpload);
@@ -1086,11 +632,8 @@ function setupEventListeners() {
   // OCR 처리 버튼
   document.getElementById('ocrProcessBtn').addEventListener('click', processOCR);
   
-  // 저장 버튼 (이미지로 바로 저장)
+  // 저장 버튼
   document.getElementById('saveDataBtn').addEventListener('click', saveAndDownloadImage);
-  
-  // 다운로드 버튼
-  document.getElementById('downloadImageBtn').addEventListener('click', downloadImage);
   
   // 검색 기능
   document.getElementById('searchInput').addEventListener('input', filterSavedList);
@@ -1110,7 +653,7 @@ function setupEventListeners() {
 
 // 화면 전환
 function showScreen(screenName) {
-  const screens = ['menu', 'input', 'load', 'preview'];
+  const screens = ['menu', 'input', 'load'];
   screens.forEach(name => {
     document.getElementById(name + 'Screen').classList.toggle('hidden', name !== screenName);
   });
@@ -1125,353 +668,49 @@ function goHome() {
   showScreen('menu');
 }
 
-// createInputTables 함수 제거 - 이제 HTML에 직접 구현됨
-
-// 데이터 저장 및 이미지 생성 후 다운로드
-async function saveAndDownloadImage() {
-  const customerName = document.getElementById('customerName').value.trim();
-  
-  if (!customerName) {
-    alert('고객명을 입력해주세요.');
-    return;
-  }
-  
-  // 현재 데이터 수집
-  currentData = {
-    customerName: customerName,
-    birthDate: document.getElementById('birthDate').value.trim(),
-    inputDate: new Date().toLocaleString('ko-KR'),
-    coverages: {},
-    caregiverOption: document.querySelector('input[name="caregiverOption"]:checked').value
-  };
-  
-  // 모든 담보 데이터 수집 (질병통원, 상해통원 제거)
-  const allFields = [
-    ...Object.values(COVERAGE_ITEMS).flat(),
-    // 5대 필수보험 항목들
-    { key: 'diseaseHospitalization', name: '(질병)입원한도' },
-    { key: 'injuryHospitalization', name: '(상해)입원한도' },
-    { key: 'criminalSettlement', name: '형사합의금' },
-    { key: 'lawyerAppointment', name: '변호사선임비' },
-    { key: 'nursingHospitalOut', name: '요양병원 외' },
-    { key: 'nursingHospitalIn', name: '요양병원' },
-    { key: 'nursingCareIntegrated', name: '간호간병통합' },
-    { key: 'dailyLifeLiability', name: '일상생활배상책임' },
-    { key: 'fireFine', name: '화재벌금' }
-  ];
-  
-  allFields.forEach(item => {
-    const input = document.getElementById(item.key);
-    if (input && input.value.trim()) {
-      currentData.coverages[item.key] = {
-        name: item.name,
-        value: input.value.trim()
-      };
-    }
+// 입력 테이블 생성
+function createInputTables() {
+  // 자동인식 담보 테이블
+  const autoTable = document.getElementById('autoRecognitionTable');
+  AUTO_RECOGNITION_ITEMS.forEach(item => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <th>${item.name}</th>
+      <td class="unit-column">
+        <input type="text" id="${item.key}" placeholder="0">
+        <span class="unit-text">만원</span>
+      </td>
+    `;
+    autoTable.appendChild(row);
   });
   
-  // 저장
-  saveDataToStorage(currentData);
+  // 수동입력 암 관련 담보 테이블
+  const manualCancerTable = document.getElementById('manualCancerTable');
+  MANUAL_CANCER_ITEMS.forEach(item => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <th>${item.name}</th>
+      <td class="unit-column">
+        <input type="text" id="${item.key}" placeholder="0">
+        <span class="unit-text">만원</span>
+      </td>
+    `;
+    manualCancerTable.appendChild(row);
+  });
   
-  // 이미지 생성 및 다운로드
-  await generateAndDownloadImage(currentData);
-}
-
-// 이미지 생성 및 다운로드
-async function generateAndDownloadImage(data) {
-  // HTML을 이용해 이미지 생성
-  const previewHTML = generatePreviewHTML(data);
-  
-  // 새 창에 HTML 생성하여 이미지로 변환
-  const printWindow = window.open('', '_blank', 'width=1200,height=800');
-  printWindow.document.write(`
-    <!DOCTYPE html>
-    <html lang="ko">
-    <head>
-      <meta charset="UTF-8">
-      <title>보장분석지 - ${data.customerName}</title>
-      <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { 
-          font-family: Arial, "Noto Sans KR", sans-serif;
-          padding: 15px;
-          background: white;
-          font-size: 9px;
-        }
-        ${getPreviewStyles()}
-      </style>
-    </head>
-    <body>
-      ${previewHTML}
-      <script>
-        // 페이지가 완전히 로드된 후 인쇄 대화상자 열기
-        window.onload = function() {
-          setTimeout(function() {
-            window.print();
-            // 인쇄 후 창 닫기
-            setTimeout(function() {
-              window.close();
-            }, 1000);
-          }, 500);
-        };
-      </script>
-    </body>
-    </html>
-  `);
-  
-  printWindow.document.close();
-  
-  alert('보장분석지 이미지가 준비되었습니다. 인쇄 대화상자에서 "PDF로 저장" 또는 프린터를 선택해 이미지로 저장하세요.');
-}
-
-// 미리보기 HTML 생성
-function generatePreviewHTML(data) {
-  return `
-    <div class="print-header">
-      (${data.customerName})님의 한 장 요약 보장분석
-    </div>
-    
-    <div class="sections-container">
-      <!-- 암 섹션 -->
-      <div class="section">
-        <div class="section-title">암</div>
-        ${generateCoverageItems(data.coverages, COVERAGE_ITEMS.cancer)}
-      </div>
-      
-      <!-- 2대 중대질환 섹션 -->
-      <div class="section">
-        <div class="section-title">2대 중대질환</div>
-        ${generateCoverageItems(data.coverages, COVERAGE_ITEMS.majorDisease)}
-      </div>
-      
-      <!-- 5대 필수보험 섹션 -->
-      <div class="section">
-        <div class="section-title">5대 필수 보험</div>
-        
-        <div class="subsection">
-          <div class="subsection-title">실손의료비</div>
-          ${generateEssentialCoverageItem(data.coverages, 'diseaseHospitalization', '(질병)입원한도', '만원')}
-          ${generateEssentialCoverageItem(data.coverages, 'injuryHospitalization', '(상해)입원한도', '만원')}
-        </div>
-        
-        <div class="subsection">
-          <div class="subsection-title">운전자</div>
-          ${generateEssentialCoverageItem(data.coverages, 'criminalSettlement', '형사합의금', '만원', true)}
-          ${generateEssentialCoverageItem(data.coverages, 'lawyerAppointment', '변호사선임비', '만원', true)}
-        </div>
-        
-        <div class="subsection">
-          <div class="subsection-title">간병인일당</div>
-          ${data.caregiverOption === 'support' ? 
-            '<div class="coverage-item"><div class="coverage-name">외국 간병인 현물지원</div><div class="coverage-value">-</div></div>' :
-            `
-            ${generateEssentialCoverageItem(data.coverages, 'nursingHospitalOut', '요양병원 외', '만원/일')}
-            ${generateEssentialCoverageItem(data.coverages, 'nursingHospitalIn', '요양병원', '만원/일')}
-            ${generateEssentialCoverageItem(data.coverages, 'nursingCareIntegrated', '간호간병통합', '만원/일')}
-            `
-          }
-        </div>
-        
-        <div class="subsection">
-          <div class="subsection-title">일상생활배상책임</div>
-          ${generateEssentialCoverageItem(data.coverages, 'dailyLifeLiability', '일상생활배상책임', '만원')}
-        </div>
-        
-        <div class="subsection">
-          <div class="subsection-title">화재벌금</div>
-          ${generateEssentialCoverageItem(data.coverages, 'fireFine', '화재벌금', '만원')}
-        </div>
-      </div>
-    </div>
-    
-    <!-- 치료 보장 예시 -->
-    <div class="examples-container">
-      <div class="example-section">
-        <div class="example-title">일반암 치료 보장 예시</div>
-        ${generateExampleItem('다빈치로봇수술 1개 부위', calculateExample1(data.coverages))}
-        ${generateExampleItem('전이+표적', calculateExample2(data.coverages))}
-        ${generateExampleItem('중입자치료', calculateExample3(data.coverages))}
-      </div>
-      
-      <div class="example-section">
-        <div class="example-title">뇌경색 치료 보장 예시</div>
-        ${generateExampleItem('스텐트', calculateStentExample(data.coverages))}
-        ${generateExampleItem('스텐트+혈전용해', calculateStentThrombolysisExample(data.coverages))}
-        ${generateExampleItem('혈전용해+혈전제거+중환자실', calculateComplexTreatmentExample(data.coverages))}
-      </div>
-      
-      <div class="example-section">
-        <div class="example-title">급성심근경색 치료 보장 예시</div>
-        ${generateExampleItem('스텐트', calculateMyocardialStentExample(data.coverages))}
-        ${generateExampleItem('스텐트+혈전용해', calculateMyocardialStentThrombolysisExample(data.coverages))}
-        ${generateExampleItem('혈전용해+혈전제거+중환자실', calculateMyocardialComplexTreatmentExample(data.coverages))}
-      </div>
-    </div>
-    
-    <div style="margin-top: 15px; font-size: 7px; color: #666; text-align: center;">
-      * 단위: 만원 | 작성일: ${data.inputDate} | 생년월일: ${data.birthDate || ''}<br>
-      * 본 자료는 참고용이며, 실제 보장내용은 약관을 확인하시기 바랍니다.
-    </div>
-  `;
-}
-
-// 미리보기 스타일 반환
-function getPreviewStyles() {
-  return `
-    .print-header {
-      text-align: center;
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 20px;
-      color: #ff7f00;
-    }
-    
-    .sections-container {
-      display: flex !important;
-      gap: 15px;
-      margin-bottom: 20px;
-      width: 100%;
-    }
-    
-    .section {
-      flex: 1;
-      border: 1px solid #333;
-      padding: 10px;
-      min-height: 300px;
-    }
-    
-    .section-title {
-      text-align: center;
-      font-weight: 700;
-      font-size: 12px;
-      margin-bottom: 10px;
-      background: #ff7f00 !important;
-      color: white !important;
-      margin: -10px -10px 10px -10px;
-      padding: 8px;
-    }
-    
-    .coverage-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 4px 0;
-      padding: 2px 0;
-      border-bottom: 1px dotted #ccc;
-      font-size: 8px;
-      line-height: 1.2;
-    }
-    
-    .coverage-name {
-      flex: 1;
-      padding-right: 8px;
-      font-size: 8px;
-    }
-    
-    .coverage-value {
-      font-weight: 600;
-      color: #ff7f00;
-      min-width: 45px;
-      text-align: right;
-      font-size: 8px;
-    }
-    
-    .coverage-progress {
-      margin: 1px 6px;
-      height: 6px;
-      background: #f0f0f0;
-      border-radius: 3px;
-      overflow: hidden;
-      position: relative;
-      min-width: 25px;
-    }
-    
-    .progress-bar {
-      height: 100%;
-      border-radius: 3px;
-    }
-    
-    .progress-green { background: #28a745 !important; }
-    .progress-yellow { background: #ffc107 !important; }
-    .progress-red { background: #dc3545 !important; }
-    
-    .no-coverage-x {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: #dc3545 !important;
-      font-weight: 900;
-      font-size: 8px;
-      line-height: 1;
-    }
-    
-    .coverage-name.no-coverage { color: #dc3545 !important; }
-    .coverage-value.full-coverage { color: #28a745 !important; font-weight: 700; }
-    .coverage-value.insufficient-coverage { color: #dc3545 !important; }
-    
-    .subsection {
-      margin-bottom: 12px;
-      border: 1px solid #ddd;
-      padding: 8px;
-    }
-    
-    .subsection-title {
-      font-weight: 600;
-      font-size: 8px;
-      margin-bottom: 6px;
-      text-align: center;
-      background: #f8f9fa;
-      padding: 4px;
-      border: 1px solid #ddd;
-      margin: -8px -8px 6px -8px;
-    }
-    
-    .examples-container {
-      display: flex !important;
-      gap: 15px;
-      margin-top: 15px;
-      width: 100%;
-    }
-    
-    .example-section {
-      flex: 1;
-      border: 1px solid #333;
-      padding: 8px;
-    }
-    
-    .example-title {
-      font-weight: 700;
-      font-size: 9px;
-      margin-bottom: 8px;
-      text-align: center;
-      padding: 4px;
-      background: #f0f0f0;
-      border: 1px solid #333;
-      margin: -8px -8px 8px -8px;
-    }
-    
-    .example-item {
-      display: flex;
-      justify-content: space-between;
-      margin: 3px 0;
-      font-size: 8px;
-      padding: 2px 0;
-      border-bottom: 1px dotted #ccc;
-      line-height: 1.2;
-    }
-    
-    .example-name {
-      flex: 1;
-      font-size: 8px;
-    }
-    
-    .example-value {
-      font-weight: 600;
-      color: #ff7f00;
-      font-size: 8px;
-    }
-  `;
+  // 수동입력 2대 중대질환 테이블
+  const manualMajorDiseaseTable = document.getElementById('manualMajorDiseaseTable');
+  MANUAL_MAJOR_DISEASE_ITEMS.forEach(item => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <th>${item.name}</th>
+      <td class="unit-column">
+        <input type="text" id="${item.key}" placeholder="0">
+        <span class="unit-text">만원</span>
+      </td>
+    `;
+    manualMajorDiseaseTable.appendChild(row);
+  });
 }
 
 // 입력 폼 초기화
@@ -1480,20 +719,14 @@ function resetInputForm() {
   document.getElementById('birthDate').value = '';
   
   // 모든 담보 항목 초기화
-  Object.values(COVERAGE_ITEMS).flat().forEach(item => {
+  const allItems = [...AUTO_RECOGNITION_ITEMS, ...MANUAL_CANCER_ITEMS, ...MANUAL_MAJOR_DISEASE_ITEMS];
+  allItems.forEach(item => {
     const input = document.getElementById(item.key);
     if (input) input.value = '';
   });
   
-  // 5대 필수보험 항목들 초기화 (질병통원, 상해통원 제거)
-  const essentialInputs = [
-    'diseaseHospitalization', 'injuryHospitalization',
-    'criminalSettlement', 'lawyerAppointment',
-    'nursingHospitalOut', 'nursingHospitalIn', 'nursingCareIntegrated',
-    'dailyLifeLiability', 'fireFine'
-  ];
-  
-  essentialInputs.forEach(id => {
+  // 간병인 항목 초기화
+  ['nursingHospitalOut', 'nursingHospitalIn', 'nursingCareIntegrated'].forEach(id => {
     const input = document.getElementById(id);
     if (input) input.value = '';
   });
@@ -1510,31 +743,6 @@ function resetInputForm() {
   
   document.getElementById('ocrProcessBtn').disabled = true;
   document.getElementById('ocrStatus').textContent = '';
-}
-
-// 현재 데이터를 폼에 로드
-function loadCurrentDataToForm() {
-  if (!currentData.customerName) return;
-  
-  document.getElementById('customerName').value = currentData.customerName;
-  document.getElementById('birthDate').value = currentData.birthDate || '';
-  
-  // 담보 데이터 로드
-  if (currentData.coverages) {
-    Object.entries(currentData.coverages).forEach(([key, data]) => {
-      const input = document.getElementById(key);
-      if (input) {
-        input.value = data.value || '';
-      }
-    });
-  }
-  
-  // 간병인 옵션 로드
-  if (currentData.caregiverOption) {
-    document.getElementById('caregiverUse').checked = currentData.caregiverOption === 'use';
-    document.getElementById('caregiverSupport').checked = currentData.caregiverOption === 'support';
-    handleCaregiverOptionChange();
-  }
 }
 
 // 주요순환계 자동 계산 함수
@@ -1566,58 +774,21 @@ function handleMajorCirculatoryCalculation() {
   }
 }
 
-// 표준금액 대비 진행률 계산
-function calculateProgressPercentage(currentValue, standardAmount) {
-  if (!currentValue || currentValue == 0 || !standardAmount) return 0;
-  return (parseInt(currentValue) / standardAmount) * 100;
-}
-
-// 진행률 바 생성 (암, 2대중대질환용)
-function generateProgressBar(percentage, value) {
-  // 값이 0이면 빨간색 X 표시
-  if (value === 0) {
-    return `
-      <div class="coverage-progress">
-        <div class="no-coverage-x">✗</div>
-      </div>
-    `;
+// 간병인 옵션 변경 처리
+function handleCaregiverOptionChange() {
+  const isUse = document.getElementById('caregiverUse').checked;
+  const detailsRow = document.getElementById('caregiverDetails');
+  
+  if (isUse) {
+    detailsRow.style.display = 'table-row';
+  } else {
+    detailsRow.style.display = 'none';
+    // 지원 선택 시 세부 입력값들 초기화
+    ['nursingHospitalOut', 'nursingHospitalIn', 'nursingCareIntegrated'].forEach(id => {
+      const input = document.getElementById(id);
+      if (input) input.value = '';
+    });
   }
-  
-  let colorClass = 'progress-red';
-  if (percentage >= 100) colorClass = 'progress-green';
-  else if (percentage >= 30) colorClass = 'progress-yellow';
-  
-  const width = Math.min(percentage, 100);
-  
-  return `
-    <div class="coverage-progress">
-      <div class="progress-bar ${colorClass}" style="width: ${width}%"></div>
-    </div>
-  `;
-}
-
-// 5대 필수보험용 진행률 바 생성
-function generateEssentialProgressBar(percentage, value) {
-  // 값이 0이면 빨간색 X 표시
-  if (value === 0) {
-    return `
-      <div class="coverage-progress">
-        <div class="no-coverage-x">✗</div>
-      </div>
-    `;
-  }
-  
-  let colorClass = 'progress-red';
-  if (percentage >= 100) colorClass = 'progress-green';
-  else if (percentage >= 30) colorClass = 'progress-yellow';
-  
-  const width = Math.min(percentage, 100);
-  
-  return `
-    <div class="coverage-progress">
-      <div class="progress-bar ${colorClass}" style="width: ${width}%"></div>
-    </div>
-  `;
 }
 
 // 이미지 업로드 처리
@@ -1764,16 +935,14 @@ async function parseOCRResult(apiResult) {
 
 // 고객 정보 추출
 function extractCustomerInfo(text) {
-  // 이름 추출 (손덕령님의 한 장 요약 보장분석 형태)
+  // 이름 추출
   const namePatterns = [
     /([가-힣]{2,4})님의\s*한\s*장\s*요약\s*보장분석/,
     /손덕령님의/,
     /^([가-힣]{2,4})님/m,
     /성명[:\s]*([가-힣]{2,4})/,
     /이름[:\s]*([가-힣]{2,4})/,
-    /고객명[:\s]*([가-힣]{2,4})/,
-    /계약자[:\s]*([가-힣]{2,4})/,
-    /피보험자[:\s]*([가-힣]{2,4})/
+    /고객명[:\s]*([가-힣]{2,4})/
   ];
 
   for (const pattern of namePatterns) {
@@ -1785,14 +954,12 @@ function extractCustomerInfo(text) {
     }
   }
 
-  // 생년월일 추출 (생년월일 yy-mm-dd 형태 그대로 유지)
+  // 생년월일 추출
   const birthPatterns = [
     /생년월일\s*(\d{2}-\d{1,2}-\d{1,2})/,
     /생년월일\s*(\d{4}-\d{1,2}-\d{1,2})/,
     /생년월일\s*(\d{2}\.\d{1,2}\.\d{1,2})/,
-    /생년월일\s*(\d{4}\.\d{1,2}\.\d{1,2})/,
-    /(\d{2}-\d{1,2}-\d{1,2})\s*\/\s*상황일/,
-    /(\d{4}-\d{1,2}-\d{1,2})/
+    /생년월일\s*(\d{4}\.\d{1,2}\.\d{1,2})/
   ];
 
   for (const pattern of birthPatterns) {
@@ -1817,11 +984,9 @@ function extractCustomerInfo(text) {
   }
 }
 
-// 담보 금액 추출 (실제 양식에서 추출 가능한 항목만)
+// 담보 금액 추출 (자동인식 항목만)
 function extractCoverageAmounts(text) {
-  // 실제 양식에서 추출 가능한 항목들의 정확한 패턴
   const coveragePatterns = {
-    // 큰병보장 섹션에서 추출
     generalCancer: {
       name: '일반암진단비',
       extractPattern: /일반암\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
@@ -1850,8 +1015,6 @@ function extractCoverageAmounts(text) {
       name: '심근경색진단비',
       extractPattern: /급성심근경색증\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
     },
-    
-    // 의료보장 섹션에서 추출
     diseaseHospitalization: {
       name: '(질병)입원한도',
       extractPattern: /질병입원\s*실손\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
@@ -1860,8 +1023,6 @@ function extractCoverageAmounts(text) {
       name: '(상해)입원한도',
       extractPattern: /상해입원\s*실손\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
     },
-    
-    // 생활보장 섹션에서 추출 - 만원 표기 방식
     criminalSettlement: {
       name: '형사합의금',
       extractPattern: /대인형사합의지원금\s*([0-9,]+)만원/i
@@ -1888,105 +1049,21 @@ function extractCoverageAmounts(text) {
       return;
     }
 
-    // 기본 패턴 시도
-    let match = text.match(config.extractPattern);
+    const match = text.match(config.extractPattern);
     if (match && match[1]) {
       let amount = match[1].replace(/,/g, '');
       if (amount && !isNaN(amount)) {
         element.value = amount;
         console.log(`✅ ${config.name} 추출 성공: ${amount}만원`);
-        return;
       }
-    }
-
-    // 대안 패턴들 시도 (공백이나 특수문자 변화에 대응)
-    const alternativePatterns = [];
-    
-    if (key === 'cerebrovascularDiagnosis') {
-      alternativePatterns.push(
-        /뇌혈관.*질환\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
-        /뇌.*혈관.*질환\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
-      );
-    } else if (key === 'criminalSettlement') {
-      alternativePatterns.push(
-        /대인.*형사.*합의.*지원금\s*([0-9,]+)만원/i,
-        /형사.*합의.*지원금\s*([0-9,]+)만원/i,
-        /대인형사합의지원금\s*([0-9,]+)\s*만원/i
-      );
-    } else if (key === 'lawyerAppointment') {
-      alternativePatterns.push(
-        /변호사.*선임.*비용\s*([0-9,]+)만원/i,
-        /변호사선임비\s*([0-9,]+)만원/i,
-        /변호사선임비용\s*([0-9,]+)\s*만원/i
-      );
-    } else if (key === 'ischemicHeartDiagnosis') {
-      alternativePatterns.push(
-        /허혈성심장질환\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
-        /허혈성심질환\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
-        /허혈성.*심.*질환\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
-      );
-    } else if (key === 'diseaseHospitalization') {
-      alternativePatterns.push(
-        /질병.*입원.*실손\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
-        /질병입원실손\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
-      );
-    } else if (key === 'injuryHospitalization') {
-      alternativePatterns.push(
-        /상해.*입원.*실손\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
-        /상해입원실손\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
-      );
-    }
-
-    // 대안 패턴들 시도
-    for (const altPattern of alternativePatterns) {
-      const altMatch = text.match(altPattern);
-      if (altMatch && altMatch[1]) {
-        let amount = altMatch[1].replace(/,/g, '');
-        if (amount && !isNaN(amount)) {
-          element.value = amount;
-          console.log(`✅ ${config.name} 대안패턴 추출 성공: ${amount}만원`);
-          return;
-        }
-      }
-    }
-
-    console.log(`❌ ${config.name} 패턴 매칭 실패`);
-  });
-
-  // 추가 디버깅: 특정 키워드가 포함된 라인 찾기
-  const lines = text.split('\n');
-  const keywords = ['일반암', '통합암', '표적항암약물', '뇌혈관질환', '뇌졸중', '허혈성심질환', '급성심근경색증', '질병입원', '상해입원', '대인형사합의지원금', '변호사선임비용', '일상생활배상책임', '화재벌금'];
-  
-  keywords.forEach(keyword => {
-    const matchingLines = lines.filter(line => line.includes(keyword));
-    if (matchingLines.length > 0) {
-      console.log(`🔍 "${keyword}" 포함 라인:`, matchingLines);
+    } else {
+      console.log(`❌ ${config.name} 패턴 매칭 실패`);
     }
   });
-  
-  // 전체 OCR 텍스트 로그
-  console.log('📄 OCR 전체 텍스트:');
-  console.log(text);
-  console.log('📏 텍스트 길이:', text.length);
 }
 
-// 샘플 데이터 채우기 (테스트용 - 백업으로 유지)
-function fillSampleData() {
-  document.getElementById('customerName').value = '홍길동';
-  document.getElementById('birthDate').value = '1980.01.15';
-  document.getElementById('generalCancer').value = '1000';
-  document.getElementById('targetTherapy').value = '5000';
-  document.getElementById('surgery5Type').value = '1000';
-  document.getElementById('strokeDiagnosis').value = '2000';
-  document.getElementById('diseaseHospitalization').value = '10';
-  document.getElementById('criminalSettlement').value = '3000';
-  document.getElementById('nursingHospitalOut').value = '10';
-  document.getElementById('dailyLifeLiability').value = '2000';
-  document.getElementById('fireFine').value = '300';
-}
-
-// 데이터 저장 및 미리보기
-function saveAndPreview() {
+// 데이터 저장 및 이미지 다운로드
+async function saveAndDownloadImage() {
   const customerName = document.getElementById('customerName').value.trim();
   
   if (!customerName) {
@@ -2003,19 +1080,14 @@ function saveAndPreview() {
     caregiverOption: document.querySelector('input[name="caregiverOption"]:checked').value
   };
   
-  // 모든 담보 데이터 수집 (질병통원, 상해통원 제거)
+  // 모든 담보 데이터 수집
   const allFields = [
-    ...Object.values(COVERAGE_ITEMS).flat(),
-    // 5대 필수보험 항목들
-    { key: 'diseaseHospitalization', name: '(질병)입원한도' },
-    { key: 'injuryHospitalization', name: '(상해)입원한도' },
-    { key: 'criminalSettlement', name: '형사합의금' },
-    { key: 'lawyerAppointment', name: '변호사선임비' },
+    ...AUTO_RECOGNITION_ITEMS,
+    ...MANUAL_CANCER_ITEMS,
+    ...MANUAL_MAJOR_DISEASE_ITEMS,
     { key: 'nursingHospitalOut', name: '요양병원 외' },
     { key: 'nursingHospitalIn', name: '요양병원' },
-    { key: 'nursingCareIntegrated', name: '간호간병통합' },
-    { key: 'dailyLifeLiability', name: '일상생활배상책임' },
-    { key: 'fireFine', name: '화재벌금' }
+    { key: 'nursingCareIntegrated', name: '간호간병통합' }
   ];
   
   allFields.forEach(item => {
@@ -2031,10 +1103,384 @@ function saveAndPreview() {
   // 저장
   saveDataToStorage(currentData);
   
-  // 미리보기 생성
-  generatePreview(currentData);
+  // 이미지 생성 및 다운로드
+  await generateAndDownloadImage(currentData);
   
-  showScreen('preview');
+  alert('이미지가 저장되었습니다!');
+}
+
+// 이미지 생성 및 다운로드
+async function generateAndDownloadImage(data) {
+  const container = document.getElementById('hiddenPrintContainer');
+  
+  // HTML 내용 생성
+  container.innerHTML = `
+    <div style="background: white; padding: 20px; width: 1200px; font-family: Arial, sans-serif;">
+      <style>
+        .print-header {
+          text-align: center;
+          font-size: 20px;
+          font-weight: 700;
+          margin-bottom: 20px;
+          color: #ff7f00;
+        }
+        .sections-container {
+          display: flex;
+          gap: 15px;
+          margin-bottom: 20px;
+        }
+        .section {
+          flex: 1;
+          border: 1px solid #333;
+          padding: 10px;
+          min-height: 400px;
+        }
+        .section-title {
+          text-align: center;
+          font-weight: 700;
+          font-size: 14px;
+          margin-bottom: 10px;
+          background: #ff7f00;
+          color: white;
+          margin: -10px -10px 10px -10px;
+          padding: 8px;
+        }
+        .coverage-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin: 6px 0;
+          padding: 3px 0;
+          border-bottom: 1px dotted #ccc;
+          font-size: 11px;
+        }
+        .coverage-name {
+          flex: 1;
+          padding-right: 8px;
+        }
+        .coverage-value {
+          font-weight: 600;
+          color: #ff7f00;
+          min-width: 60px;
+          text-align: right;
+        }
+        .subsection {
+          margin-bottom: 15px;
+          border: 1px solid #ddd;
+          padding: 10px;
+        }
+        .subsection-title {
+          font-weight: 600;
+          font-size: 11px;
+          margin-bottom: 8px;
+          text-align: center;
+          background: #f8f9fa;
+          padding: 5px;
+          border: 1px solid #ddd;
+          margin: -10px -10px 8px -10px;
+        }
+        .examples-container {
+          display: flex;
+          gap: 15px;
+          margin-top: 20px;
+        }
+        .example-section {
+          flex: 1;
+          border: 1px solid #333;
+          padding: 10px;
+        }
+        .example-title {
+          font-weight: 700;
+          font-size: 12px;
+          margin-bottom: 10px;
+          text-align: center;
+          padding: 5px;
+          background: #f0f0f0;
+          border: 1px solid #333;
+          margin: -10px -10px 10px -10px;
+        }
+        .example-item {
+          display: flex;
+          justify-content: space-between;
+          margin: 5px 0;
+          font-size: 11px;
+          padding: 3px 0;
+          border-bottom: 1px dotted #ccc;
+        }
+        .example-name {
+          flex: 1;
+        }
+        .example-value {
+          font-weight: 600;
+          color: #ff7f00;
+        }
+      </style>
+      
+      <div class="print-header">
+        (${data.customerName})님의 한 장 요약 보장분석
+      </div>
+      
+      <div class="sections-container">
+        <div class="section">
+          <div class="section-title">암</div>
+          ${generateCoverageItemsForPrint(data.coverages, COVERAGE_ITEMS.cancer)}
+        </div>
+        
+        <div class="section">
+          <div class="section-title">2대 중대질환</div>
+          ${generateCoverageItemsForPrint(data.coverages, COVERAGE_ITEMS.majorDisease)}
+        </div>
+        
+        <div class="section">
+          <div class="section-title">5대 필수 보험</div>
+          
+          <div class="subsection">
+            <div class="subsection-title">실손의료비</div>
+            ${generateEssentialItemForPrint(data.coverages, 'diseaseHospitalization', '(질병)입원한도', '만원/일')}
+            ${generateEssentialItemForPrint(data.coverages, 'injuryHospitalization', '(상해)입원한도', '만원/일')}
+          </div>
+          
+          <div class="subsection">
+            <div class="subsection-title">운전자</div>
+            ${generateEssentialItemForPrint(data.coverages, 'criminalSettlement', '형사합의금', '만원')}
+            ${generateEssentialItemForPrint(data.coverages, 'lawyerAppointment', '변호사선임비', '만원')}
+          </div>
+          
+          <div class="subsection">
+            <div class="subsection-title">간병인일당</div>
+            ${data.caregiverOption === 'support' ? 
+              '<div class="coverage-item"><div class="coverage-name">외국 간병인 현물지원</div><div class="coverage-value">-</div></div>' :
+              `
+              ${generateEssentialItemForPrint(data.coverages, 'nursingHospitalOut', '요양병원 외', '만원/일')}
+              ${generateEssentialItemForPrint(data.coverages, 'nursingHospitalIn', '요양병원', '만원/일')}
+              ${generateEssentialItemForPrint(data.coverages, 'nursingCareIntegrated', '간호간병통합', '만원/일')}
+              `
+            }
+          </div>
+          
+          <div class="subsection">
+            <div class="subsection-title">일상생활배상책임</div>
+            ${generateEssentialItemForPrint(data.coverages, 'dailyLifeLiability', '일상생활배상책임', '만원')}
+          </div>
+          
+          <div class="subsection">
+            <div class="subsection-title">화재벌금</div>
+            ${generateEssentialItemForPrint(data.coverages, 'fireFine', '화재벌금', '만원')}
+          </div>
+        </div>
+      </div>
+      
+      <div class="examples-container">
+        <div class="example-section">
+          <div class="example-title">일반암 치료 보장 예시</div>
+          ${generateExampleItemForPrint('다빈치로봇수술 1개 부위', calculateExample1(data.coverages))}
+          ${generateExampleItemForPrint('전이+표적', calculateExample2(data.coverages))}
+          ${generateExampleItemForPrint('중입자치료', calculateExample3(data.coverages))}
+        </div>
+        
+        <div class="example-section">
+          <div class="example-title">뇌경색 치료 보장 예시</div>
+          ${generateExampleItemForPrint('스텐트', calculateStentExample(data.coverages))}
+          ${generateExampleItemForPrint('스텐트+혈전용해', calculateStentThrombolysisExample(data.coverages))}
+          ${generateExampleItemForPrint('혈전용해+혈전제거+중환자실', calculateComplexTreatmentExample(data.coverages))}
+        </div>
+        
+        <div class="example-section">
+          <div class="example-title">급성심근경색 치료 보장 예시</div>
+          ${generateExampleItemForPrint('스텐트', calculateMyocardialStentExample(data.coverages))}
+          ${generateExampleItemForPrint('스텐트+혈전용해', calculateMyocardialStentThrombolysisExample(data.coverages))}
+          ${generateExampleItemForPrint('혈전용해+혈전제거+중환자실', calculateMyocardialComplexTreatmentExample(data.coverages))}
+        </div>
+      </div>
+      
+      <div style="margin-top: 20px; font-size: 10px; color: #666; text-align: center;">
+        * 단위: 만원 | 작성일: ${data.inputDate} | 생년월일: ${data.birthDate || ''}<br>
+        * 본 자료는 참고용이며, 실제 보장내용은 약관을 확인하시기 바랍니다.
+      </div>
+    </div>
+  `;
+  
+  // html2canvas를 사용하여 이미지 생성
+  try {
+    const canvas = await html2canvas(container.firstElementChild, {
+      scale: 2,
+      logging: false,
+      useCORS: true,
+      backgroundColor: '#ffffff'
+    });
+    
+    // 캔버스를 이미지로 변환
+    canvas.toBlob(function(blob) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `보장분석_${data.customerName}_${new Date().getTime()}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+  } catch (error) {
+    console.error('이미지 생성 오류:', error);
+    alert('이미지 생성 중 오류가 발생했습니다.');
+  }
+  
+  // 컨테이너 비우기
+  container.innerHTML = '';
+}
+
+// 인쇄용 담보 항목 생성
+function generateCoverageItemsForPrint(coverages, items) {
+  return items.map(item => {
+    const coverage = coverages[item.key];
+    const value = coverage ? parseInt(coverage.value) : 0;
+    const displayValue = value ? `${value}만원` : '0만원';
+    
+    return `
+      <div class="coverage-item">
+        <div class="coverage-name">${item.name}</div>
+        <div class="coverage-value">${displayValue}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// 인쇄용 5대 필수보험 항목 생성
+function generateEssentialItemForPrint(coverages, key, name, unit) {
+  const coverage = coverages[key];
+  const value = coverage ? parseInt(coverage.value) : 0;
+  const displayValue = value ? `${value}${unit}` : `0${unit}`;
+  
+  return `
+    <div class="coverage-item">
+      <div class="coverage-name">${name}</div>
+      <div class="coverage-value">${displayValue}</div>
+    </div>
+  `;
+}
+
+// 인쇄용 예시 항목 생성
+function generateExampleItemForPrint(name, value) {
+  return `
+    <div class="example-item">
+      <div class="example-name">${name}</div>
+      <div class="example-value">${value}만원</div>
+    </div>
+  `;
+}
+
+// 치료 보장 예시 계산 함수들
+function calculateExample1(coverages) {
+  const c5 = parseInt(coverages.generalCancer?.value || 0);
+  const c6 = parseInt(coverages.totalCancer?.value || 0);
+  const c8 = parseInt(coverages.cancerSpecificTreatment?.value || 0);
+  const c9 = parseInt(coverages.cancerNonCoveredTreatment?.value || 0);
+  const c12 = parseInt(coverages.cancerSurgery?.value || 0);
+  const c13 = parseInt(coverages.daVinciSurgery?.value || 0);
+  const c14 = parseInt(coverages.surgery5Type?.value || 0);
+  
+  return (c5 + c6 + c8 + c9 + c12 + c13 + c14).toLocaleString();
+}
+
+function calculateExample2(coverages) {
+  const c5 = parseInt(coverages.generalCancer?.value || 0);
+  const c6 = parseInt(coverages.totalCancer?.value || 0);
+  const c7 = parseInt(coverages.metastasisCancer?.value || 0);
+  const c8 = parseInt(coverages.cancerSpecificTreatment?.value || 0);
+  const c9 = parseInt(coverages.cancerNonCoveredTreatment?.value || 0);
+  const c10 = parseInt(coverages.targetTherapy?.value || 0);
+  
+  return (c5 + c6 + c7 + c8 + c9 + c10).toLocaleString();
+}
+
+function calculateExample3(coverages) {
+  const c5 = parseInt(coverages.generalCancer?.value || 0);
+  const c6 = parseInt(coverages.totalCancer?.value || 0);
+  const c8 = parseInt(coverages.cancerSpecificTreatment?.value || 0);
+  const c9 = parseInt(coverages.cancerNonCoveredTreatment?.value || 0);
+  const c11 = parseInt(coverages.heavyIonTherapy?.value || 0);
+  
+  return (c5 + c6 + c8 + c9 + c11).toLocaleString();
+}
+
+function calculateStentExample(coverages) {
+  const g5 = parseInt(coverages.cerebrovascularDiagnosis?.value || 0);
+  const g6 = parseInt(coverages.strokeDiagnosis?.value || 0);
+  const g15 = parseInt(coverages.twoMajorTreatment?.value || 0);
+  const g16 = parseInt(coverages.majorCirculatorySurgery?.value || 0);
+  const g9 = parseInt(coverages.cerebrovascularSurgery?.value || 0);
+  const g10 = parseInt(coverages.strokeSurgery?.value || 0);
+  const g21 = parseInt(coverages.surgery3Type?.value || 0);
+  const g23 = parseInt(coverages.disease124Surgery?.value || 0);
+  const g24 = parseInt(coverages.sevenOrganSurgery?.value || 0);
+  
+  return (g5 + g6 + g15 + g16 + g9 + g10 + g21 + g23 + g24/2).toLocaleString();
+}
+
+function calculateStentThrombolysisExample(coverages) {
+  const baseValue = parseFloat(calculateStentExample(coverages).replace(/,/g, ''));
+  const g18 = parseInt(coverages.majorCirculatoryThrombolysis?.value || 0);
+  const g13 = parseInt(coverages.strokeThrombolysis?.value || 0);
+  
+  return (baseValue + g18 + g13).toLocaleString();
+}
+
+function calculateComplexTreatmentExample(coverages) {
+  const g5 = parseInt(coverages.cerebrovascularDiagnosis?.value || 0);
+  const g6 = parseInt(coverages.strokeDiagnosis?.value || 0);
+  const g15 = parseInt(coverages.twoMajorTreatment?.value || 0);
+  const g17 = parseInt(coverages.majorCirculatoryThrombectomy?.value || 0);
+  const g9 = parseInt(coverages.cerebrovascularSurgery?.value || 0);
+  const g10 = parseInt(coverages.strokeSurgery?.value || 0);
+  const g21 = parseInt(coverages.surgery3Type?.value || 0);
+  const g23 = parseInt(coverages.disease124Surgery?.value || 0);
+  const g24 = parseInt(coverages.sevenOrganSurgery?.value || 0);
+  const g18 = parseInt(coverages.majorCirculatoryThrombolysis?.value || 0);
+  const g13 = parseInt(coverages.strokeThrombolysis?.value || 0);
+  const g19 = parseInt(coverages.majorCirculatoryICU?.value || 0);
+  const g20 = parseInt(coverages.thrombectomyTreatment?.value || 0);
+  
+  return (g5 + g6 + g15 + g17 + g9 + g10 + g21 + g23 + g24/2 + g18 + g13 + g19 + g20).toLocaleString();
+}
+
+function calculateMyocardialStentExample(coverages) {
+  const g7 = parseInt(coverages.ischemicHeartDiagnosis?.value || 0);
+  const g8 = parseInt(coverages.myocardialInfarctionDiagnosis?.value || 0);
+  const g15 = parseInt(coverages.twoMajorTreatment?.value || 0);
+  const g16 = parseInt(coverages.majorCirculatorySurgery?.value || 0);
+  const g11 = parseInt(coverages.ischemicHeartSurgery?.value || 0);
+  const g12 = parseInt(coverages.myocardialInfarctionSurgery?.value || 0);
+  const g21 = parseInt(coverages.surgery3Type?.value || 0);
+  const g23 = parseInt(coverages.disease124Surgery?.value || 0);
+  const g24 = parseInt(coverages.sevenOrganSurgery?.value || 0);
+  
+  return (g7 + g8 + g15 + g16 + g11 + g12 + g21 + g23 + g24/2).toLocaleString();
+}
+
+function calculateMyocardialStentThrombolysisExample(coverages) {
+  const baseValue = parseFloat(calculateMyocardialStentExample(coverages).replace(/,/g, ''));
+  const g18 = parseInt(coverages.majorCirculatoryThrombolysis?.value || 0);
+  const g14 = parseInt(coverages.myocardialInfarctionThrombolysis?.value || 0);
+  
+  return (baseValue + g18 + g14).toLocaleString();
+}
+
+function calculateMyocardialComplexTreatmentExample(coverages) {
+  const g7 = parseInt(coverages.ischemicHeartDiagnosis?.value || 0);
+  const g8 = parseInt(coverages.myocardialInfarctionDiagnosis?.value || 0);
+  const g15 = parseInt(coverages.twoMajorTreatment?.value || 0);
+  const g17 = parseInt(coverages.majorCirculatoryThrombectomy?.value || 0);
+  const g11 = parseInt(coverages.ischemicHeartSurgery?.value || 0);
+  const g12 = parseInt(coverages.myocardialInfarctionSurgery?.value || 0);
+  const g21 = parseInt(coverages.surgery3Type?.value || 0);
+  const g23 = parseInt(coverages.disease124Surgery?.value || 0);
+  const g24 = parseInt(coverages.sevenOrganSurgery?.value || 0);
+  const g18 = parseInt(coverages.majorCirculatoryThrombolysis?.value || 0);
+  const g14 = parseInt(coverages.myocardialInfarctionThrombolysis?.value || 0);
+  const g19 = parseInt(coverages.majorCirculatoryICU?.value || 0);
+  const g20 = parseInt(coverages.thrombectomyTreatment?.value || 0);
+  
+  return (g7 + g8 + g15 + g17 + g11 + g12 + g21 + g23 + g24/2 + g18 + g14 + g19 + g20).toLocaleString();
 }
 
 // 로컬 스토리지에 데이터 저장
@@ -2098,557 +1544,41 @@ function filterSavedList() {
   `).join('');
 }
 
-// 저장된 항목 로드
+// 저장된 항목 로드하여 입력 화면에 표시
 function loadSavedItem(customerName) {
   const data = savedDataList.find(item => item.customerName === customerName);
   if (!data) return;
   
   currentData = data;
   
-  // 미리보기 생성 후 화면 전환
-  generatePreview(data);
-  showScreen('preview');
+  // 입력 화면으로 이동하고 데이터 로드
+  showScreen('input');
+  loadCurrentDataToForm();
 }
 
-// 미리보기 생성 (가로형 A4 양식)
-function generatePreview(data) {
-  const preview = document.getElementById('printPreview');
+// 현재 데이터를 폼에 로드
+function loadCurrentDataToForm() {
+  if (!currentData.customerName) return;
   
-  // A4 가로 양식으로 보장분석지 생성
-  preview.innerHTML = `
-    <div class="print-header">
-      (${data.customerName})님의 한 장 요약 보장분석
-    </div>
-    
-    <div class="sections-container">
-      <!-- 암 섹션 -->
-      <div class="section">
-        <div class="section-title">암</div>
-        ${generateCoverageItems(data.coverages, COVERAGE_ITEMS.cancer)}
-      </div>
-      
-      <!-- 2대 중대질환 섹션 -->
-      <div class="section">
-        <div class="section-title">2대 중대질환</div>
-        ${generateCoverageItems(data.coverages, COVERAGE_ITEMS.majorDisease)}
-      </div>
-      
-      <!-- 5대 필수보험 섹션 -->
-      <div class="section">
-        <div class="section-title">5대 필수 보험</div>
-        
-        <div class="subsection">
-          <div class="subsection-title">실손의료비</div>
-          ${generateEssentialCoverageItem(data.coverages, 'diseaseHospitalization', '(질병)입원한도', '만원/일')}
-          ${generateEssentialCoverageItem(data.coverages, 'injuryHospitalization', '(상해)입원한도', '만원/일')}
-        </div>
-        
-        <div class="subsection">
-          <div class="subsection-title">운전자</div>
-          ${generateEssentialCoverageItem(data.coverages, 'criminalSettlement', '형사합의금', '만원', true)}
-          ${generateEssentialCoverageItem(data.coverages, 'lawyerAppointment', '변호사선임비', '만원', true)}
-        </div>
-        
-        <div class="subsection">
-          <div class="subsection-title">간병인일당</div>
-          ${data.caregiverOption === 'support' ? 
-            '<div class="coverage-item"><div class="coverage-name">외국 간병인 현물지원</div><div class="coverage-value">-</div></div>' :
-            `
-            ${generateEssentialCoverageItem(data.coverages, 'nursingHospitalOut', '요양병원 외', '만원/일')}
-            ${generateEssentialCoverageItem(data.coverages, 'nursingHospitalIn', '요양병원', '만원/일')}
-            ${generateEssentialCoverageItem(data.coverages, 'nursingCareIntegrated', '간호간병통합', '만원/일')}
-            `
-          }
-        </div>
-        
-        <div class="subsection">
-          <div class="subsection-title">일상생활배상책임</div>
-          ${generateEssentialCoverageItem(data.coverages, 'dailyLifeLiability', '일상생활배상책임', '만원')}
-        </div>
-        
-        <div class="subsection">
-          <div class="subsection-title">화재벌금</div>
-          ${generateEssentialCoverageItem(data.coverages, 'fireFine', '화재벌금', '만원')}
-        </div>
-      </div>
-    </div>
-    
-    <!-- 치료 보장 예시 -->
-    <div class="examples-container">
-      <div class="example-section">
-        <div class="example-title">일반암 치료 보장 예시</div>
-        ${generateExampleItem('다빈치로봇수술 1개 부위', calculateExample1(data.coverages))}
-        ${generateExampleItem('전이+표적', calculateExample2(data.coverages))}
-        ${generateExampleItem('중입자치료', calculateExample3(data.coverages))}
-      </div>
-      
-      <div class="example-section">
-        <div class="example-title">뇌경색 치료 보장 예시</div>
-        ${generateExampleItem('스텐트', calculateStentExample(data.coverages))}
-        ${generateExampleItem('스텐트+혈전용해', calculateStentThrombolysisExample(data.coverages))}
-        ${generateExampleItem('혈전용해+혈전제거+중환자실', calculateComplexTreatmentExample(data.coverages))}
-      </div>
-      
-      <div class="example-section">
-        <div class="example-title">급성심근경색 치료 보장 예시</div>
-        ${generateExampleItem('스텐트', calculateMyocardialStentExample(data.coverages))}
-        ${generateExampleItem('스텐트+혈전용해', calculateMyocardialStentThrombolysisExample(data.coverages))}
-        ${generateExampleItem('혈전용해+혈전제거+중환자실', calculateMyocardialComplexTreatmentExample(data.coverages))}
-      </div>
-    </div>
-    
-    <div style="margin-top: 15px; font-size: 7px; color: #666; text-align: center;">
-      * 단위: 만원 | 작성일: ${data.inputDate} | 생년월일: ${data.birthDate || ''}<br>
-      * 본 자료는 참고용이며, 실제 보장내용은 약관을 확인하시기 바랍니다.
-    </div>
-  `;
-}
-
-// 간병인 옵션 변경 처리
-function handleCaregiverOptionChange() {
-  const isUse = document.getElementById('caregiverUse').checked;
-  const detailsRow = document.getElementById('caregiverDetails');
+  document.getElementById('customerName').value = currentData.customerName;
+  document.getElementById('birthDate').value = currentData.birthDate || '';
   
-  if (isUse) {
-    detailsRow.style.display = 'table-row';
-  } else {
-    detailsRow.style.display = 'none';
-    // 지원 선택 시 세부 입력값들 초기화
-    ['nursingHospitalOut', 'nursingHospitalIn', 'nursingCareIntegrated'].forEach(id => {
-      const input = document.getElementById(id);
-      if (input) input.value = '';
+  // 담보 데이터 로드
+  if (currentData.coverages) {
+    Object.entries(currentData.coverages).forEach(([key, data]) => {
+      const input = document.getElementById(key);
+      if (input) {
+        input.value = data.value || '';
+      }
     });
   }
-}
-
-// 담보 항목 생성 (진행률 바 포함)
-function generateCoverageItems(coverages, items) {
-  return items.map(item => {
-    const coverage = coverages[item.key];
-    const value = coverage ? parseInt(coverage.value) : 0;
-    const percentage = calculateProgressPercentage(value, item.standardAmount);
-    
-    let nameClass = '';
-    if (value === 0) nameClass = 'no-coverage';
-    
-    const displayValue = value ? `${value}만원` : '0만원';
-    const progressBar = generateProgressBar(percentage, value);
-    
-    return `
-      <div class="coverage-item">
-        <div class="coverage-name ${nameClass}">${item.name}</div>
-        ${progressBar}
-        <div class="coverage-value">${displayValue}</div>
-      </div>
-    `;
-  }).join('');
-}
-
-// 5대 필수보험 항목 생성 (색상 표시 및 진행률 바)
-function generateEssentialCoverageItem(coverages, key, name, unit, isDriverSection = false) {
-  const coverage = coverages[key];
-  const value = coverage ? parseInt(coverage.value) : 0;
   
-  // 표준금액 찾기
-  const standardItem = ESSENTIAL_ITEMS.find(item => item.key === key);
-  const standardAmount = standardItem ? standardItem.standardAmount : 1000;
-  const percentage = calculateProgressPercentage(value, standardAmount);
-  
-  let nameClass = '';
-  let valueClass = '';
-  
-  if (value === 0) {
-    nameClass = 'no-coverage';
-  } else if (percentage >= 100) {
-    valueClass = 'full-coverage';
-  } else {
-    nameClass = 'insufficient-coverage';
+  // 간병인 옵션 로드
+  if (currentData.caregiverOption) {
+    document.getElementById('caregiverUse').checked = currentData.caregiverOption === 'use';
+    document.getElementById('caregiverSupport').checked = currentData.caregiverOption === 'support';
+    handleCaregiverOptionChange();
   }
-  
-  const displayValue = value ? `${value}${unit}` : `0${unit}`;
-  
-  // 운전자 구역이면 진행률 바 추가
-  let progressBar = '';
-  if (isDriverSection) {
-    progressBar = generateEssentialProgressBar(percentage, value);
-  }
-  
-  return `
-    <div class="coverage-item">
-      <div class="coverage-name ${nameClass}">${name}</div>
-      ${progressBar}
-      <div class="coverage-value ${valueClass}">${displayValue}</div>
-    </div>
-  `;
-}
-
-// 예시 항목 생성
-function generateExampleItem(name, value) {
-  return `
-    <div class="example-item">
-      <div class="example-name">${name}</div>
-      <div class="example-value">${value}만원</div>
-    </div>
-  `;
-}
-
-// 치료 보장 예시 계산 함수들 (엑셀 수식 기반)
-function calculateExample1(coverages) {
-  // C27: 다빈치로봇수술 = C5+C6+C8+C9+C12+C13+C14
-  // 일반암진단비 + 통합암진단비 + 암특정치료비 + 암특정치료비(비급여) + 암수술비 + 다빈치로봇수술비 + 1-5종수술비(5종)
-  const c5 = parseInt(coverages.generalCancer?.value || 0);
-  const c6 = parseInt(coverages.totalCancer?.value || 0);
-  const c8 = parseInt(coverages.cancerSpecificTreatment?.value || 0);
-  const c9 = parseInt(coverages.cancerNonCoveredTreatment?.value || 0);
-  const c12 = parseInt(coverages.cancerSurgery?.value || 0);
-  const c13 = parseInt(coverages.daVinciSurgery?.value || 0);
-  const c14 = parseInt(coverages.surgery5Type?.value || 0);
-  
-  return (c5 + c6 + c8 + c9 + c12 + c13 + c14).toLocaleString();
-}
-
-function calculateExample2(coverages) {
-  // C28: 1개 부위 전이+표적 = C5+C6+C7+C8+C9+C10
-  // 일반암진단비 + 통합암진단비 + 전이암진단비 + 암특정치료비 + 암특정치료비(비급여) + 표적항암치료비
-  const c5 = parseInt(coverages.generalCancer?.value || 0);
-  const c6 = parseInt(coverages.totalCancer?.value || 0);
-  const c7 = parseInt(coverages.metastasisCancer?.value || 0);
-  const c8 = parseInt(coverages.cancerSpecificTreatment?.value || 0);
-  const c9 = parseInt(coverages.cancerNonCoveredTreatment?.value || 0);
-  const c10 = parseInt(coverages.targetTherapy?.value || 0);
-  
-  return (c5 + c6 + c7 + c8 + c9 + c10).toLocaleString();
-}
-
-function calculateExample3(coverages) {
-  // C29: 중입자치료 = C5+C6+C8+C9+C11
-  // 일반암진단비 + 통합암진단비 + 암특정치료비 + 암특정치료비(비급여) + 중입자치료비
-  const c5 = parseInt(coverages.generalCancer?.value || 0);
-  const c6 = parseInt(coverages.totalCancer?.value || 0);
-  const c8 = parseInt(coverages.cancerSpecificTreatment?.value || 0);
-  const c9 = parseInt(coverages.cancerNonCoveredTreatment?.value || 0);
-  const c11 = parseInt(coverages.heavyIonTherapy?.value || 0);
-  
-  return (c5 + c6 + c8 + c9 + c11).toLocaleString();
-}
-
-function calculateStentExample(coverages) {
-  // G27: 스텐트 = G5+G6+G15+G16+G9+G10+G21+G23+G24/2
-  // 뇌혈관질환진단비 + 뇌졸중진단비 + 2대특정치료비 + 주요순환계(수술) + 뇌혈관질환수술비 + 뇌졸중수술비 + 1-5종수술비(3종) + 124대질병수술비(특정10대) + 7대기관수술비(뇌/심) 관혈/2
-  const g5 = parseInt(coverages.cerebrovascularDiagnosis?.value || 0);
-  const g6 = parseInt(coverages.strokeDiagnosis?.value || 0);
-  const g15 = parseInt(coverages.twoMajorTreatment?.value || 0);
-  const g16 = parseInt(coverages.majorCirculatorySurgery?.value || 0);
-  const g9 = parseInt(coverages.cerebrovascularSurgery?.value || 0);
-  const g10 = parseInt(coverages.strokeSurgery?.value || 0);
-  const g21 = parseInt(coverages.surgery3Type?.value || 0);
-  const g23 = parseInt(coverages.disease124Surgery?.value || 0);
-  const g24 = parseInt(coverages.sevenOrganSurgery?.value || 0);
-  
-  return (g5 + g6 + g15 + g16 + g9 + g10 + g21 + g23 + g24/2).toLocaleString();
-}
-
-function calculateStentThrombolysisExample(coverages) {
-  // G28: 스텐트+혈전용해 = G5+G6+G15+G16+G9+G10+G21+G23+G24/2+G18+G13
-  // 위 항목들 + 주요순환계(혈전용해) + 뇌졸중혈전용해
-  const baseValue = parseFloat(calculateStentExample(coverages).replace(/,/g, ''));
-  const g18 = parseInt(coverages.majorCirculatoryThrombolysis?.value || 0);
-  const g13 = parseInt(coverages.strokeThrombolysis?.value || 0);
-  
-  return (baseValue + g18 + g13).toLocaleString();
-}
-
-function calculateComplexTreatmentExample(coverages) {
-  // G29: 혈전용해+혈전제거+중환자실 = G5+G6+G15+G17+G9+G10+G21+G23+G24/2+G18+G13+G19+G20
-  // 기본 스텐트 항목들 + 주요순환계(혈전제거) + 주요순환계(혈전용해) + 뇌졸중혈전용해 + 주요순환계(중환자실) + 혈전제거치료비
-  const g5 = parseInt(coverages.cerebrovascularDiagnosis?.value || 0);
-  const g6 = parseInt(coverages.strokeDiagnosis?.value || 0);
-  const g15 = parseInt(coverages.twoMajorTreatment?.value || 0);
-  const g17 = parseInt(coverages.majorCirculatoryThrombectomy?.value || 0);
-  const g9 = parseInt(coverages.cerebrovascularSurgery?.value || 0);
-  const g10 = parseInt(coverages.strokeSurgery?.value || 0);
-  const g21 = parseInt(coverages.surgery3Type?.value || 0);
-  const g23 = parseInt(coverages.disease124Surgery?.value || 0);
-  const g24 = parseInt(coverages.sevenOrganSurgery?.value || 0);
-  const g18 = parseInt(coverages.majorCirculatoryThrombolysis?.value || 0);
-  const g13 = parseInt(coverages.strokeThrombolysis?.value || 0);
-  const g19 = parseInt(coverages.majorCirculatoryICU?.value || 0);
-  const g20 = parseInt(coverages.thrombectomyTreatment?.value || 0);
-  
-  return (g5 + g6 + g15 + g17 + g9 + g10 + g21 + g23 + g24/2 + g18 + g13 + g19 + g20).toLocaleString();
-}
-
-function calculateMyocardialStentExample(coverages) {
-  // K27: 스텐트 = G7+G8+G15+G16+G11+G12+G21+G23+G24/2
-  // 허혈성심장질환진단비 + 심근경색진단비 + 2대특정치료비 + 주요순환계(수술) + 허혈성심장질환수술비 + 심근경색수술비 + 1-5종수술비(3종) + 124대질병수술비(특정10대) + 7대기관수술비(뇌/심) 관혈/2
-  const g7 = parseInt(coverages.ischemicHeartDiagnosis?.value || 0);
-  const g8 = parseInt(coverages.myocardialInfarctionDiagnosis?.value || 0);
-  const g15 = parseInt(coverages.twoMajorTreatment?.value || 0);
-  const g16 = parseInt(coverages.majorCirculatorySurgery?.value || 0);
-  const g11 = parseInt(coverages.ischemicHeartSurgery?.value || 0);
-  const g12 = parseInt(coverages.myocardialInfarctionSurgery?.value || 0);
-  const g21 = parseInt(coverages.surgery3Type?.value || 0);
-  const g23 = parseInt(coverages.disease124Surgery?.value || 0);
-  const g24 = parseInt(coverages.sevenOrganSurgery?.value || 0);
-  
-  return (g7 + g8 + g15 + g16 + g11 + g12 + g21 + g23 + g24/2).toLocaleString();
-}
-
-function calculateMyocardialStentThrombolysisExample(coverages) {
-  // K28: 스텐트+혈전용해 = G7+G8+G15+G16+G11+G12+G21+G23+G24/2+G18+G14
-  // 위 항목들 + 주요순환계(혈전용해) + 심근경색혈전용해
-  const baseValue = parseFloat(calculateMyocardialStentExample(coverages).replace(/,/g, ''));
-  const g18 = parseInt(coverages.majorCirculatoryThrombolysis?.value || 0);
-  const g14 = parseInt(coverages.myocardialInfarctionThrombolysis?.value || 0);
-  
-  return (baseValue + g18 + g14).toLocaleString();
-}
-
-function calculateMyocardialComplexTreatmentExample(coverages) {
-  // K29: 혈전용해+혈전제거+중환자실 = G7+G8+G15+G17+G11+G12+G21+G23+G24/2+G18+G14+G19+G20
-  // 허혈성심장질환진단비 + 심근경색진단비 + 2대특정치료비 + 주요순환계(혈전제거) + 허혈성심장질환수술비 + 심근경색수술비 + 1-5종수술비(3종) + 124대질병수술비(특정10대) + 7대기관수술비(뇌/심) 관혈/2 + 주요순환계(혈전용해) + 심근경색혈전용해 + 주요순환계(중환자실) + 혈전제거치료비
-  const g7 = parseInt(coverages.ischemicHeartDiagnosis?.value || 0);
-  const g8 = parseInt(coverages.myocardialInfarctionDiagnosis?.value || 0);
-  const g15 = parseInt(coverages.twoMajorTreatment?.value || 0);
-  const g17 = parseInt(coverages.majorCirculatoryThrombectomy?.value || 0);
-  const g11 = parseInt(coverages.ischemicHeartSurgery?.value || 0);
-  const g12 = parseInt(coverages.myocardialInfarctionSurgery?.value || 0);
-  const g21 = parseInt(coverages.surgery3Type?.value || 0);
-  const g23 = parseInt(coverages.disease124Surgery?.value || 0);
-  const g24 = parseInt(coverages.sevenOrganSurgery?.value || 0);
-  const g18 = parseInt(coverages.majorCirculatoryThrombolysis?.value || 0);
-  const g14 = parseInt(coverages.myocardialInfarctionThrombolysis?.value || 0);
-  const g19 = parseInt(coverages.majorCirculatoryICU?.value || 0);
-  const g20 = parseInt(coverages.thrombectomyTreatment?.value || 0);
-  
-  return (g7 + g8 + g15 + g17 + g11 + g12 + g21 + g23 + g24/2 + g18 + g14 + g19 + g20).toLocaleString();
-}
-
-// 이미지 다운로드
-function downloadImage() {
-  const preview = document.getElementById('printPreview');
-  
-  // 인쇄용 스타일을 포함한 새 창 생성 (미리보기와 동일한 스타일)
-  const printWindow = window.open('', '_blank');
-  printWindow.document.write(`
-    <!DOCTYPE html>
-    <html lang="ko">
-    <head>
-      <title>보장분석지 - ${currentData.customerName}</title>
-      <meta charset="UTF-8">
-      <style>
-        * {
-          box-sizing: border-box;
-        }
-        
-        body { 
-          margin: 0; 
-          padding: 15px; 
-          font-family: Arial, "Noto Sans KR", sans-serif;
-          color: #333;
-          font-size: 9px;
-          background: white;
-        }
-        
-        @media print { 
-          body { 
-            margin: 0; 
-            padding: 10mm; 
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-          }
-          
-          .sections-container {
-            break-inside: avoid;
-            page-break-inside: avoid;
-          }
-          
-          .section {
-            break-inside: avoid;
-            page-break-inside: avoid;
-          }
-          
-          .examples-container {
-            break-inside: avoid;
-            page-break-inside: avoid;
-          }
-        }
-        
-        @page { 
-          size: A4 landscape; 
-          margin: 10mm;
-        }
-        
-        .print-header {
-          text-align: center;
-          font-size: 16px;
-          font-weight: 700;
-          margin-bottom: 20px;
-          color: #ff7f00;
-        }
-        
-        .sections-container {
-          display: flex !important;
-          gap: 15px;
-          margin-bottom: 20px;
-          width: 100%;
-        }
-        
-        .section {
-          flex: 1;
-          border: 1px solid #333;
-          padding: 10px;
-          min-height: 300px;
-        }
-        
-        .section-title {
-          text-align: center;
-          font-weight: 700;
-          font-size: 12px;
-          margin-bottom: 10px;
-          background: #ff7f00 !important;
-          color: white !important;
-          margin: -10px -10px 10px -10px;
-          padding: 8px;
-        }
-        
-        .coverage-item {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin: 4px 0;
-          padding: 2px 0;
-          border-bottom: 1px dotted #ccc;
-          font-size: 8px;
-          line-height: 1.2;
-        }
-        
-        .coverage-name {
-          flex: 1;
-          padding-right: 8px;
-          font-size: 8px;
-        }
-        
-        .coverage-value {
-          font-weight: 600;
-          color: #ff7f00;
-          min-width: 45px;
-          text-align: right;
-          font-size: 8px;
-        }
-        
-        .coverage-progress {
-          margin: 1px 6px;
-          height: 6px;
-          background: #f0f0f0;
-          border-radius: 3px;
-          overflow: hidden;
-          position: relative;
-          min-width: 25px;
-        }
-        
-        .progress-bar {
-          height: 100%;
-          border-radius: 3px;
-        }
-        
-        .progress-green { background: #28a745 !important; }
-        .progress-yellow { background: #ffc107 !important; }
-        .progress-red { background: #dc3545 !important; }
-        
-        .no-coverage-x {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          color: #dc3545 !important;
-          font-weight: 900;
-          font-size: 8px;
-          line-height: 1;
-        }
-        
-        .coverage-name.no-coverage { color: #dc3545 !important; }
-        .coverage-value.full-coverage { color: #28a745 !important; font-weight: 700; }
-        .coverage-value.insufficient-coverage { color: #dc3545 !important; }
-        
-        .subsection {
-          margin-bottom: 12px;
-          border: 1px solid #ddd;
-          padding: 8px;
-        }
-        
-        .subsection-title {
-          font-weight: 600;
-          font-size: 8px;
-          margin-bottom: 6px;
-          text-align: center;
-          background: #f8f9fa;
-          padding: 4px;
-          border: 1px solid #ddd;
-          margin: -8px -8px 6px -8px;
-        }
-        
-        .examples-container {
-          display: flex !important;
-          gap: 15px;
-          margin-top: 15px;
-          width: 100%;
-          break-inside: avoid;
-          page-break-inside: avoid;
-        }
-        
-        .example-section {
-          flex: 1;
-          border: 1px solid #333;
-          padding: 8px;
-        }
-        
-        .example-title {
-          font-weight: 700;
-          font-size: 9px;
-          margin-bottom: 8px;
-          text-align: center;
-          padding: 4px;
-          background: #f0f0f0;
-          border: 1px solid #333;
-          margin: -8px -8px 8px -8px;
-        }
-        
-        .example-item {
-          display: flex;
-          justify-content: space-between;
-          margin: 3px 0;
-          font-size: 8px;
-          padding: 2px 0;
-          border-bottom: 1px dotted #ccc;
-          line-height: 1.2;
-        }
-        
-        .example-name {
-          flex: 1;
-          font-size: 8px;
-        }
-        
-        .example-value {
-          font-weight: 600;
-          color: #ff7f00;
-          font-size: 8px;
-        }
-        
-        /* 하단 메타 정보 */
-        div[style*="margin-top: 15px"] {
-          margin-top: 15px !important;
-          font-size: 7px !important;
-        }
-      </style>
-    </head>
-    <body>
-      ${preview.innerHTML}
-    </body>
-    </html>
-  `);
-  
-  printWindow.document.close();
 }
 </script>
 
