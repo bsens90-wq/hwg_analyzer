@@ -1108,122 +1108,133 @@ function extractCoverageAmounts(text) {
   // 생활보장 섹션에서 값 찾기 (형사합의금, 변호사선임비 등)
   function findLifeInsuranceValue(keyword) {
     // 생활보장 섹션 찾기
-    let inLifeSection = false;
     let sectionStartIndex = -1;
     
     for (let i = 0; i < lines.length; i++) {
       if (lines[i].includes('생활보장')) {
-        inLifeSection = true;
         sectionStartIndex = i;
         break;
       }
     }
     
-    if (!inLifeSection) return null;
+    if (sectionStartIndex === -1) return null;
     
-    // 생활보장 섹션 내에서 키워드 찾기
-    for (let i = sectionStartIndex; i < Math.min(sectionStartIndex + 30, lines.length); i++) {
-      if (lines[i].includes(keyword)) {
-        console.log(`찾은 키워드 "${keyword}" at line ${i}: "${lines[i]}"`);
-        
-        // 특별 처리: 세로 배치된 레이아웃
-        // 대인형사합의지원금 -> 20,000만원
-        // 변호사선임비용 -> 5,000만원
-        // 운전자벌금 -> 3,500만원
-        // 화재벌금 -> 2,000만원
-        // 일상생활배상책임 -> 10,000만원
-        
-        if (keyword === '대인형사합의지원금') {
-          // 대인형사합의지원금은 보통 첫 번째 값
-          for (let j = i + 1; j < Math.min(i + 10, lines.length); j++) {
-            const match = lines[j].match(/([0-9,]+)만원/);
-            if (match && match[1]) {
-              // 20,000만원을 찾기
-              if (match[1].includes('20') || match[1] === '20,000') {
-                return match[1].replace(/,/g, '');
-              }
-            }
-          }
-        } else if (keyword === '변호사선임비용') {
-          // 변호사선임비용은 보통 두 번째 값
-          let valueCount = 0;
-          for (let j = sectionStartIndex; j < Math.min(sectionStartIndex + 20, lines.length); j++) {
-            const match = lines[j].match(/([0-9,]+)만원/);
-            if (match && match[1]) {
-              valueCount++;
-              // 일반적으로 5,000만원 또는 3,500만원
-              if (valueCount === 2 || match[1].includes('5,000') || match[1] === '5000') {
-                return match[1].replace(/,/g, '');
-              }
-            }
-          }
-        } else if (keyword === '화재벌금') {
-          // 화재벌금은 보통 2,000만원
-          for (let j = i + 1; j < Math.min(i + 10, lines.length); j++) {
-            const match = lines[j].match(/([0-9,]+)만원/);
-            if (match && match[1]) {
-              if (match[1].includes('2,000') || match[1] === '2000') {
-                return match[1].replace(/,/g, '');
-              }
-            }
-          }
-        } else if (keyword === '일상생활배상책임') {
-          // 일상생활배상책임은 보통 10,000만원
-          for (let j = i + 1; j < Math.min(i + 10, lines.length); j++) {
-            const match = lines[j].match(/([0-9,]+)만원/);
-            if (match && match[1]) {
-              if (match[1].includes('10,000') || match[1] === '10000') {
-                return match[1].replace(/,/g, '');
-              }
-            }
-          }
+    // 생활보장 섹션의 구조 분석
+    // 일반적으로 항목명들이 먼저 나오고, 그 다음에 값들이 나옴
+    let items = [];
+    let values = [];
+    
+    // 항목 수집 (대인형사합의지원금, 변호사선임비용 등)
+    for (let i = sectionStartIndex; i < Math.min(sectionStartIndex + 20, lines.length); i++) {
+      if (lines[i].includes('대인형사합의지원금')) items.push({name: '대인형사합의지원금', index: i});
+      if (lines[i].includes('변호사선임비용')) items.push({name: '변호사선임비용', index: i});
+      if (lines[i].includes('운전자벌금')) items.push({name: '운전자벌금', index: i});
+      if (lines[i].includes('화재벌금')) items.push({name: '화재벌금', index: i});
+      if (lines[i].includes('일상생활배상책임')) items.push({name: '일상생활배상책임', index: i});
+      
+      // 값 수집 (만원 단위)
+      const valueMatch = lines[i].match(/^([0-9,]+)만원$/);
+      if (valueMatch && valueMatch[1]) {
+        values.push({value: valueMatch[1].replace(/,/g, ''), index: i});
+      }
+    }
+    
+    console.log('생활보장 항목들:', items);
+    console.log('생활보장 값들:', values);
+    
+    // 특정 키워드에 대한 값 매핑
+    // 보통 레이아웃: 
+    // 대인형사합의지원금 - 20,000만원
+    // 변호사선임비용 - 5,000만원
+    // 운전자벌금 - 3,500만원
+    // 화재벌금 - 2,000만원
+    // 일상생활배상책임 - 10,000만원
+    
+    if (keyword === '대인형사합의지원금') {
+      // 20,000 찾기
+      for (let v of values) {
+        if (v.value === '20000' || v.value.includes('20')) {
+          return v.value;
         }
-        
-        // 기본 처리: 같은 줄 또는 다음 줄에서 찾기
-        const sameLine = lines[i];
-        let match = sameLine.match(/([0-9,]+)만원\s*$/);
-        if (!match) {
-          match = sameLine.match(/\s+([0-9,]+)만원/);
+      }
+      // 첫 번째 큰 값
+      if (values.length > 0) return values[0].value;
+    }
+    
+    if (keyword === '변호사선임비용') {
+      // 5,000 찾기
+      for (let v of values) {
+        if (v.value === '5000') {
+          return v.value;
         }
-        if (match && match[1]) {
-          return match[1].replace(/,/g, '');
+      }
+      // 3,500도 가능
+      for (let v of values) {
+        if (v.value === '3500') {
+          return v.value;
         }
-        
-        // 다음 줄에서 찾기
-        for (let j = i + 1; j < Math.min(i + 5, lines.length); j++) {
-          if (lines[j].match(/^\s*([0-9,]+)만원/)) {
-            const valueMatch = lines[j].match(/^\s*([0-9,]+)만원/);
-            if (valueMatch && valueMatch[1]) {
-              return valueMatch[1].replace(/,/g, '');
-            }
+      }
+      // 항목 순서로 찾기 - 보통 두 번째 큰 값
+      const sortedValues = [...values].sort((a, b) => parseInt(b.value) - parseInt(a.value));
+      if (sortedValues.length > 1) {
+        // 20000 다음으로 큰 값 찾기
+        for (let v of sortedValues) {
+          if (v.value !== '20000' && v.value !== '10000' && v.value !== '30' && parseInt(v.value) > 1000) {
+            return v.value;
           }
         }
       }
     }
     
-    // 대안: 항목 순서로 값 매칭
-    const itemOrder = ['대인형사합의지원금', '변호사선임비용', '운전자벌금', '화재벌금', '일상생활배상책임'];
-    const itemIndex = itemOrder.indexOf(keyword);
-    
-    if (itemIndex !== -1) {
-      let values = [];
-      for (let i = sectionStartIndex; i < Math.min(sectionStartIndex + 20, lines.length); i++) {
-        const match = lines[i].match(/([0-9,]+)만원/);
-        if (match && match[1]) {
-          values.push(match[1].replace(/,/g, ''));
+    if (keyword === '운전자벌금') {
+      // 3,500 찾기
+      for (let v of values) {
+        if (v.value === '3500') {
+          return v.value;
         }
       }
-      
-      // 일반적인 패턴: 20000, 5000, 3500, 2000, 10000
-      if (keyword === '변호사선임비용' && values.length > 1) {
-        // 5000을 찾기
-        for (let val of values) {
-          if (val === '5000' || val === '5,000') {
+    }
+    
+    if (keyword === '화재벌금') {
+      // 2,000 찾기
+      for (let v of values) {
+        if (v.value === '2000') {
+          return v.value;
+        }
+      }
+    }
+    
+    if (keyword === '일상생활배상책임') {
+      // 10,000 찾기
+      for (let v of values) {
+        if (v.value === '10000') {
+          return v.value;
+        }
+      }
+    }
+    
+    // 기본 처리: 키워드가 있는 줄 근처에서 값 찾기
+    for (let i = sectionStartIndex; i < Math.min(sectionStartIndex + 30, lines.length); i++) {
+      if (lines[i].includes(keyword)) {
+        // 같은 줄에서 찾기
+        const sameLine = lines[i];
+        let match = sameLine.match(/([0-9,]+)만원/);
+        if (match && match[1]) {
+          return match[1].replace(/,/g, '');
+        }
+        
+        // 다음 몇 줄에서 찾기
+        for (let j = i + 1; j < Math.min(i + 5, lines.length); j++) {
+          match = lines[j].match(/([0-9,]+)만원/);
+          if (match && match[1]) {
+            const val = match[1].replace(/,/g, '');
+            // 30같은 작은 값은 건너뛰기 (변호사선임비용의 경우)
+            if (keyword === '변호사선임비용' && parseInt(val) < 1000) {
+              continue;
+            }
             return val;
           }
         }
-        // 못 찾으면 두 번째 값 반환
-        if (values[1]) return values[1];
       }
     }
     
