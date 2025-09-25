@@ -1166,6 +1166,23 @@ async function processOCR() {
     return;
   }
   
+  // 일일 사용량 제한 체크
+  let dailyRequestCount = parseInt(localStorage.getItem('ocrRequestCount') || '0');
+  const today = new Date().toDateString();
+  const lastRequestDate = localStorage.getItem('lastRequestDate');
+
+  // 날짜가 바뀌면 카운트 리셋
+  if (lastRequestDate !== today) {
+    dailyRequestCount = 0;
+    localStorage.setItem('lastRequestDate', today);
+  }
+
+  // 일일 한도 체크 (50회)
+  if (dailyRequestCount >= 50) {
+    alert('일일 OCR 사용 한도(50회)를 초과했습니다. 내일 다시 시도해주세요.');
+    return;
+  }
+  
   try {
     ocrBtn.disabled = true;
     ocrStatus.innerHTML = '<span class="loading"></span> OCR 인식 중... 잠시만 기다려주세요.';
@@ -1173,11 +1190,13 @@ async function processOCR() {
     // 이미지를 base64로 변환
     const base64Image = imagePreview.src.split(',')[1];
     
-    // Google Vision API 호출 (실제 구현 시 API 키 필요)
-    // const result = await callGoogleVisionAPI(base64Image);
+    // Google Vision API 호출
+    const result = await callGoogleVisionAPI(base64Image);
+    await parseOCRResult(result);
     
-    // 테스트용 샘플 데이터 사용
-    fillSampleData();
+    // 성공 시 카운트 증가
+    dailyRequestCount++;
+    localStorage.setItem('ocrRequestCount', dailyRequestCount.toString());
     
     ocrStatus.innerHTML = '<span class="success">✅ OCR 인식이 완료되었습니다. 결과를 확인하고 필요시 수정해주세요.</span>';
   } catch (error) {
@@ -1188,9 +1207,9 @@ async function processOCR() {
   }
 }
 
-// Google Vision API 호출 (실제 구현용)
+// Google Vision API 호출
 async function callGoogleVisionAPI(base64Image) {
-  const API_KEY = 'YOUR_GOOGLE_VISION_API_KEY'; // 실제 API 키로 교체 필요
+  const API_KEY = 'AIzaSyDywqG3hrawe_KrgWVpj5Y34ySJE0xjGQM';
   
   const requestBody = {
     requests: [{
@@ -1213,13 +1232,153 @@ async function callGoogleVisionAPI(base64Image) {
   });
   
   if (!response.ok) {
-    throw new Error(`API 호출 실패: ${response.status}`);
+    throw new Error(`API 호출 실패: ${response.status} - ${response.statusText}`);
   }
   
   return await response.json();
 }
 
-// 샘플 데이터 채우기 (테스트용)
+// OCR 결과 파싱 및 입력 필드 자동 채우기
+async function parseOCRResult(apiResult) {
+  if (!apiResult || !apiResult.responses || !apiResult.responses[0]) {
+    throw new Error('OCR 결과를 받아올 수 없습니다.');
+  }
+
+  const detectedText = apiResult.responses[0].fullTextAnnotation?.text || '';
+  console.log('OCR 인식된 텍스트:', detectedText);
+
+  if (!detectedText.trim()) {
+    throw new Error('이미지에서 텍스트를 인식할 수 없습니다.');
+  }
+
+  // 텍스트에서 정보 추출
+  extractCustomerInfo(detectedText);
+  extractCoverageAmounts(detectedText);
+}
+
+// 고객 정보 추출
+function extractCustomerInfo(text) {
+  // 이름 추출 (다양한 패턴 시도)
+  const namePatterns = [
+    /성명[:\s]*([가-힣]{2,4})/,
+    /이름[:\s]*([가-힣]{2,4})/,
+    /고객명[:\s]*([가-힣]{2,4})/,
+    /^([가-힣]{2,4})\s*님/m,
+    /계약자[:\s]*([가-힣]{2,4})/,
+    /피보험자[:\s]*([가-힣]{2,4})/
+  ];
+
+  for (const pattern of namePatterns) {
+    const match = text.match(pattern);
+    if (match) {
+      document.getElementById('customerName').value = match[1];
+      break;
+    }
+  }
+
+  // 생년월일 추출
+  const birthPatterns = [
+    /생년월일[:\s]*(\d{4}[.\-/]\d{1,2}[.\-/]\d{1,2})/,
+    /생일[:\s]*(\d{4}[.\-/]\d{1,2}[.\-/]\d{1,2})/,
+    /(\d{4}[.\-/]\d{1,2}[.\-/]\d{1,2})/
+  ];
+
+  for (const pattern of birthPatterns) {
+    const match = text.match(pattern);
+    if (match) {
+      const date = match[1].replace(/[-/]/g, '.');
+      document.getElementById('birthDate').value = date;
+      break;
+    }
+  }
+}
+
+// 담보 금액 추출
+function extractCoverageAmounts(text) {
+  // 담보명과 금액 매칭 패턴
+  const coveragePatterns = {
+    // 암 관련
+    generalCancer: ['일반암진단비', '암진단비', '일반암'],
+    targetTherapy: ['표적항암치료비', '표적치료비', '표적항암'],
+    daVinciSurgery: ['다빈치로봇수술비', '다빈치수술비', '로봇수술비'],
+    cancerSurgery: ['암수술비'],
+    totalCancer: ['통합암진단비', '통합암'],
+    metastasisCancer: ['전이암진단비', '전이암'],
+    cancerSpecificTreatment: ['암특정치료비'],
+    cancerNonCoveredTreatment: ['암특정치료비(비급여)', '암비급여'],
+    heavyIonTherapy: ['중입자치료비', '중입자'],
+    surgery5Type: ['1-5종수술비', '5종수술비'],
+    
+    // 2대 중대질환
+    strokeDiagnosis: ['뇌졸중진단비', '뇌졸중'],
+    myocardialInfarctionDiagnosis: ['심근경색진단비', '심근경색'],
+    cerebrovascularDiagnosis: ['뇌혈관질환진단비', '뇌혈관질환'],
+    ischemicHeartDiagnosis: ['허혈성심장질환진단비', '허혈성심장질환'],
+    cerebrovascularSurgery: ['뇌혈관질환수술비'],
+    strokeSurgery: ['뇌졸중수술비'],
+    ischemicHeartSurgery: ['허혈성심장질환수술비'],
+    myocardialInfarctionSurgery: ['심근경색수술비'],
+    strokeThrombolysis: ['뇌졸중혈전용해'],
+    myocardialInfarctionThrombolysis: ['심근경색혈전용해'],
+    twoMajorTreatment: ['2대특정치료비'],
+    majorCirculatorySurgery: ['주요순환계수술', '주요순환계'],
+    majorCirculatoryThrombectomy: ['주요순환계혈전제거'],
+    majorCirculatoryThrombolysis: ['주요순환계혈전용해'],
+    majorCirculatoryICU: ['주요순환계중환자실'],
+    thrombectomyTreatment: ['혈전제거치료비'],
+    surgery3Type: ['1-5종수술비(3종)', '3종수술비'],
+    surgery5Type2: ['1-5종수술비(5종)', '5종수술비'],
+    disease124Surgery: ['124대질병수술비'],
+    sevenOrganSurgery: ['7대기관수술비'],
+    
+    // 5대 필수보험
+    diseaseHospitalization: ['질병입원', '입원의료비', '질병입원한도'],
+    diseaseOutpatient: ['질병통원', '통원의료비', '질병통원한도'],
+    injuryHospitalization: ['상해입원', '상해입원한도'],
+    injuryOutpatient: ['상해통원', '상해통원한도'],
+    criminalSettlement: ['형사합의금'],
+    lawyerAppointment: ['변호사선임비'],
+    nursingHospitalOut: ['요양병원외', '간병비'],
+    nursingHospitalIn: ['요양병원'],
+    nursingCareIntegrated: ['간호간병통합'],
+    dailyLifeLiability: ['일상생활배상책임', '배상책임'],
+    fireFine: ['화재벌금']
+  };
+
+  // 각 담보별로 금액 추출 시도
+  Object.entries(coveragePatterns).forEach(([key, keywords]) => {
+    const element = document.getElementById(key);
+    if (!element) return;
+
+    for (const keyword of keywords) {
+      // 패턴: 담보명 + (공백/구분자) + 숫자 + (만원/원)
+      const patterns = [
+        new RegExp(keyword + '[\\s:]*([\\d,]+)\\s*만원', 'i'),
+        new RegExp(keyword + '[\\s:]*([\\d,]+)\\s*원', 'i'),
+        new RegExp(keyword + '[\\s:]*([\\d,]+)', 'i')
+      ];
+
+      for (const pattern of patterns) {
+        const match = text.match(pattern);
+        if (match && match[1]) {
+          let amount = match[1].replace(/,/g, '');
+          
+          // 만원 단위로 변환 (원 단위인 경우)
+          if (match[0].includes('원') && !match[0].includes('만원')) {
+            amount = Math.floor(parseInt(amount) / 10000);
+          }
+          
+          if (amount && !isNaN(amount)) {
+            element.value = amount;
+            return;
+          }
+        }
+      }
+    }
+  });
+}
+
+// 샘플 데이터 채우기 (테스트용 - 백업으로 유지)
 function fillSampleData() {
   document.getElementById('customerName').value = '홍길동';
   document.getElementById('birthDate').value = '1980.01.15';
@@ -1902,8 +2061,6 @@ function downloadImage() {
   `);
   
   printWindow.document.close();
-  
-
 }
 </script>
 
