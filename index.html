@@ -375,9 +375,7 @@
       background: #f0f0f0;
       border-radius: 4px;
       overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      position: relative;
     }
     
     .progress-bar {
@@ -399,6 +397,10 @@
     }
     
     .no-coverage-x {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       color: #dc3545;
       font-weight: 900;
       font-size: 12px;
@@ -1707,16 +1709,16 @@ function downloadImage() {
         
         body { 
           margin: 0; 
-          padding: 15px; 
+          padding: 8px; 
           font-family: Arial, "Noto Sans KR", sans-serif;
           color: #333;
-          font-size: 11px;
+          font-size: 9px;
         }
         
         @media print { 
           body { 
             margin: 0; 
-            padding: 10px; 
+            padding: 5px; 
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
           }
@@ -1730,83 +1732,87 @@ function downloadImage() {
             break-inside: avoid;
             page-break-inside: avoid;
           }
+          
+          .examples-container {
+            break-inside: avoid;
+            page-break-inside: avoid;
+          }
         }
         
         @page { 
           size: A4 landscape; 
-          margin: 8mm;
+          margin: 5mm;
         }
         
         .print-header {
           text-align: center;
-          font-size: 18px;
+          font-size: 16px;
           font-weight: 700;
-          margin-bottom: 25px;
+          margin-bottom: 15px;
           color: #ff7f00;
         }
         
         .sections-container {
           display: flex !important;
-          gap: 15px;
-          margin-bottom: 25px;
+          gap: 10px;
+          margin-bottom: 15px;
           width: 100%;
         }
         
         .section {
           flex: 1;
           border: 1px solid #333;
-          padding: 12px;
-          min-height: 300px;
+          padding: 8px;
+          min-height: 200px;
         }
         
         .section-title {
           text-align: center;
           font-weight: 700;
-          font-size: 14px;
-          margin-bottom: 12px;
-          padding: 8px;
+          font-size: 12px;
+          margin-bottom: 8px;
+          padding: 6px;
           background: #ff7f00 !important;
           color: white !important;
-          margin: -12px -12px 12px -12px;
+          margin: -8px -8px 8px -8px;
         }
         
         .coverage-item {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin: 6px 0;
-          padding: 3px 0;
+          margin: 3px 0;
+          padding: 1px 0;
           border-bottom: 1px dotted #ccc;
-          font-size: 10px;
+          font-size: 8px;
+          line-height: 1.2;
         }
         
         .coverage-name {
           flex: 1;
-          padding-right: 8px;
+          padding-right: 6px;
         }
         
         .coverage-value {
           font-weight: 600;
           color: #ff7f00;
-          min-width: 50px;
+          min-width: 40px;
           text-align: right;
         }
         
         .coverage-progress {
-          margin: 2px 6px;
-          height: 6px;
+          margin: 1px 4px;
+          height: 5px;
           background: #f0f0f0;
-          border-radius: 3px;
+          border-radius: 2px;
           overflow: hidden;
-          min-width: 40px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          min-width: 30px;
+          position: relative;
         }
         
         .progress-bar {
           height: 100%;
-          border-radius: 3px;
+          border-radius: 2px;
         }
         
         .progress-green { background: #28a745 !important; }
@@ -1814,9 +1820,13 @@ function downloadImage() {
         .progress-red { background: #dc3545 !important; }
         
         .no-coverage-x {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
           color: #dc3545 !important;
           font-weight: 900;
-          font-size: 10px;
+          font-size: 8px;
           line-height: 1;
         }
         
@@ -1825,26 +1835,26 @@ function downloadImage() {
         .coverage-value.insufficient-coverage { color: #dc3545 !important; }
         
         .subsection {
-          margin-bottom: 15px;
+          margin-bottom: 10px;
           border: 1px solid #ddd;
-          padding: 8px;
+          padding: 6px;
         }
         
         .subsection-title {
           font-weight: 600;
-          font-size: 10px;
-          margin-bottom: 6px;
+          font-size: 8px;
+          margin-bottom: 4px;
           text-align: center;
           background: #f8f9fa;
-          padding: 4px;
+          padding: 3px;
           border: 1px solid #ddd;
-          margin: -8px -8px 8px -8px;
+          margin: -6px -6px 6px -6px;
         }
         
         .examples-container {
           display: flex !important;
-          gap: 15px;
-          margin-top: 15px;
+          gap: 10px;
+          margin-top: 10px;
           width: 100%;
           break-inside: avoid;
           page-break-inside: avoid;
@@ -1853,27 +1863,28 @@ function downloadImage() {
         .example-section {
           flex: 1;
           border: 1px solid #333;
-          padding: 8px;
+          padding: 6px;
         }
         
         .example-title {
           font-weight: 700;
-          font-size: 10px;
-          margin-bottom: 8px;
+          font-size: 9px;
+          margin-bottom: 6px;
           text-align: center;
-          padding: 4px;
+          padding: 3px;
           background: #f0f0f0;
           border: 1px solid #333;
-          margin: -8px -8px 8px -8px;
+          margin: -6px -6px 6px -6px;
         }
         
         .example-item {
           display: flex;
           justify-content: space-between;
-          margin: 4px 0;
-          font-size: 9px;
-          padding: 2px 0;
+          margin: 2px 0;
+          font-size: 8px;
+          padding: 1px 0;
           border-bottom: 1px dotted #ccc;
+          line-height: 1.2;
         }
         
         .example-name {
@@ -1883,6 +1894,12 @@ function downloadImage() {
         .example-value {
           font-weight: 600;
           color: #ff7f00;
+        }
+        
+        /* 하단 메타 정보 */
+        div[style*="margin-top: 30px"] {
+          margin-top: 8px !important;
+          font-size: 7px !important;
         }
       </style>
     </head>
