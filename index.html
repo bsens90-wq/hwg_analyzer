@@ -1873,6 +1873,357 @@ function generateProgressBar(percentage, value) {
 }
 
 // 이미지 생성 및 다운로드
+async function generateAndDownloadImage(data) {
+  const container = document.getElementById('hiddenPrintContainer');
+  
+  // HTML 내용 생성 - 좌우 분할 레이아웃
+  container.innerHTML = `
+    <div style="background: white; padding: 15px; width: 1400px; font-family: Arial, sans-serif; display: flex; gap: 10px;">
+      <style>
+        .comparison-container {
+          display: flex;
+          gap: 10px;
+          width: 100%;
+        }
+        .before-section, .after-section {
+          flex: 1;
+          border: 2px solid #333;
+          padding: 10px;
+        }
+        .print-header {
+          text-align: center;
+          font-size: 16px;
+          font-weight: 700;
+          margin-bottom: 15px;
+          color: #ff7f00;
+        }
+        .before-header {
+          background: #f0f0f0;
+          color: #333;
+        }
+        .after-header {
+          background: #ff7f00;
+          color: white;
+        }
+        .sections-container {
+          display: flex;
+          gap: 8px;
+          margin-bottom: 15px;
+          flex-wrap: wrap;
+        }
+        .section {
+          flex: 0 0 calc(50% - 4px);
+          border: 1px solid #333;
+          padding: 8px;
+          min-height: 280px;
+        }
+        .section-title {
+          text-align: center;
+          font-weight: 700;
+          font-size: 11px;
+          margin-bottom: 8px;
+          background: #ff7f00;
+          color: white;
+          margin: -8px -8px 8px -8px;
+          padding: 6px;
+        }
+        .coverage-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin: 4px 0;
+          padding: 2px 0;
+          border-bottom: 1px dotted #ccc;
+          font-size: 9px;
+          line-height: 1.1;
+        }
+        .coverage-name {
+          flex: 1;
+          padding-right: 4px;
+          font-size: 9px;
+        }
+        .coverage-name.no-coverage {
+          color: #dc3545;
+        }
+        .coverage-value {
+          font-weight: 600;
+          color: #ff7f00;
+          min-width: 45px;
+          text-align: right;
+          font-size: 9px;
+        }
+        .coverage-value.full-coverage {
+          color: #28a745;
+          font-weight: 700;
+        }
+        .coverage-value.insufficient-coverage {
+          color: #dc3545;
+        }
+        .coverage-progress {
+          margin: 1px 4px;
+          height: 5px;
+          background: #f0f0f0;
+          border-radius: 3px;
+          overflow: hidden;
+          position: relative;
+          min-width: 20px;
+          display: inline-block;
+        }
+        .progress-bar {
+          height: 100%;
+          border-radius: 3px;
+        }
+        .progress-green { background: #28a745; }
+        .progress-yellow { background: #ffc107; }
+        .progress-red { background: #dc3545; }
+        .no-coverage-x {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          color: #dc3545;
+          font-weight: 900;
+          font-size: 7px;
+          line-height: 1;
+        }
+        .subsection {
+          margin-bottom: 10px;
+          border: 1px solid #ddd;
+          padding: 6px;
+        }
+        .subsection-title {
+          font-weight: 600;
+          font-size: 9px;
+          margin-bottom: 6px;
+          text-align: center;
+          background: #f8f9fa;
+          padding: 3px;
+          border: 1px solid #ddd;
+          margin: -6px -6px 6px -6px;
+        }
+        .examples-container {
+          display: flex;
+          gap: 8px;
+          margin-top: 10px;
+        }
+        .example-section {
+          flex: 1;
+          border: 1px solid #333;
+          padding: 6px;
+        }
+        .example-title {
+          font-weight: 700;
+          font-size: 10px;
+          margin-bottom: 6px;
+          text-align: center;
+          padding: 3px;
+          background: #f0f0f0;
+          border: 1px solid #333;
+          margin: -6px -6px 6px -6px;
+        }
+        .example-item {
+          display: flex;
+          justify-content: space-between;
+          margin: 3px 0;
+          font-size: 9px;
+          padding: 2px 0;
+          border-bottom: 1px dotted #ccc;
+        }
+        .example-name {
+          flex: 1;
+          font-size: 9px;
+        }
+        .example-value {
+          font-weight: 600;
+          color: #ff7f00;
+          font-size: 9px;
+        }
+      </style>
+      
+      <!-- 변경 전 섹션 -->
+      <div class="before-section">
+        <div class="print-header before-header">
+          【변경 전】 ${data.customerName}님의 보장분석
+        </div>
+        
+        <div class="sections-container">
+          <div class="section">
+            <div class="section-title">암</div>
+            ${generateCoverageItemsForPrint(data.coveragesBefore, COVERAGE_ITEMS.cancer)}
+          </div>
+          
+          <div class="section">
+            <div class="section-title">2대 중대질환</div>
+            ${generateCoverageItemsForPrint(data.coveragesBefore, COVERAGE_ITEMS.majorDisease)}
+          </div>
+          
+          <div class="section" style="flex: 0 0 100%;">
+            <div class="section-title">5대 필수 보험</div>
+            
+            <div style="display: flex; gap: 8px;">
+              <div style="flex: 1;">
+                <div class="subsection">
+                  <div class="subsection-title">실손의료비</div>
+                  ${generateEssentialItemForPrint(data.coveragesBefore, 'diseaseHospitalization', '(질병)입원한도', '만원/일', false)}
+                  ${generateEssentialItemForPrint(data.coveragesBefore, 'injuryHospitalization', '(상해)입원한도', '만원/일', false)}
+                </div>
+                
+                <div class="subsection">
+                  <div class="subsection-title">운전자</div>
+                  ${generateEssentialItemForPrint(data.coveragesBefore, 'criminalSettlement', '형사합의금', '만원', true)}
+                  ${generateEssentialItemForPrint(data.coveragesBefore, 'lawyerAppointment', '변호사선임비', '만원', true)}
+                </div>
+              </div>
+              
+              <div style="flex: 1;">
+                <div class="subsection">
+                  <div class="subsection-title">간병인일당</div>
+                  ${data.caregiverOption === 'support' ? 
+                    '<div class="coverage-item"><div class="coverage-name">외국 간병인 현물지원</div><div class="coverage-value">-</div></div>' :
+                    `
+                    ${generateEssentialItemForPrint(data.coveragesBefore, 'nursingHospitalOut', '요양병원 외', '만원/일', false)}
+                    ${generateEssentialItemForPrint(data.coveragesBefore, 'nursingHospitalIn', '요양병원', '만원/일', false)}
+                    ${generateEssentialItemForPrint(data.coveragesBefore, 'nursingCareIntegrated', '간호간병통합', '만원/일', false)}
+                    `
+                  }
+                </div>
+                
+                <div class="subsection">
+                  <div class="subsection-title">배상/벌금</div>
+                  ${generateEssentialItemForPrint(data.coveragesBefore, 'dailyLifeLiability', '일상생활배상책임', '만원', false)}
+                  ${generateEssentialItemForPrint(data.coveragesBefore, 'fireFine', '화재벌금', '만원', false)}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="examples-container">
+          <div class="example-section">
+            <div class="example-title">일반암 치료 보장</div>
+            ${generateExampleItemForPrint('다빈치로봇수술', calculateExample1(data.coveragesBefore))}
+            ${generateExampleItemForPrint('전이+표적', calculateExample2(data.coveragesBefore))}
+            ${generateExampleItemForPrint('중입자치료', calculateExample3(data.coveragesBefore))}
+          </div>
+          
+          <div class="example-section">
+            <div class="example-title">뇌/심장 치료 보장</div>
+            ${generateExampleItemForPrint('뇌경색 스텐트', calculateStentExample(data.coveragesBefore))}
+            ${generateExampleItemForPrint('심근경색 스텐트', calculateMyocardialStentExample(data.coveragesBefore))}
+          </div>
+        </div>
+      </div>
+      
+      <!-- 변경 후 섹션 -->
+      <div class="after-section">
+        <div class="print-header after-header">
+          【변경 후】 ${data.customerName}님의 보장분석
+        </div>
+        
+        <div class="sections-container">
+          <div class="section">
+            <div class="section-title">암</div>
+            ${generateCoverageItemsForPrint(data.coveragesAfter, COVERAGE_ITEMS.cancer)}
+          </div>
+          
+          <div class="section">
+            <div class="section-title">2대 중대질환</div>
+            ${generateCoverageItemsForPrint(data.coveragesAfter, COVERAGE_ITEMS.majorDisease)}
+          </div>
+          
+          <div class="section" style="flex: 0 0 100%;">
+            <div class="section-title">5대 필수 보험</div>
+            
+            <div style="display: flex; gap: 8px;">
+              <div style="flex: 1;">
+                <div class="subsection">
+                  <div class="subsection-title">실손의료비</div>
+                  ${generateEssentialItemForPrint(data.coveragesAfter, 'diseaseHospitalization', '(질병)입원한도', '만원/일', false)}
+                  ${generateEssentialItemForPrint(data.coveragesAfter, 'injuryHospitalization', '(상해)입원한도', '만원/일', false)}
+                </div>
+                
+                <div class="subsection">
+                  <div class="subsection-title">운전자</div>
+                  ${generateEssentialItemForPrint(data.coveragesAfter, 'criminalSettlement', '형사합의금', '만원', true)}
+                  ${generateEssentialItemForPrint(data.coveragesAfter, 'lawyerAppointment', '변호사선임비', '만원', true)}
+                </div>
+              </div>
+              
+              <div style="flex: 1;">
+                <div class="subsection">
+                  <div class="subsection-title">간병인일당</div>
+                  ${data.caregiverOption === 'support' ? 
+                    '<div class="coverage-item"><div class="coverage-name">외국 간병인 현물지원</div><div class="coverage-value">-</div></div>' :
+                    `
+                    ${generateEssentialItemForPrint(data.coveragesAfter, 'nursingHospitalOut', '요양병원 외', '만원/일', false)}
+                    ${generateEssentialItemForPrint(data.coveragesAfter, 'nursingHospitalIn', '요양병원', '만원/일', false)}
+                    ${generateEssentialItemForPrint(data.coveragesAfter, 'nursingCareIntegrated', '간호간병통합', '만원/일', false)}
+                    `
+                  }
+                </div>
+                
+                <div class="subsection">
+                  <div class="subsection-title">배상/벌금</div>
+                  ${generateEssentialItemForPrint(data.coveragesAfter, 'dailyLifeLiability', '일상생활배상책임', '만원', false)}
+                  ${generateEssentialItemForPrint(data.coveragesAfter, 'fireFine', '화재벌금', '만원', false)}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="examples-container">
+          <div class="example-section">
+            <div class="example-title">일반암 치료 보장</div>
+            ${generateExampleItemForPrint('다빈치로봇수술', calculateExample1(data.coveragesAfter))}
+            ${generateExampleItemForPrint('전이+표적', calculateExample2(data.coveragesAfter))}
+            ${generateExampleItemForPrint('중입자치료', calculateExample3(data.coveragesAfter))}
+          </div>
+          
+          <div class="example-section">
+            <div class="example-title">뇌/심장 치료 보장</div>
+            ${generateExampleItemForPrint('뇌경색 스텐트', calculateStentExample(data.coveragesAfter))}
+            ${generateExampleItemForPrint('심근경색 스텐트', calculateMyocardialStentExample(data.coveragesAfter))}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div style="text-align: center; margin-top: 10px;">
+      <div style="font-size: 9px; color: #666;">
+        작성일: ${data.inputDate} | 생년월일: ${data.birthDate || ''} | ※ 본 자료는 참고용이며, 실제 보장내용은 약관을 확인하시기 바랍니다.
+      </div>
+    </div>
+  `;
+  
+  // html2canvas를 사용하여 이미지 생성
+  try {
+    const canvas = await html2canvas(container.firstElementChild, {
+      scale: 2,
+      logging: false,
+      useCORS: true,
+      backgroundColor: '#ffffff'
+    });
+    
+    // 캔버스를 이미지로 변환
+    canvas.toBlob(function(blob) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `보장분석_${data.customerName}_${new Date().getTime()}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+  } catch (error) {
+    console.error('이미지 생성 오류:', error);
+    alert('이미지 생성 중 오류가 발생했습니다.');
+  }
+  
+  // 컨테이너 비우기
+  container.innerHTML = '';
+}
   await generateAndDownloadImage(currentData);
   
   alert('이미지가 저장되었습니다!');
@@ -2402,13 +2753,33 @@ function loadCurrentDataToForm() {
   document.getElementById('customerName').value = currentData.customerName;
   document.getElementById('birthDate').value = currentData.birthDate || '';
   
-  // 담보 데이터 로드
-  if (currentData.coverages) {
-    Object.entries(currentData.coverages).forEach(([key, data]) => {
-      const input = document.getElementById(key);
+  // 변경 전 담보 데이터 로드
+  if (currentData.coveragesBefore) {
+    Object.entries(currentData.coveragesBefore).forEach(([key, data]) => {
+      const input = document.getElementById(key + '_before');
       if (input) {
         input.value = data.value || '';
       }
+    });
+  }
+  
+  // 변경 후 담보 데이터 로드
+  if (currentData.coveragesAfter) {
+    Object.entries(currentData.coveragesAfter).forEach(([key, data]) => {
+      const input = document.getElementById(key + '_after');
+      if (input) {
+        input.value = data.value || '';
+      }
+    });
+  }
+  
+  // 구버전 데이터 호환성 처리
+  if (currentData.coverages && !currentData.coveragesBefore) {
+    Object.entries(currentData.coverages).forEach(([key, data]) => {
+      const inputBefore = document.getElementById(key + '_before');
+      const inputAfter = document.getElementById(key + '_after');
+      if (inputBefore) inputBefore.value = data.value || '';
+      if (inputAfter) inputAfter.value = data.value || '';
     });
   }
   
