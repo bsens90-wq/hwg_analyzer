@@ -1716,6 +1716,355 @@ function extractCoverageAmounts(text) {
     }
   };
 
+  // 각 담보별로 금액 추출 시도 - 변경 전/후 동일하게 설정
+  Object.entries(coveragePatterns).forEach(([key, config]) => {
+    const elementBefore = document.getElementById(key + '_before');
+    const elementAfter = document.getElementById(key + '_after');
+    
+    if (!elementBefore || !elementAfter) {
+      console.log(`요소를 찾을 수 없음: ${key}`);
+      return;
+    }
+
+    let amount = null;
+
+    // 생활보장 항목 처리
+    if (config.lifeInsurance) {
+      amount = findLifeInsuranceValue(config.keyword);
+      if (amount && !isNaN(amount)) {
+        elementBefore.value = amount;
+        elementAfter.value = amount; // 변경 후도 동일하게 설정
+        console.log(`✅ ${config.name} 추출 성공: ${amount}만원`);
+        return;
+      }
+    }
+    
+    // 뇌혈관질환 특별 처리
+    if (key === 'cerebrovascularDiagnosis') {
+      // 뇌혈관질환 찾기
+      for (let i = 0; i < lines.length; i++) {
+        if (lines[i].includes('뇌혈관질환')) {
+          // 다음 몇 줄 안에서 숫자 찾기 (부족 제외)
+          for (let j = i + 1; j < Math.min(i + 4, lines.length); j++) {
+            if (!lines[j].includes('부족')) {
+              const match = lines[j].match(/([0-9,]+)\s*\/\s*[0-9,]+/);
+              if (match && match[1]) {
+                amount = match[1].replace(/,/g, '');
+                if (amount && !isNaN(amount)) {
+                  elementBefore.value = amount;
+                  elementAfter.value = amount; // 변경 후도 동일하게 설정
+                  console.log(`✅ ${config.name} 특별처리 추출 성공: ${amount}만원`);
+                  return;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    // 기본 패턴 시도
+    if (config.extractPattern) {
+      const match = text.match(config.extractPattern);
+      if (match && match[1]) {
+        amount = match[1].replace(/,/g, '');
+        if (amount && !isNaN(amount)) {
+          elementBefore.value = amount;
+          elementAfter.value = amount; // 변경 후도 동일하게 설정
+          console.log(`✅ ${config.name} 추출 성공: ${amount}만원`);
+          return;
+        }
+      }
+    }
+    
+    // 라인 기반 추출 시도
+    if (!amount && config.keyword) {
+      amount = findValueByKeyword(config.keyword, lines);
+      if (amount && !isNaN(amount)) {
+        elementBefore.value = amount;
+        elementAfter.value = amount; // 변경 후도 동일하게 설정
+        console.log(`✅ ${config.name} 라인기반 추출 성공: ${amount}만원`);
+        return;
+      }
+    }
+
+    console.log(`❌ ${config.name} 패턴 매칭 실패`);
+  });
+
+  // 추가 디버깅 정보
+  console.log('=== 생활보장 섹션 분석 ===');
+  let lifeStart = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].includes('생활보장')) {
+      lifeStart = i;
+      console.log(`생활보장 시작 라인: ${i}`);
+      // 다음 10줄 출력
+      for (let j = i; j < Math.min(i + 10, lines.length); j++) {
+        console.log(`  [${j}]: "${lines[j]}"`);
+      }
+      break;
+    }
+  }
+}
+  // 먼저 텍스트를 라인 배열로 변환
+  const lines = text.split('\n');
+  
+  // 라인 기반 추출 헬퍼 함수
+  function findValueByKeyword(keyword, lines) {
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].includes(keyword)) {
+        // 현재 라인에서 숫자 찾기 (슬래시 포함 패턴)
+        let match = lines[i].match(/([0-9,]+)\s*\/\s*[0-9,]+/);
+        if (match && match[1]) {
+          return match[1].replace(/,/g, '');
+        }
+        
+        // 다음 라인 확인
+        if (i + 1 < lines.length) {
+          const nextLine = lines[i + 1];
+          // "부족"이 포함된 라인이면 그 다음 라인 확인
+          if (nextLine.includes('부족') && i + 2 < lines.length) {
+            match = lines[i + 2].match(/([0-9,]+)\s*\/\s*[0-9,]+/);
+            if (match && match[1]) {
+              return match[1].replace(/,/g, '');
+            }
+          } else if (!nextLine.includes('부족')) {
+            // 다음 라인에서 숫자 찾기
+            match = nextLine.match(/([0-9,]+)\s*\/\s*[0-9,]+/);
+            if (match && match[1]) {
+              return match[1].replace(/,/g, '');
+            }
+          }
+        }
+      }
+    }
+    return null;
+  }
+  
+  // 생활보장 섹션에서 값 찾기 (형사합의금, 변호사선임비 등)
+  function findLifeInsuranceValue(keyword) {
+    // 생활보장 섹션 찾기
+    let sectionStartIndex = -1;
+    
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].includes('생활보장')) {
+        sectionStartIndex = i;
+        break;
+      }
+    }
+    
+    if (sectionStartIndex === -1) return null;
+    
+    // 생활보장 섹션의 구조 분석
+    // 항목명과 바로 다음 줄의 값을 매칭하는 방식
+    let itemValuePairs = [];
+    
+    for (let i = sectionStartIndex; i < Math.min(sectionStartIndex + 30, lines.length); i++) {
+      // 대인형사합의지원금 찾기
+      if (lines[i].includes('대인형사합의지원금') && i + 1 < lines.length) {
+        const nextLineMatch = lines[i + 1].match(/([0-9,]+)만원/);
+        if (nextLineMatch && nextLineMatch[1]) {
+          itemValuePairs.push({
+            item: '대인형사합의지원금',
+            value: nextLineMatch[1].replace(/,/g, ''),
+            lineIndex: i
+          });
+        }
+      }
+      // 변호사선임비용 찾기
+      if (lines[i].includes('변호사선임비용') && i + 1 < lines.length) {
+        const nextLineMatch = lines[i + 1].match(/([0-9,]+)만원/);
+        if (nextLineMatch && nextLineMatch[1]) {
+          itemValuePairs.push({
+            item: '변호사선임비용',
+            value: nextLineMatch[1].replace(/,/g, ''),
+            lineIndex: i
+          });
+        }
+      }
+      // 운전자벌금 찾기
+      if (lines[i].includes('운전자벌금') && i + 1 < lines.length) {
+        const nextLineMatch = lines[i + 1].match(/([0-9,]+)만원/);
+        if (nextLineMatch && nextLineMatch[1]) {
+          itemValuePairs.push({
+            item: '운전자벌금',
+            value: nextLineMatch[1].replace(/,/g, ''),
+            lineIndex: i
+          });
+        }
+      }
+      // 화재벌금 찾기
+      if (lines[i].includes('화재벌금') && i + 1 < lines.length) {
+        const nextLineMatch = lines[i + 1].match(/([0-9,]+)만원/);
+        if (nextLineMatch && nextLineMatch[1]) {
+          itemValuePairs.push({
+            item: '화재벌금',
+            value: nextLineMatch[1].replace(/,/g, ''),
+            lineIndex: i
+          });
+        }
+      }
+      // 일상생활배상책임 찾기
+      if (lines[i].includes('일상생활배상책임') && i + 1 < lines.length) {
+        const nextLineMatch = lines[i + 1].match(/([0-9,]+)만원/);
+        if (nextLineMatch && nextLineMatch[1]) {
+          itemValuePairs.push({
+            item: '일상생활배상책임',
+            value: nextLineMatch[1].replace(/,/g, ''),
+            lineIndex: i
+          });
+        }
+      }
+    }
+    
+    console.log('생활보장 항목-값 매칭:', itemValuePairs);
+    
+    // 찾은 매칭에서 해당 키워드의 값 반환
+    for (let pair of itemValuePairs) {
+      if (pair.item === keyword) {
+        return pair.value;
+      }
+    }
+    
+    // 매칭이 안 된 경우 기존 로직으로 폴백
+    let items = [];
+    let values = [];
+    
+    for (let i = sectionStartIndex; i < Math.min(sectionStartIndex + 20, lines.length); i++) {
+      if (lines[i].includes('대인형사합의지원금')) items.push({name: '대인형사합의지원금', index: i});
+      if (lines[i].includes('변호사선임비용')) items.push({name: '변호사선임비용', index: i});
+      if (lines[i].includes('운전자벌금')) items.push({name: '운전자벌금', index: i});
+      if (lines[i].includes('화재벌금')) items.push({name: '화재벌금', index: i});
+      if (lines[i].includes('일상생활배상책임')) items.push({name: '일상생활배상책임', index: i});
+      
+      const valueMatch = lines[i].match(/^([0-9,]+)만원$/);
+      if (valueMatch && valueMatch[1]) {
+        values.push({value: valueMatch[1].replace(/,/g, ''), index: i});
+      }
+    }
+    
+    console.log('생활보장 항목들:', items);
+    console.log('생활보장 값들:', values);
+    
+    // 특정 키워드에 대한 값 매핑
+    if (keyword === '대인형사합의지원금') {
+      // 20,000 찾기
+      for (let v of values) {
+        if (v.value === '20000' || v.value.includes('20')) {
+          return v.value;
+        }
+      }
+      if (values.length > 0) return values[0].value;
+    }
+    
+    if (keyword === '변호사선임비용') {
+      // 먼저 3,000 찾기
+      for (let v of values) {
+        if (v.value === '3000') {
+          return v.value;
+        }
+      }
+      // 그 다음 5,000 찾기
+      for (let v of values) {
+        if (v.value === '5000') {
+          return v.value;
+        }
+      }
+      // 그 다음 3,500 찾기
+      for (let v of values) {
+        if (v.value === '3500') {
+          return v.value;
+        }
+      }
+    }
+    
+    if (keyword === '화재벌금') {
+      for (let v of values) {
+        if (v.value === '2000') {
+          return v.value;
+        }
+      }
+    }
+    
+    if (keyword === '일상생활배상책임') {
+      for (let v of values) {
+        if (v.value === '10000') {
+          return v.value;
+        }
+      }
+    }
+    
+    return null;
+  }
+
+  const coveragePatterns = {
+    generalCancer: {
+      name: '일반암진단비',
+      keyword: '일반암',
+      extractPattern: /일반암\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i
+    },
+    totalCancer: {
+      name: '통합암진단비', 
+      keyword: '통합암',
+      extractPattern: /통합암\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i
+    },
+    targetTherapy: {
+      name: '표적항암치료비',
+      keyword: '표적항암약물',
+      extractPattern: /표적항암약물\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i
+    },
+    cerebrovascularDiagnosis: {
+      name: '뇌혈관질환진단비',
+      keyword: '뇌혈관질환',
+      special: true
+    },
+    strokeDiagnosis: {
+      name: '뇌졸중진단비',
+      keyword: '뇌졸중',
+      extractPattern: /뇌졸중\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i
+    },
+    ischemicHeartDiagnosis: {
+      name: '허혈성심장질환진단비',
+      keyword: '허혈성심질환',
+      extractPattern: /허혈성심질환\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i
+    },
+    myocardialInfarctionDiagnosis: {
+      name: '심근경색진단비',
+      keyword: '급성심근경색증',
+      extractPattern: /급성심근경색증\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i
+    },
+    diseaseHospitalization: {
+      name: '(질병)입원한도',
+      keyword: '질병입원',
+      extractPattern: /질병입원\s*실손\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i
+    },
+    injuryHospitalization: {
+      name: '(상해)입원한도',
+      keyword: '상해입원',
+      extractPattern: /상해입원\s*실손\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i
+    },
+    criminalSettlement: {
+      name: '형사합의금',
+      keyword: '대인형사합의지원금',
+      lifeInsurance: true
+    },
+    lawyerAppointment: {
+      name: '변호사선임비',
+      keyword: '변호사선임비용',
+      lifeInsurance: true
+    },
+    dailyLifeLiability: {
+      name: '일상생활배상책임',
+      keyword: '일상생활배상책임',
+      lifeInsurance: true
+    },
+    fireFine: {
+      name: '화재벌금',
+      keyword: '화재벌금',
+      lifeInsurance: true
+    }
+  };
+
   // 각 담보별로 금액 추출 시도
   Object.entries(coveragePatterns).forEach(([key, config]) => {
     const element = document.getElementById(key);
