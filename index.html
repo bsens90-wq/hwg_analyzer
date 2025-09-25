@@ -1531,23 +1531,181 @@ async function saveAndDownloadImage() {
 async function generateAndDownloadImage(data) {
   const container = document.getElementById('hiddenPrintContainer');
   
-  // HTML 내용 생성 - 좌우 분할 레이아웃
+  // 스타일 정의
+  const styles = `
+    <style>
+      .comparison-container {
+        display: flex;
+        gap: 10px;
+        width: 100%;
+      }
+      .before-section, .after-section {
+        flex: 1;
+        border: 2px solid #333;
+        padding: 10px;
+      }
+      .print-header {
+        text-align: center;
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 15px;
+        padding: 8px;
+      }
+      .before-header {
+        background: #e0e0e0;
+        color: #333;
+      }
+      .after-header {
+        background: #ff7f00;
+        color: white;
+      }
+      .section-title {
+        text-align: center;
+        font-weight: 700;
+        font-size: 11px;
+        margin-bottom: 8px;
+        background: #ff7f00;
+        color: white;
+        padding: 6px;
+      }
+      .coverage-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 4px 0;
+        padding: 2px 0;
+        border-bottom: 1px dotted #ccc;
+        font-size: 9px;
+      }
+      .coverage-name {
+        flex: 1;
+        font-size: 9px;
+      }
+      .coverage-value {
+        font-weight: 600;
+        color: #ff7f00;
+        min-width: 45px;
+        text-align: right;
+        font-size: 9px;
+      }
+      .section {
+        border: 1px solid #333;
+        padding: 8px;
+        margin-bottom: 10px;
+      }
+      .subsection {
+        margin-bottom: 10px;
+        border: 1px solid #ddd;
+        padding: 6px;
+      }
+      .subsection-title {
+        font-weight: 600;
+        font-size: 9px;
+        margin-bottom: 6px;
+        text-align: center;
+        background: #f8f9fa;
+        padding: 3px;
+      }
+    </style>
+  `;
+  
+  // HTML 내용 생성
   container.innerHTML = `
-    <div style="background: white; padding: 15px; width: 1400px; font-family: Arial, sans-serif; display: flex; gap: 10px;">
-      <!-- 변경 전 섹션 -->
-      <div style="flex: 1; border: 2px solid #333; padding: 10px;">
-        <div style="text-align: center; font-size: 16px; font-weight: 700; margin-bottom: 15px; background: #f0f0f0; color: #333; padding: 8px;">
-          【변경 전】 ${data.customerName}님의 보장분석
+    <div style="background: white; padding: 15px; width: 1400px; font-family: Arial, sans-serif;">
+      ${styles}
+      
+      <div class="comparison-container">
+        <!-- 변경 전 섹션 -->
+        <div class="before-section">
+          <div class="print-header before-header">
+            【변경 전】 ${data.customerName}님의 보장분석
+          </div>
+          
+          <div class="section">
+            <div class="section-title">암 보장</div>
+            ${generateCoverageList(data.coveragesBefore, ['generalCancer', 'totalCancer', 'targetTherapy', 'metastasisCancer', 'cancerSpecificTreatment', 'cancerNonCoveredTreatment', 'heavyIonTherapy', 'cancerSurgery', 'daVinciSurgery'])}
+          </div>
+          
+          <div class="section">
+            <div class="section-title">2대 중대질환</div>
+            ${generateCoverageList(data.coveragesBefore, ['cerebrovascularDiagnosis', 'strokeDiagnosis', 'ischemicHeartDiagnosis', 'myocardialInfarctionDiagnosis', 'cerebrovascularSurgery', 'strokeSurgery', 'ischemicHeartSurgery', 'myocardialInfarctionSurgery'])}
+          </div>
+          
+          <div class="section">
+            <div class="section-title">5대 필수보험</div>
+            
+            <div class="subsection">
+              <div class="subsection-title">실손의료비</div>
+              ${generateCoverageList(data.coveragesBefore, ['diseaseHospitalization', 'injuryHospitalization'])}
+            </div>
+            
+            <div class="subsection">
+              <div class="subsection-title">운전자</div>
+              ${generateCoverageList(data.coveragesBefore, ['criminalSettlement', 'lawyerAppointment'])}
+            </div>
+            
+            <div class="subsection">
+              <div class="subsection-title">간병인일당</div>
+              ${data.caregiverOption === 'support' ? 
+                '<div class="coverage-item"><div class="coverage-name">외국 간병인 현물지원</div></div>' :
+                generateCoverageList(data.coveragesBefore, ['nursingHospitalOut', 'nursingHospitalIn', 'nursingCareIntegrated'])
+              }
+            </div>
+            
+            <div class="subsection">
+              <div class="subsection-title">배상/벌금</div>
+              ${generateCoverageList(data.coveragesBefore, ['dailyLifeLiability', 'fireFine'])}
+            </div>
+          </div>
         </div>
-        <div>작성일: ${data.inputDate} | 생년월일: ${data.birthDate || ''}</div>
+        
+        <!-- 변경 후 섹션 -->
+        <div class="after-section">
+          <div class="print-header after-header">
+            【변경 후】 ${data.customerName}님의 보장분석
+          </div>
+          
+          <div class="section">
+            <div class="section-title">암 보장</div>
+            ${generateCoverageList(data.coveragesAfter, ['generalCancer', 'totalCancer', 'targetTherapy', 'metastasisCancer', 'cancerSpecificTreatment', 'cancerNonCoveredTreatment', 'heavyIonTherapy', 'cancerSurgery', 'daVinciSurgery'])}
+          </div>
+          
+          <div class="section">
+            <div class="section-title">2대 중대질환</div>
+            ${generateCoverageList(data.coveragesAfter, ['cerebrovascularDiagnosis', 'strokeDiagnosis', 'ischemicHeartDiagnosis', 'myocardialInfarctionDiagnosis', 'cerebrovascularSurgery', 'strokeSurgery', 'ischemicHeartSurgery', 'myocardialInfarctionSurgery'])}
+          </div>
+          
+          <div class="section">
+            <div class="section-title">5대 필수보험</div>
+            
+            <div class="subsection">
+              <div class="subsection-title">실손의료비</div>
+              ${generateCoverageList(data.coveragesAfter, ['diseaseHospitalization', 'injuryHospitalization'])}
+            </div>
+            
+            <div class="subsection">
+              <div class="subsection-title">운전자</div>
+              ${generateCoverageList(data.coveragesAfter, ['criminalSettlement', 'lawyerAppointment'])}
+            </div>
+            
+            <div class="subsection">
+              <div class="subsection-title">간병인일당</div>
+              ${data.caregiverOption === 'support' ? 
+                '<div class="coverage-item"><div class="coverage-name">외국 간병인 현물지원</div></div>' :
+                generateCoverageList(data.coveragesAfter, ['nursingHospitalOut', 'nursingHospitalIn', 'nursingCareIntegrated'])
+              }
+            </div>
+            
+            <div class="subsection">
+              <div class="subsection-title">배상/벌금</div>
+              ${generateCoverageList(data.coveragesAfter, ['dailyLifeLiability', 'fireFine'])}
+            </div>
+          </div>
+        </div>
       </div>
       
-      <!-- 변경 후 섹션 -->
-      <div style="flex: 1; border: 2px solid #333; padding: 10px;">
-        <div style="text-align: center; font-size: 16px; font-weight: 700; margin-bottom: 15px; background: #ff7f00; color: white; padding: 8px;">
-          【변경 후】 ${data.customerName}님의 보장분석
-        </div>
-        <div>작성일: ${data.inputDate} | 생년월일: ${data.birthDate || ''}</div>
+      <div style="text-align: center; margin-top: 10px; font-size: 9px; color: #666;">
+        작성일: ${data.inputDate} | 생년월일: ${data.birthDate || ''} | ※ 본 자료는 참고용이며, 실제 보장내용은 약관을 확인하시기 바랍니다.
       </div>
     </div>
   `;
@@ -1579,6 +1737,29 @@ async function generateAndDownloadImage(data) {
   
   // 컨테이너 비우기
   container.innerHTML = '';
+}
+
+// 담보 목록 생성 헬퍼 함수
+function generateCoverageList(coverages, itemKeys) {
+  if (!coverages) return '';
+  
+  const items = itemKeys.map(key => {
+    const coverage = coverages[key];
+    if (!coverage) return null;
+    
+    const value = parseInt(coverage.value) || 0;
+    const displayValue = value ? `${value}만원` : '0만원';
+    const valueStyle = value === 0 ? 'color: #dc3545;' : '';
+    
+    return `
+      <div class="coverage-item">
+        <div class="coverage-name">${coverage.name}</div>
+        <div class="coverage-value" style="${valueStyle}">${displayValue}</div>
+      </div>
+    `;
+  }).filter(item => item !== null);
+  
+  return items.join('');
 }
 
 // 로컬 스토리지에 데이터 저장
