@@ -1459,16 +1459,57 @@ function calculateMyocardialStentThrombolysisExample(coverages) {
 }
 
 function calculateMyocardialComplexTreatmentExample(coverages) {
-  // 급성심근경색 혈전용해+혈전제거+중환자실: 심근경색혈전용해 + 혈전제거치료비 + 주요순환계(중환자실)
-  const thrombolysis = parseInt(coverages.myocardialInfarctionThrombolysis?.value || 0);
-  const thrombectomy = parseInt(coverages.thrombectomyTreatment?.value || 0);
-  const icu = parseInt(coverages.majorCirculatoryICU?.value || 0);
-  return (thrombolysis + thrombectomy + icu).toLocaleString();
+  // K29: 혈전용해+혈전제거+중환자실 = G7+G8+G15+G17+G11+G12+G21+G23+G24/2+G18+G14+G19+G20
+  // 허혈성심장질환진단비 + 심근경색진단비 + 2대특정치료비 + 주요순환계(혈전제거) + 허혈성심장질환수술비 + 심근경색수술비 + 1-5종수술비(3종) + 124대질병수술비(특정10대) + 7대기관수술비(뇌/심) 관혈/2 + 주요순환계(혈전용해) + 심근경색혈전용해 + 주요순환계(중환자실) + 혈전제거치료비
+  const g7 = parseInt(coverages.ischemicHeartDiagnosis?.value || 0);
+  const g8 = parseInt(coverages.myocardialInfarctionDiagnosis?.value || 0);
+  const g15 = parseInt(coverages.twoMajorTreatment?.value || 0);
+  const g17 = parseInt(coverages.majorCirculatoryThrombectomy?.value || 0);
+  const g11 = parseInt(coverages.ischemicHeartSurgery?.value || 0);
+  const g12 = parseInt(coverages.myocardialInfarctionSurgery?.value || 0);
+  const g21 = parseInt(coverages.surgery3Type?.value || 0);
+  const g23 = parseInt(coverages.disease124Surgery?.value || 0);
+  const g24 = parseInt(coverages.sevenOrganSurgery?.value || 0);
+  const g18 = parseInt(coverages.majorCirculatoryThrombolysis?.value || 0);
+  const g14 = parseInt(coverages.myocardialInfarctionThrombolysis?.value || 0);
+  const g19 = parseInt(coverages.majorCirculatoryICU?.value || 0);
+  const g20 = parseInt(coverages.thrombectomyTreatment?.value || 0);
+  
+  return (g7 + g8 + g15 + g17 + g11 + g12 + g21 + g23 + g24/2 + g18 + g14 + g19 + g20).toLocaleString();
 }
 
 // 이미지 다운로드
 function downloadImage() {
   const preview = document.getElementById('printPreview');
   
-  // html2canvas 라이브러리가 필요합니다
-  // 여
+  // 인쇄 기능으로 대체 (브라우저 내장 기능 활용)
+  const printWindow = window.open('', '_blank');
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>보장분석지 - ${currentData.customerName}</title>
+      <style>
+        body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+        @media print { body { margin: 0; } }
+        @page { size: A4 landscape; margin: 10mm; }
+      </style>
+    </head>
+    <body>
+      ${preview.innerHTML}
+    </body>
+    </html>
+  `);
+  
+  printWindow.document.close();
+  
+  // 잠시 후 인쇄 대화상자 열기
+  setTimeout(() => {
+    printWindow.print();
+    printWindow.close();
+  }, 500);
+}
+</script>
+
+</body>
+</html>
