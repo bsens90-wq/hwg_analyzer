@@ -1070,119 +1070,141 @@ function extractCustomerInfo(text) {
 
 // 담보 금액 추출 (자동인식 항목만)
 function extractCoverageAmounts(text) {
+  // 먼저 텍스트를 라인 배열로 변환
+  const lines = text.split('\n');
+  
+  // 라인 기반 추출 헬퍼 함수
+  function findValueByKeyword(keyword, lines) {
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].includes(keyword)) {
+        // 현재 라인에서 숫자 찾기 (슬래시 포함 패턴)
+        let match = lines[i].match(/([0-9,]+)\s*\/\s*[0-9,]+/);
+        if (match && match[1]) {
+          return match[1].replace(/,/g, '');
+        }
+        
+        // 다음 라인 확인
+        if (i + 1 < lines.length) {
+          const nextLine = lines[i + 1];
+          // "부족"이 포함된 라인이면 그 다음 라인 확인
+          if (nextLine.includes('부족') && i + 2 < lines.length) {
+            match = lines[i + 2].match(/([0-9,]+)\s*\/\s*[0-9,]+/);
+            if (match && match[1]) {
+              return match[1].replace(/,/g, '');
+            }
+          } else if (!nextLine.includes('부족')) {
+            // 다음 라인에서 숫자 찾기
+            match = nextLine.match(/([0-9,]+)\s*\/\s*[0-9,]+/);
+            if (match && match[1]) {
+              return match[1].replace(/,/g, '');
+            }
+          }
+        }
+      }
+    }
+    return null;
+  }
+  
+  // 생활보장 섹션에서 값 찾기 (형사합의금, 변호사선임비 등)
+  function findLifeInsuranceValue(keyword) {
+    // 생활보장 섹션 찾기
+    let inLifeSection = false;
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].includes('생활보장')) {
+        inLifeSection = true;
+        continue;
+      }
+      
+      if (inLifeSection && lines[i].includes(keyword)) {
+        // 같은 줄 끝에 있는 숫자 찾기
+        const sameLine = lines[i];
+        let match = sameLine.match(/([0-9,]+)만원\s*$/);
+        if (!match) {
+          match = sameLine.match(/\s+([0-9,]+)만원/);
+        }
+        if (match && match[1]) {
+          return match[1].replace(/,/g, '');
+        }
+        
+        // 다음 줄 확인 (세로로 배열된 경우)
+        for (let j = i + 1; j < Math.min(i + 5, lines.length); j++) {
+          if (lines[j].match(/^\s*([0-9,]+)만원/)) {
+            const valueMatch = lines[j].match(/^\s*([0-9,]+)만원/);
+            if (valueMatch && valueMatch[1]) {
+              return valueMatch[1].replace(/,/g, '');
+            }
+          }
+        }
+      }
+    }
+    return null;
+  }
+
   const coveragePatterns = {
     generalCancer: {
       name: '일반암진단비',
-      extractPattern: /일반암\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i,
-      alternativePatterns: [
-        /일반암\n([0-9,]+)\s*\/\s*[0-9,]+만원/i,
-        /일반암\s*([0-9,]+)만원/i
-      ]
+      keyword: '일반암',
+      extractPattern: /일반암\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i
     },
     totalCancer: {
       name: '통합암진단비', 
-      extractPattern: /통합암\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i,
-      alternativePatterns: [
-        /통합암\n([0-9,]+)\s*\/\s*[0-9,]+만원/i,
-        /통합암\s*([0-9,]+)만원/i
-      ]
+      keyword: '통합암',
+      extractPattern: /통합암\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i
     },
     targetTherapy: {
       name: '표적항암치료비',
-      extractPattern: /표적항암약물\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i,
-      alternativePatterns: [
-        /표적항암약물\n([0-9,]+)\s*\/\s*[0-9,]+만원/i,
-        /표적항암\s*([0-9,]+)만원/i
-      ]
+      keyword: '표적항암약물',
+      extractPattern: /표적항암약물\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i
     },
     cerebrovascularDiagnosis: {
       name: '뇌혈관질환진단비',
-      extractPattern: /뇌혈관질환\n([0-9,]+)\s*\/\s*[0-9,]+만원/i,
-      alternativePatterns: [
-        /뇌혈관질환\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i,
-        /뇌혈관질환[^0-9부족]*?([0-9,]+)\s*\/\s*[0-9,]+만원/i,
-        /뇌혈관질환\s*\n\s*([0-9,]+)\s*\/\s*[0-9,]+/i
-      ]
+      keyword: '뇌혈관질환',
+      special: true
     },
     strokeDiagnosis: {
       name: '뇌졸중진단비',
-      extractPattern: /뇌졸중\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i,
-      alternativePatterns: [
-        /뇌졸중\n([0-9,]+)\s*\/\s*[0-9,]+만원/i,
-        /뇌졸중\s*([0-9,]+)만원/i
-      ]
+      keyword: '뇌졸중',
+      extractPattern: /뇌졸중\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i
     },
     ischemicHeartDiagnosis: {
       name: '허혈성심장질환진단비',
-      extractPattern: /허혈성심질환\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i,
-      alternativePatterns: [
-        /허혈성심질환\n([0-9,]+)\s*\/\s*[0-9,]+만원/i,
-        /허혈성심장질환\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
-        /허혈성심질환\s*([0-9,]+)만원/i
-      ]
+      keyword: '허혈성심질환',
+      extractPattern: /허혈성심질환\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i
     },
     myocardialInfarctionDiagnosis: {
       name: '심근경색진단비',
-      extractPattern: /급성심근경색증\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i,
-      alternativePatterns: [
-        /급성심근경색증\n([0-9,]+)\s*\/\s*[0-9,]+만원/i,
-        /급성심근경색\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i,
-        /심근경색\s*([0-9,]+)만원/i
-      ]
+      keyword: '급성심근경색증',
+      extractPattern: /급성심근경색증\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i
     },
     diseaseHospitalization: {
       name: '(질병)입원한도',
-      extractPattern: /질병입원\s*실손\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i,
-      alternativePatterns: [
-        /질병입원\s*실손\n([0-9,]+)\s*\/\s*[0-9,]+만원/i,
-        /질병입원.*실손\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
-      ]
+      keyword: '질병입원',
+      extractPattern: /질병입원\s*실손\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i
     },
     injuryHospitalization: {
       name: '(상해)입원한도',
-      extractPattern: /상해입원\s*실손\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i,
-      alternativePatterns: [
-        /상해입원\s*실손\n([0-9,]+)\s*\/\s*[0-9,]+만원/i,
-        /상해입원.*실손\s*([0-9,]+)\s*\/\s*[0-9,]+만원/i
-      ]
+      keyword: '상해입원',
+      extractPattern: /상해입원\s*실손\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i
     },
     criminalSettlement: {
       name: '형사합의금',
-      extractPattern: /대인형사합의지원금\s+([0-9,]+)만원/i,
-      alternativePatterns: [
-        /대인형사합의지원금\n([0-9,]+)만원/i,
-        /대인형사합의지원금\s*\n\s*([0-9,]+)만원/i,
-        /대인형사합의지원금[^\n]*?\n\s*([0-9,]+)만원/i,
-        /형사합의[^\n]*?\s+([0-9,]+)만원/i,
-        /대인형사[^\n]*?\s+([0-9,]+)만원/i
-      ]
+      keyword: '대인형사합의지원금',
+      lifeInsurance: true
     },
     lawyerAppointment: {
       name: '변호사선임비',
-      extractPattern: /변호사선임비용\s+([0-9,]+)만원/i,
-      alternativePatterns: [
-        /변호사선임비용\n([0-9,]+)만원/i,
-        /변호사선임비용\s*\n\s*([0-9,]+)만원/i,
-        /변호사선임비용[^\n]*?\n\s*([0-9,]+)만원/i,
-        /변호사선임[^\n]*?\s+([0-9,]+)만원/i,
-        /변호사[^\n]*?비용\s+([0-9,]+)만원/i
-      ]
+      keyword: '변호사선임비용',
+      lifeInsurance: true
     },
     dailyLifeLiability: {
       name: '일상생활배상책임',
-      extractPattern: /일상생활배상책임\s+([0-9,]+)만원/i,
-      alternativePatterns: [
-        /일상생활배상책임\n([0-9,]+)만원/i,
-        /일상생활배상\s*([0-9,]+)만원/i
-      ]
+      keyword: '일상생활배상책임',
+      lifeInsurance: true
     },
     fireFine: {
       name: '화재벌금',
-      extractPattern: /화재벌금\s+([0-9,]+)만원/i,
-      alternativePatterns: [
-        /화재벌금\n([0-9,]+)만원/i,
-        /화재벌금\s*([0-9,]+)만원/i
-      ]
+      keyword: '화재벌금',
+      lifeInsurance: true
     }
   };
 
@@ -1194,46 +1216,29 @@ function extractCoverageAmounts(text) {
       return;
     }
 
-    // 기본 패턴 시도
-    let match = text.match(config.extractPattern);
-    if (match && match[1]) {
-      let amount = match[1].replace(/,/g, '');
+    let amount = null;
+
+    // 생활보장 항목 처리
+    if (config.lifeInsurance) {
+      amount = findLifeInsuranceValue(config.keyword);
       if (amount && !isNaN(amount)) {
         element.value = amount;
         console.log(`✅ ${config.name} 추출 성공: ${amount}만원`);
         return;
       }
     }
-
-    // 대안 패턴들 시도
-    if (config.alternativePatterns) {
-      for (const altPattern of config.alternativePatterns) {
-        const altMatch = text.match(altPattern);
-        if (altMatch && altMatch[1]) {
-          let amount = altMatch[1].replace(/,/g, '');
-          if (amount && !isNaN(amount)) {
-            element.value = amount;
-            console.log(`✅ ${config.name} 대안패턴 추출 성공: ${amount}만원`);
-            return;
-          }
-        }
-      }
-    }
-
-    // 특별 처리: 뇌혈관질환의 경우 "부족" 텍스트 앞의 숫자는 무시
+    
+    // 뇌혈관질환 특별 처리
     if (key === 'cerebrovascularDiagnosis') {
-      // 뇌혈관질환 다음 줄에서 첫 번째 숫자 찾기
-      const lines = text.split('\n');
+      // 뇌혈관질환 찾기
       for (let i = 0; i < lines.length; i++) {
         if (lines[i].includes('뇌혈관질환')) {
-          // 다음 줄에서 숫자 찾기
-          if (i + 1 < lines.length) {
-            const nextLine = lines[i + 1];
-            // "부족"이 포함되지 않은 라인에서 숫자 추출
-            if (!nextLine.includes('부족')) {
-              const numberMatch = nextLine.match(/([0-9,]+)\s*\/\s*[0-9,]+/);
-              if (numberMatch && numberMatch[1]) {
-                let amount = numberMatch[1].replace(/,/g, '');
+          // 다음 몇 줄 안에서 숫자 찾기 (부족 제외)
+          for (let j = i + 1; j < Math.min(i + 4, lines.length); j++) {
+            if (!lines[j].includes('부족')) {
+              const match = lines[j].match(/([0-9,]+)\s*\/\s*[0-9,]+/);
+              if (match && match[1]) {
+                amount = match[1].replace(/,/g, '');
                 if (amount && !isNaN(amount)) {
                   element.value = amount;
                   console.log(`✅ ${config.name} 특별처리 추출 성공: ${amount}만원`);
@@ -1245,65 +1250,47 @@ function extractCoverageAmounts(text) {
         }
       }
     }
-
-    // 특별 처리: 형사합의금, 변호사선임비의 경우
-    if (key === 'criminalSettlement' || key === 'lawyerAppointment') {
-      const searchText = key === 'criminalSettlement' ? '대인형사합의지원금' : '변호사선임비용';
-      const lines = text.split('\n');
-      
-      for (let i = 0; i < lines.length; i++) {
-        if (lines[i].includes(searchText)) {
-          // 같은 줄에서 오른쪽에 있는 숫자 찾기
-          const sameLine = lines[i].split(searchText)[1];
-          if (sameLine) {
-            const numberMatch = sameLine.match(/\s*([0-9,]+)만원/);
-            if (numberMatch && numberMatch[1]) {
-              let amount = numberMatch[1].replace(/,/g, '');
-              if (amount && !isNaN(amount)) {
-                element.value = amount;
-                console.log(`✅ ${config.name} 같은줄 추출 성공: ${amount}만원`);
-                return;
-              }
-            }
-          }
-          
-          // 다음 줄에서 숫자 찾기
-          if (i + 1 < lines.length) {
-            const nextLine = lines[i + 1];
-            const numberMatch = nextLine.match(/^\s*([0-9,]+)만원/);
-            if (numberMatch && numberMatch[1]) {
-              let amount = numberMatch[1].replace(/,/g, '');
-              if (amount && !isNaN(amount)) {
-                element.value = amount;
-                console.log(`✅ ${config.name} 다음줄 추출 성공: ${amount}만원`);
-                return;
-              }
-            }
-          }
+    
+    // 기본 패턴 시도
+    if (config.extractPattern) {
+      const match = text.match(config.extractPattern);
+      if (match && match[1]) {
+        amount = match[1].replace(/,/g, '');
+        if (amount && !isNaN(amount)) {
+          element.value = amount;
+          console.log(`✅ ${config.name} 추출 성공: ${amount}만원`);
+          return;
         }
+      }
+    }
+    
+    // 라인 기반 추출 시도
+    if (!amount && config.keyword) {
+      amount = findValueByKeyword(config.keyword, lines);
+      if (amount && !isNaN(amount)) {
+        element.value = amount;
+        console.log(`✅ ${config.name} 라인기반 추출 성공: ${amount}만원`);
+        return;
       }
     }
 
     console.log(`❌ ${config.name} 패턴 매칭 실패`);
   });
 
-  // 추가 디버깅: 특정 키워드가 포함된 라인 찾기
-  const lines = text.split('\n');
-  const keywords = ['뇌혈관', '형사합의', '변호사선임', '대인형사', '변호사'];
-  
-  keywords.forEach(keyword => {
-    const matchingLines = lines.filter(line => line.includes(keyword));
-    if (matchingLines.length > 0) {
-      console.log(`🔍 "${keyword}" 포함 라인:`, matchingLines);
-      // 해당 라인 다음 라인도 출력
-      matchingLines.forEach(line => {
-        const lineIndex = lines.indexOf(line);
-        if (lineIndex !== -1 && lineIndex + 1 < lines.length) {
-          console.log(`   다음 라인: "${lines[lineIndex + 1]}"`);
-        }
-      });
+  // 추가 디버깅 정보
+  console.log('=== 생활보장 섹션 분석 ===');
+  let lifeStart = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].includes('생활보장')) {
+      lifeStart = i;
+      console.log(`생활보장 시작 라인: ${i}`);
+      // 다음 10줄 출력
+      for (let j = i; j < Math.min(i + 10, lines.length); j++) {
+        console.log(`  [${j}]: "${lines[j]}"`);
+      }
+      break;
     }
-  });
+  }
 }
 
 // 데이터 저장 및 이미지 다운로드
