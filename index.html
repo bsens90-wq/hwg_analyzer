@@ -1537,13 +1537,16 @@ async function generateAndDownloadImage(data) {
           border-radius: 6px 6px 0 0;
         }
         .coverage-item-wrapper {
-          margin-bottom: 4px;
+          margin-bottom: 6px;
+          display: block;
         }
         .coverage-item {
           display: flex;
           justify-content: space-between;
           align-items: center;
           white-space: nowrap;
+          width: 100%;
+          margin-bottom: 2px;
         }
         .coverage-name {
           flex: 0 0 auto;
@@ -1580,7 +1583,7 @@ async function generateAndDownloadImage(data) {
           color: #dc3545 !important;
         }
         .coverage-progress-wrapper {
-          margin-top: 2px;
+          display: block;
           width: 100%;
         }
         .coverage-progress {
@@ -1590,6 +1593,7 @@ async function generateAndDownloadImage(data) {
           overflow: hidden;
           position: relative;
           width: 100%;
+          display: block;
         }
         .progress-bar {
           height: 100%;
