@@ -1828,7 +1828,7 @@ async function generateAndDownloadImage(data) {
         }
         .subsection-title {
           font-weight: 600;
-          font-size: 22px;
+          font-size: 14px;
           margin-bottom: 2px;
           text-align: center;
           background: white;
@@ -1882,22 +1882,22 @@ async function generateAndDownloadImage(data) {
         }
         .example-name {
           flex: 0 0 auto;
-          font-size: 10px;
+          font-size: 12px;
           overflow: hidden;
           text-overflow: ellipsis;
           max-width: 90px;
         }
         .example-value {
           font-weight: 600;
-          font-size: 10px;
+          font-size: 12px;
           flex: 0 0 auto;
           margin-left: 3px;
         }
         .before-sections .example-value {
-          color: #333333;
+          color: #666;
         }
         .after-sections .example-value {
-          color: #333333;
+          color: #1565C0;
         }
       </style>
       
@@ -2000,7 +2000,7 @@ function generateCoverageItemsForPrint(coverages, items, type) {
     const percentage = calculateProgressPercentage(value, item.standardAmount);
     
     let displayValue = '';
-    let valueColor = '#333333'; // 진한 회색으로 통일
+    let valueColor = type === 'before' ? '#666' : '#1565C0';
     
     if (value === 0) {
       displayValue = '✗';
@@ -2008,9 +2008,9 @@ function generateCoverageItemsForPrint(coverages, items, type) {
     } else {
       displayValue = value.toLocaleString() + '만원';
       if (percentage >= 100) {
-        valueColor = '#333333'; // 진한 회색 유지
+        valueColor = '#28a745';
       } else if (percentage < 30) {
-        valueColor = '#333333'; // 진한 회색 유지
+        valueColor = '#dc3545';
       }
     }
     
@@ -2033,10 +2033,10 @@ function generateCoverageItemsForPrint(coverages, items, type) {
     
     return `
       <div style="margin-bottom: 3px;">
-        <div style="padding: 0; font-size: 10px; margin-bottom: 1px; ${value === 0 ? 'color: #dc3545;' : ''}">${shortName}</div>
+        <div style="padding: 0; font-size: 12px; margin-bottom: 1px; ${value === 0 ? 'color: #dc3545;' : ''}">${shortName}</div>
         <div style="display: flex; align-items: center; justify-content: space-between;">
           ${progressBarHtml}
-          <span style="font-size: 10px; font-weight: 600; color: ${valueColor}; white-space: nowrap; margin-left: 4px;">${displayValue}</span>
+          <span style="font-size: 12px; font-weight: 600; color: ${valueColor}; white-space: nowrap; margin-left: 4px;">${displayValue}</span>
         </div>
       </div>
     `;
@@ -2053,7 +2053,7 @@ function generateEssentialItemForPrint(coverages, key, name, type) {
   const percentage = calculateProgressPercentage(value, standardAmount);
   
   let displayValue = '';
-  let valueColor = '#333333'; // 진한 회색으로 통일
+  let valueColor = type === 'before' ? '#666' : '#1565C0';
   
   if (value === 0) {
     displayValue = '✗';
@@ -2061,9 +2061,9 @@ function generateEssentialItemForPrint(coverages, key, name, type) {
   } else {
     displayValue = value.toLocaleString() + '만원';
     if (percentage >= 100) {
-      valueColor = '#333333'; // 진한 회색 유지
+      valueColor = '#28a745';
     } else if (percentage < 30) {
-      valueColor = '#333333'; // 진한 회색 유지
+      valueColor = '#dc3545';
     }
   }
   
@@ -2080,10 +2080,10 @@ function generateEssentialItemForPrint(coverages, key, name, type) {
   
   return `
     <div style="margin-bottom: 3px;">
-      <div style="padding: 0; font-size: 10px; margin-bottom: 1px; ${value === 0 ? 'color: #dc3545;' : ''}">${name}</div>
+      <div style="padding: 0; font-size: 12px; margin-bottom: 1px; ${value === 0 ? 'color: #dc3545;' : ''}">${name}</div>
       <div style="display: flex; align-items: center; justify-content: space-between;">
         ${progressBarHtml}
-        <span style="font-size: 10px; font-weight: 600; color: ${valueColor}; white-space: nowrap; margin-left: 4px;">${displayValue}</span>
+        <span style="font-size: 12px; font-weight: 600; color: ${valueColor}; white-space: nowrap; margin-left: 4px;">${displayValue}</span>
       </div>
     </div>
   `;
@@ -2135,7 +2135,7 @@ function generateEssentialSectionForPrint(coverages, caregiverOption, type) {
             const percentage = calculateProgressPercentage(value, standardItem.standardAmount);
             
             let displayValue = '';
-            let valueColor = '#333333'; // 진한 회색으로 통일
+            let valueColor = type === 'before' ? '#666' : '#1565C0';
             
             if (value === 0) {
               displayValue = '✗';
@@ -2143,9 +2143,9 @@ function generateEssentialSectionForPrint(coverages, caregiverOption, type) {
             } else {
               displayValue = value.toLocaleString() + '만원';
               if (percentage >= 100) {
-                valueColor = '#333333'; // 진한 회색 유지
+                valueColor = '#28a745';
               } else if (percentage < 30) {
-                valueColor = '#333333'; // 진한 회색 유지
+                valueColor = '#dc3545';
               }
             }
             
@@ -2179,7 +2179,7 @@ function generateEssentialSectionForPrint(coverages, caregiverOption, type) {
             const percentage = calculateProgressPercentage(value, standardItem.standardAmount);
             
             let displayValue = '';
-            let valueColor = '#333333'; // 진한 회색으로 통일
+            let valueColor = type === 'before' ? '#666' : '#1565C0';
             
             if (value === 0) {
               displayValue = '✗';
@@ -2187,9 +2187,9 @@ function generateEssentialSectionForPrint(coverages, caregiverOption, type) {
             } else {
               displayValue = value.toLocaleString() + '만원';
               if (percentage >= 100) {
-                valueColor = '#333333'; // 진한 회색 유지
+                valueColor = '#28a745';
               } else if (percentage < 30) {
-                valueColor = '#333333'; // 진한 회색 유지
+                valueColor = '#dc3545';
               }
             }
             
@@ -2218,24 +2218,24 @@ function generateEssentialSectionForPrint(coverages, caregiverOption, type) {
 function generateExampleSectionsForPrint(coverages, type) {
   return `
     <div class="example-section">
-      <div class="example-title">일반암 치료 보장 예시</div>
-      ${generateExampleItemForPrint('다빈치로봇수술 1개 부위', calculateExample1(coverages))}
-      ${generateExampleItemForPrint('전이+표적', calculateExample2(coverages))}
+      <div class="example-title">일반암 예시</div>
+      ${generateExampleItemForPrint('다빈치수술', calculateExample1(coverages))}
+      ${generateExampleItemForPrint('1부위 전이+표적', calculateExample2(coverages))}
       ${generateExampleItemForPrint('중입자치료', calculateExample3(coverages))}
     </div>
     
     <div class="example-section">
-      <div class="example-title">뇌경색 치료 보장 예시</div>
+      <div class="example-title">뇌경색 예시</div>
       ${generateExampleItemForPrint('스텐트', calculateStentExample(coverages))}
       ${generateExampleItemForPrint('스텐트+혈전용해', calculateStentThrombolysisExample(coverages))}
-      ${generateExampleItemForPrint('혈전용해+혈전제거+중환자실', calculateComplexTreatmentExample(coverages))}
+      ${generateExampleItemForPrint('혈전제거+용해+중환자', calculateComplexTreatmentExample(coverages))}
     </div>
     
     <div class="example-section">
-      <div class="example-title">급성심근경색 치료 보장 예시</div>
+      <div class="example-title">급성심근경색 예시</div>
       ${generateExampleItemForPrint('스텐트', calculateMyocardialStentExample(coverages))}
       ${generateExampleItemForPrint('스텐트+혈전용해', calculateMyocardialStentThrombolysisExample(coverages))}
-      ${generateExampleItemForPrint('혈전용해+혈전제거+중환자실', calculateMyocardialComplexTreatmentExample(coverages))}
+      ${generateExampleItemForPrint('혈전제거+용해+중환자', calculateMyocardialComplexTreatmentExample(coverages))}
     </div>
   `;
 }
