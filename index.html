@@ -1460,106 +1460,131 @@ function generateProgressBar(percentage, value) {
 async function generateAndDownloadImage(data) {
   const container = document.getElementById('hiddenPrintContainer');
   
-  // HTML 내용 생성 (A4 가로 레이아웃)
+  // HTML 내용 생성 (A4 가로 레이아웃 - 254mm x 190.5mm)
   container.innerHTML = `
-    <div style="background: white; padding: 15px; width: 1650px; font-family: 'Noto Sans KR', Arial, sans-serif;">
+    <div style="background: white; padding: 20px; width: 960px; height: 720px; font-family: 'Noto Sans KR', Arial, sans-serif;">
       <style>
+        .main-title {
+          text-align: center;
+          font-size: 24px;
+          font-weight: 900;
+          margin-bottom: 20px;
+          color: #333;
+          padding: 15px;
+          background: linear-gradient(90deg, rgba(255,102,0,0.05), rgba(255,143,0,0.05));
+          border-radius: 10px;
+        }
         .print-container {
           display: flex;
-          gap: 20px;
+          gap: 15px;
+          height: calc(100% - 80px);
         }
         .comparison-section {
           flex: 1;
-          position: relative;
+          display: flex;
+          flex-direction: column;
         }
-        .section-label {
-          position: absolute;
-          top: -10px;
-          left: 20px;
-          background: white;
-          padding: 0 10px;
-          font-size: 14px;
-          font-weight: 700;
-          color: #ff6600;
-          z-index: 10;
-        }
-        .print-header {
+        .section-header {
           text-align: center;
-          font-size: 18px;
+          font-size: 24px;
           font-weight: 700;
           margin-bottom: 15px;
-          color: #ff6600;
-          background: linear-gradient(90deg, rgba(255,102,0,0.1), rgba(255,143,0,0.1));
           padding: 10px;
           border-radius: 8px;
         }
+        .before-header {
+          color: #666;
+          background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
+        }
+        .after-header {
+          color: #1565C0;
+          background: linear-gradient(135deg, #E3F2FD, #BBDEFB);
+        }
         .sections-container {
           display: flex;
-          gap: 10px;
-          margin-bottom: 15px;
+          gap: 8px;
+          margin-bottom: 12px;
+          justify-content: center;
         }
         .section {
-          flex: 1;
-          border: 1px solid #ff6600;
-          padding: 8px;
-          min-height: 320px;
+          width: 30%;
           border-radius: 8px;
-          background: #fff;
+          padding: 6px;
+          min-height: 280px;
+        }
+        .before-sections .section {
+          border: 1.5px solid #999;
+          background: linear-gradient(135deg, #fafafa, #f5f5f5);
+        }
+        .after-sections .section {
+          border: 1.5px solid #1976D2;
+          background: linear-gradient(135deg, #E8F5FF, #F0F9FF);
+        }
+        .before-sections .section-title {
+          background: linear-gradient(135deg, #666, #888);
+        }
+        .after-sections .section-title {
+          background: linear-gradient(135deg, #1565C0, #1976D2);
         }
         .section-title {
           text-align: center;
           font-weight: 700;
-          font-size: 12px;
-          margin-bottom: 8px;
-          background: linear-gradient(135deg, #ff6600, #ff8f00);
+          font-size: 11px;
+          margin-bottom: 6px;
           color: white;
-          margin: -8px -8px 8px -8px;
-          padding: 6px;
+          margin: -6px -6px 6px -6px;
+          padding: 5px;
           border-radius: 6px 6px 0 0;
         }
         .coverage-item {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin: 4px 0;
+          margin: 3px 0;
           padding: 2px 0;
           border-bottom: 1px dotted #ddd;
-          font-size: 9px;
+          font-size: 8px;
         }
         .coverage-name {
           flex: 1;
-          padding-right: 4px;
+          padding-right: 3px;
+          font-size: 7px;
         }
         .coverage-name.no-coverage {
           color: #dc3545;
         }
         .coverage-value {
           font-weight: 600;
-          color: #ff6600;
-          min-width: 45px;
+          min-width: 40px;
           text-align: right;
-          font-size: 9px;
+          font-size: 8px;
+        }
+        .before-sections .coverage-value {
+          color: #666;
+        }
+        .after-sections .coverage-value {
+          color: #1565C0;
         }
         .coverage-value.full-coverage {
-          color: #28a745;
+          color: #28a745 !important;
           font-weight: 700;
         }
         .coverage-value.insufficient-coverage {
-          color: #dc3545;
+          color: #dc3545 !important;
         }
         .coverage-progress {
           margin: 1px 3px;
-          height: 4px;
+          height: 8px;
           background: #e0e0e0;
-          border-radius: 2px;
+          border-radius: 4px;
           overflow: hidden;
           position: relative;
-          min-width: 15px;
+          min-width: 35px;
           display: inline-block;
         }
         .progress-bar {
           height: 100%;
-          border-radius: 2px;
+          border-radius: 4px;
         }
         .progress-green { background: #28a745; }
         .progress-yellow { background: #ffc107; }
@@ -1571,142 +1596,149 @@ async function generateAndDownloadImage(data) {
           transform: translate(-50%, -50%);
           color: #dc3545;
           font-weight: 900;
-          font-size: 6px;
+          font-size: 7px;
           line-height: 1;
         }
         .subsection {
-          margin-bottom: 10px;
+          margin-bottom: 8px;
           border: 1px solid #ddd;
-          padding: 6px;
+          padding: 5px;
           border-radius: 4px;
-          background: #fafafa;
+        }
+        .before-sections .subsection {
+          background: #f8f8f8;
+        }
+        .after-sections .subsection {
+          background: #F5FAFF;
         }
         .subsection-title {
           font-weight: 600;
-          font-size: 9px;
-          margin-bottom: 4px;
+          font-size: 8px;
+          margin-bottom: 3px;
           text-align: center;
           background: white;
-          padding: 3px;
+          padding: 2px;
           border: 1px solid #ddd;
-          margin: -6px -6px 4px -6px;
+          margin: -5px -5px 3px -5px;
           border-radius: 3px 3px 0 0;
         }
         .examples-container {
           display: flex;
-          gap: 10px;
-          margin-top: 15px;
+          gap: 8px;
+          margin-top: 10px;
+          justify-content: center;
         }
         .example-section {
-          flex: 1;
-          border: 1px solid #ff6600;
-          padding: 8px;
+          width: 30%;
+          padding: 6px;
           border-radius: 6px;
-          background: #fff8f0;
+        }
+        .before-sections .example-section {
+          border: 1px solid #999;
+          background: #f8f8f8;
+        }
+        .after-sections .example-section {
+          border: 1px solid #1976D2;
+          background: #F0F9FF;
+        }
+        .before-sections .example-title {
+          background: linear-gradient(135deg, #666, #888);
+        }
+        .after-sections .example-title {
+          background: linear-gradient(135deg, #1565C0, #1976D2);
         }
         .example-title {
           font-weight: 700;
-          font-size: 10px;
-          margin-bottom: 6px;
+          font-size: 9px;
+          margin-bottom: 5px;
           text-align: center;
-          padding: 4px;
-          background: linear-gradient(135deg, #ff6600, #ff8f00);
+          padding: 3px;
           color: white;
           border-radius: 4px;
-          margin: -8px -8px 6px -8px;
+          margin: -6px -6px 5px -6px;
         }
         .example-item {
           display: flex;
           justify-content: space-between;
-          margin: 3px 0;
-          font-size: 9px;
+          margin: 2px 0;
+          font-size: 8px;
           padding: 2px 0;
           border-bottom: 1px dotted #ddd;
         }
         .example-name {
           flex: 1;
+          font-size: 7px;
         }
         .example-value {
           font-weight: 600;
-          color: #ff6600;
+          font-size: 8px;
         }
-        .hanwha-footer {
-          margin-top: 15px;
-          padding: 10px;
-          background: linear-gradient(90deg, #ff6600, #ff8f00);
-          color: white;
-          text-align: center;
-          font-size: 9px;
-          border-radius: 6px;
+        .before-sections .example-value {
+          color: #666;
         }
-        .before-section {
-          border: 2px solid #666;
-        }
-        .after-section {
-          border: 2px solid #ff6600;
+        .after-sections .example-value {
+          color: #1565C0;
         }
       </style>
       
-      <div class="print-header">
-        (${data.customerName})님의 한 장 요약 보장분석 - 변경 전/후 비교
+      <div class="main-title">
+        한 장 요약 보장분석 - ${data.customerName}님 (생년월일 ${data.birthDate || 'YY-MM-DD'})
       </div>
       
       <div class="print-container">
         <!-- 변경 전 섹션 -->
         <div class="comparison-section">
-          <div class="section-label">변경 전</div>
-          <div class="sections-container">
-            <div class="section before-section">
-              <div class="section-title">암</div>
-              ${generateCoverageItemsForPrint(data.coverages_before, ALL_COVERAGE_ITEMS.filter(i => i.category === 'cancer'))}
+          <div class="section-header before-header">변경 전 보장내용</div>
+          <div class="before-sections">
+            <div class="sections-container">
+              <div class="section">
+                <div class="section-title">암</div>
+                ${generateCoverageItemsForPrint(data.coverages_before, ALL_COVERAGE_ITEMS.filter(i => i.category === 'cancer'))}
+              </div>
+              
+              <div class="section">
+                <div class="section-title">2대 중대질환</div>
+                ${generateCoverageItemsForPrint(data.coverages_before, ALL_COVERAGE_ITEMS.filter(i => i.category === 'majorDisease'))}
+              </div>
+              
+              <div class="section">
+                <div class="section-title">5대 필수 보험</div>
+                ${generateEssentialSectionForPrint(data.coverages_before, data.caregiverOption)}
+              </div>
             </div>
             
-            <div class="section before-section">
-              <div class="section-title">2대 중대질환</div>
-              ${generateCoverageItemsForPrint(data.coverages_before, ALL_COVERAGE_ITEMS.filter(i => i.category === 'majorDisease'))}
+            <div class="examples-container">
+              ${generateExampleSectionsForPrint(data.coverages_before, 'before')}
             </div>
-            
-            <div class="section before-section">
-              <div class="section-title">5대 필수 보험</div>
-              ${generateEssentialSectionForPrint(data.coverages_before, data.caregiverOption)}
-            </div>
-          </div>
-          
-          <div class="examples-container">
-            ${generateExampleSectionsForPrint(data.coverages_before)}
           </div>
         </div>
         
         <!-- 변경 후 섹션 -->
         <div class="comparison-section">
-          <div class="section-label">변경 후</div>
-          <div class="sections-container">
-            <div class="section after-section">
-              <div class="section-title">암</div>
-              ${generateCoverageItemsForPrint(data.coverages_after, ALL_COVERAGE_ITEMS.filter(i => i.category === 'cancer'))}
+          <div class="section-header after-header">변경 후 보장내용</div>
+          <div class="after-sections">
+            <div class="sections-container">
+              <div class="section">
+                <div class="section-title">암</div>
+                ${generateCoverageItemsForPrint(data.coverages_after, ALL_COVERAGE_ITEMS.filter(i => i.category === 'cancer'))}
+              </div>
+              
+              <div class="section">
+                <div class="section-title">2대 중대질환</div>
+                ${generateCoverageItemsForPrint(data.coverages_after, ALL_COVERAGE_ITEMS.filter(i => i.category === 'majorDisease'))}
+              </div>
+              
+              <div class="section">
+                <div class="section-title">5대 필수 보험</div>
+                ${generateEssentialSectionForPrint(data.coverages_after, data.caregiverOption)}
+              </div>
             </div>
             
-            <div class="section after-section">
-              <div class="section-title">2대 중대질환</div>
-              ${generateCoverageItemsForPrint(data.coverages_after, ALL_COVERAGE_ITEMS.filter(i => i.category === 'majorDisease'))}
+            <div class="examples-container">
+              ${generateExampleSectionsForPrint(data.coverages_after, 'after')}
             </div>
-            
-            <div class="section after-section">
-              <div class="section-title">5대 필수 보험</div>
-              ${generateEssentialSectionForPrint(data.coverages_after, data.caregiverOption)}
-            </div>
-          </div>
-          
-          <div class="examples-container">
-            ${generateExampleSectionsForPrint(data.coverages_after)}
           </div>
         </div>
-      </div>
-      
-      <div class="hanwha-footer">
-        <div style="font-weight: 700; margin-bottom: 3px;">한화손해보험</div>
-        <div>작성일: ${data.inputDate} | 생년월일: ${data.birthDate || ''}</div>
-        <div style="font-size: 8px; margin-top: 3px;">* 본 자료는 참고용이며, 실제 보장내용은 약관을 확인하시기 바랍니다.</div>
       </div>
     </div>
   `;
@@ -1835,7 +1867,7 @@ function generateEssentialItemForPrint(coverages, key, name) {
 }
 
 // 예시 섹션 생성
-function generateExampleSectionsForPrint(coverages) {
+function generateExampleSectionsForPrint(coverages, type) {
   return `
     <div class="example-section">
       <div class="example-title">일반암 치료 보장 예시</div>
