@@ -2033,10 +2033,10 @@ function generateCoverageItemsForPrint(coverages, items, type) {
     
     return `
       <div style="margin-bottom: 6px;">
-        <div style="padding: 0; font-size: 22px; margin-bottom: 2px; ${value === 0 ? 'color: #dc3545;' : ''}">${shortName}</div>
+        <div style="padding: 0; font-size: 9px; margin-bottom: 2px; ${value === 0 ? 'color: #dc3545;' : ''}">${shortName}</div>
         <div style="display: flex; align-items: center; gap: 8px;">
           ${progressBarHtml}
-          <span style="font-size: 22px; font-weight: 600; color: ${valueColor}; white-space: nowrap;">${displayValue}</span>
+          <span style="font-size: 9px; font-weight: 600; color: ${valueColor}; white-space: nowrap;">${displayValue}</span>
         </div>
       </div>
     `;
