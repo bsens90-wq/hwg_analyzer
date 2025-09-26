@@ -28,63 +28,6 @@
       color:var(--text);
     }
     
-    .header-fixed {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 1000;
-      background: linear-gradient(to right, #ff6600, #ff8f00);
-      border-bottom: 3px solid var(--hanwha-dark);
-      padding: 8px 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.15);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    
-    .header-left {
-      flex: 1;
-    }
-    
-    .header-center {
-      flex: 1;
-      text-align: center;
-    }
-    
-    .header-right {
-      flex: 1;
-      text-align: right;
-    }
-    
-    .logo-container {
-      cursor: pointer;
-      transition: all 0.3s ease;
-      display: inline-block;
-    }
-    
-    .logo-container:hover {
-      transform: scale(1.05);
-    }
-    
-    .logo-main {
-      font-size: 32px;
-      font-weight: 900;
-      color: white;
-      letter-spacing: 3px;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-      margin: 0;
-      line-height: 1;
-    }
-    
-    .logo-sub {
-      font-size: 11px;
-      color: rgba(255,255,255,0.9);
-      font-weight: 400;
-      margin-top: 2px;
-      letter-spacing: 1px;
-    }
-    
     .screen{
       min-height:100vh;
       display:flex;
@@ -445,17 +388,6 @@
   </style>
 </head>
 <body>
-  <div class="header-fixed" style="display: none;">
-    <div class="header-left"></div>
-    <div class="header-center">
-      <div class="logo-container" onclick="goHome()">
-        <div class="logo-main">한화손해보험</div>
-        <div class="logo-sub">보장분석 OCR 변환기</div>
-      </div>
-    </div>
-    <div class="header-right"></div>
-  </div>
-
   <!-- 메뉴 화면 -->
   <section id="menuScreen" class="screen">
     <div class="app-title">보장분석 한 장 요약</div>
@@ -473,7 +405,7 @@
       </button>
       
       <div class="meta" style="margin-top:2rem; text-align:center; color: var(--muted); font-size: 12px;">
-        Copyright 2025 한화손해보험 all rights reserved.
+        Copyright 2025 하세봉 all rights reserved.
       </div>
     </div>
   </section>
@@ -1463,6 +1395,12 @@ async function generateAndDownloadImage(data) {
           height: auto;
           margin-top: 30px;
         }
+        .examples-row {
+          display: flex;
+          gap: 25px;
+          justify-content: center;
+          flex: 1;
+        }
         .example-section {
           width: 520px;
           padding: 20px;
@@ -1579,11 +1517,19 @@ async function generateAndDownloadImage(data) {
         
         <!-- 하단: 예시 섹션들 -->
         <div class="examples-container">
-          <div class="before-sections">
-            ${generateExampleSectionsForPrint(data.coverages_before, 'before')}
+          <div class="comparison-section">
+            <div class="before-sections">
+              <div class="examples-row">
+                ${generateExampleSectionsForPrint(data.coverages_before, 'before')}
+              </div>
+            </div>
           </div>
-          <div class="after-sections">
-            ${generateExampleSectionsForPrint(data.coverages_after, 'after')}
+          <div class="comparison-section">
+            <div class="after-sections">
+              <div class="examples-row">
+                ${generateExampleSectionsForPrint(data.coverages_after, 'after')}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1865,7 +1811,7 @@ function generateEssentialSectionForPrint(coverages, caregiverOption, type) {
   return html;
 }
 
-// 예시 섹션 생성 (최적화된 크기)
+// 예시 섹션 생성 (가로 배치로 수정)
 function generateExampleSectionsForPrint(coverages, type) {
   return `
     <div class="example-section">
