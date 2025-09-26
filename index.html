@@ -1391,7 +1391,7 @@ async function generateAndDownloadImage(data) {
         }
 .examples-container {
   display: flex;
-  gap: 25px;
+  gap: 40px;
   justify-content: center;
   height: auto;
   margin-top: 30px;
@@ -1517,25 +1517,25 @@ async function generateAndDownloadImage(data) {
           </div>
         </div>
         
-        <!-- 하단: 예시 섹션들 -->
-        <div class="examples-container">
-          <div class="comparison-section">
-            <div class="before-sections">
-              <div class="examples-row">
-                ${generateExampleSectionsForPrint(data.coverages_before, 'before')}
-              </div>
-            </div>
-          </div>
-          <div class="comparison-section">
-            <div class="after-sections">
-              <div class="examples-row">
-                ${generateExampleSectionsForPrint(data.coverages_after, 'after')}
-              </div>
-            </div>
-          </div>
-        </div>
+    <div class="examples-container">
+  <!-- 변경 전 예시 섹션 -->
+  <div class="comparison-section">
+    <div class="before-sections">
+      <div class="sections-container">  <!-- examples-row를 sections-container로 변경 -->
+        ${generateExampleSectionsForPrint(data.coverages_before, 'before')}
       </div>
     </div>
+  </div>
+  
+  <!-- 변경 후 예시 섹션 -->
+  <div class="comparison-section">
+    <div class="after-sections">
+      <div class="sections-container">  <!-- examples-row를 sections-container로 변경 -->
+        ${generateExampleSectionsForPrint(data.coverages_after, 'after')}
+      </div>
+    </div>
+  </div>
+</div>
   `;
   
   // html2canvas를 사용하여 이미지 생성
