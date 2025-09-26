@@ -1882,14 +1882,14 @@ async function generateAndDownloadImage(data) {
         }
         .example-name {
           flex: 0 0 auto;
-          font-size: 10px;
+          font-size: 12px;
           overflow: hidden;
           text-overflow: ellipsis;
           max-width: 90px;
         }
         .example-value {
           font-weight: 600;
-          font-size: 10px;
+          font-size: 12px;
           flex: 0 0 auto;
           margin-left: 3px;
         }
@@ -2219,8 +2219,8 @@ function generateExampleSectionsForPrint(coverages, type) {
   return `
     <div class="example-section">
       <div class="example-title">일반암 예시</div>
-      ${generateExampleItemForPrint('다빈치로봇수술 1개 부위', calculateExample1(coverages))}
-      ${generateExampleItemForPrint('전이+표적', calculateExample2(coverages))}
+      ${generateExampleItemForPrint('다빈치수술', calculateExample1(coverages))}
+      ${generateExampleItemForPrint('1부위 전이+표적', calculateExample2(coverages))}
       ${generateExampleItemForPrint('중입자치료', calculateExample3(coverages))}
     </div>
     
@@ -2228,14 +2228,14 @@ function generateExampleSectionsForPrint(coverages, type) {
       <div class="example-title">뇌경색 예시</div>
       ${generateExampleItemForPrint('스텐트', calculateStentExample(coverages))}
       ${generateExampleItemForPrint('스텐트+혈전용해', calculateStentThrombolysisExample(coverages))}
-      ${generateExampleItemForPrint('혈전용해+혈전제거+중환자실', calculateComplexTreatmentExample(coverages))}
+      ${generateExampleItemForPrint('혈전제거+용해+중환자', calculateComplexTreatmentExample(coverages))}
     </div>
     
     <div class="example-section">
       <div class="example-title">급성심근경색 예시</div>
       ${generateExampleItemForPrint('스텐트', calculateMyocardialStentExample(coverages))}
       ${generateExampleItemForPrint('스텐트+혈전용해', calculateMyocardialStentThrombolysisExample(coverages))}
-      ${generateExampleItemForPrint('혈전용해+혈전제거+중환자실', calculateMyocardialComplexTreatmentExample(coverages))}
+      ${generateExampleItemForPrint('혈전제거+용해+중환자', calculateMyocardialComplexTreatmentExample(coverages))}
     </div>
   `;
 }
