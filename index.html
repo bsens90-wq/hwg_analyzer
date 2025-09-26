@@ -2033,10 +2033,10 @@ function generateCoverageItemsForPrint(coverages, items, type) {
     
     return `
       <div style="margin-bottom: 3px;">
-        <div style="padding: 0; font-size: 10px; margin-bottom: 1px; ${value === 0 ? 'color: #dc3545;' : ''}">${shortName}</div>
+        <div style="padding: 0; font-size: 12px; margin-bottom: 1px; ${value === 0 ? 'color: #dc3545;' : ''}">${shortName}</div>
         <div style="display: flex; align-items: center; justify-content: space-between;">
           ${progressBarHtml}
-          <span style="font-size: 10px; font-weight: 600; color: ${valueColor}; white-space: nowrap; margin-left: 4px;">${displayValue}</span>
+          <span style="font-size: 12px; font-weight: 600; color: ${valueColor}; white-space: nowrap; margin-left: 4px;">${displayValue}</span>
         </div>
       </div>
     `;
@@ -2080,10 +2080,10 @@ function generateEssentialItemForPrint(coverages, key, name, type) {
   
   return `
     <div style="margin-bottom: 3px;">
-      <div style="padding: 0; font-size: 10px; margin-bottom: 1px; ${value === 0 ? 'color: #dc3545;' : ''}">${name}</div>
+      <div style="padding: 0; font-size: 12px; margin-bottom: 1px; ${value === 0 ? 'color: #dc3545;' : ''}">${name}</div>
       <div style="display: flex; align-items: center; justify-content: space-between;">
         ${progressBarHtml}
-        <span style="font-size: 10px; font-weight: 600; color: ${valueColor}; white-space: nowrap; margin-left: 4px;">${displayValue}</span>
+        <span style="font-size: 12px; font-weight: 600; color: ${valueColor}; white-space: nowrap; margin-left: 4px;">${displayValue}</span>
       </div>
     </div>
   `;
@@ -2218,21 +2218,21 @@ function generateEssentialSectionForPrint(coverages, caregiverOption, type) {
 function generateExampleSectionsForPrint(coverages, type) {
   return `
     <div class="example-section">
-      <div class="example-title">일반암 치료 보장 예시</div>
+      <div class="example-title">일반암 예시</div>
       ${generateExampleItemForPrint('다빈치로봇수술 1개 부위', calculateExample1(coverages))}
       ${generateExampleItemForPrint('전이+표적', calculateExample2(coverages))}
       ${generateExampleItemForPrint('중입자치료', calculateExample3(coverages))}
     </div>
     
     <div class="example-section">
-      <div class="example-title">뇌경색 치료 보장 예시</div>
+      <div class="example-title">뇌경색 예시</div>
       ${generateExampleItemForPrint('스텐트', calculateStentExample(coverages))}
       ${generateExampleItemForPrint('스텐트+혈전용해', calculateStentThrombolysisExample(coverages))}
       ${generateExampleItemForPrint('혈전용해+혈전제거+중환자실', calculateComplexTreatmentExample(coverages))}
     </div>
     
     <div class="example-section">
-      <div class="example-title">급성심근경색 치료 보장 예시</div>
+      <div class="example-title">급성심근경색 예시</div>
       ${generateExampleItemForPrint('스텐트', calculateMyocardialStentExample(coverages))}
       ${generateExampleItemForPrint('스텐트+혈전용해', calculateMyocardialStentThrombolysisExample(coverages))}
       ${generateExampleItemForPrint('혈전용해+혈전제거+중환자실', calculateMyocardialComplexTreatmentExample(coverages))}
