@@ -261,7 +261,7 @@
     }
     
     .input-table input {
-      width: 100%;
+      width: calc(100% - 45px);
       padding: 6px 8px;
       margin: 0;
       border: 1px solid #ddd;
@@ -270,49 +270,14 @@
       display: inline-block;
     }
     
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 2000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0,0,0,0.5);
-    }
-    
-    .modal-content {
-      background-color: #fefefe;
-      margin: 5% auto;
-      padding: 20px;
-      border: 1px solid #888;
-      width: 90%;
-      max-width: 600px;
-      max-height: 80vh;
-      overflow-y: auto;
-      border-radius: 12px;
-    }
-    
-    .close-modal {
-      color: #aaa;
-      float: right;
-      font-size: 28px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    
-    .close-modal:hover,
-    .close-modal:focus {
-      color: #000;
-    }
-    
-    .standard-amount-input {
-      width: 100px;
-      padding: 5px;
-      margin-left: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
+    .unit-text {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
       font-size: 13px;
+      color: var(--muted);
+      pointer-events: none;
     }
     
     .section-header {
@@ -541,11 +506,6 @@
       <!-- 담보 입력 테이블 (변경 전/후 통합) -->
       <div class="row">
         <h3>담보 항목별 보장금액</h3>
-        <div style="text-align: right; margin-bottom: 10px;">
-          <button id="standardAmountBtn" class="small" style="background: linear-gradient(135deg, #ff6600, #ff8f00); color: white; padding: 8px 16px; font-size: 13px; width: auto; margin: 0;">
-            ⚙️ 표준금액 설정
-          </button>
-        </div>
         <div class="section-notice">
           ⚠️ OCR 인식 후 변경 전/후 값이 동일하게 세팅됩니다. 필요시 수동으로 수정해주세요.
         </div>
@@ -595,28 +555,34 @@
             <tr>
               <th>요양병원 외</th>
               <td class="before-column">
-                <input type="text" id="nursingHospitalOut_before" placeholder="0" class="amount-input">
+                <input type="text" id="nursingHospitalOut_before" placeholder="0">
+                <span class="unit-text">만원</span>
               </td>
               <td class="after-column">
-                <input type="text" id="nursingHospitalOut_after" placeholder="0" class="amount-input">
+                <input type="text" id="nursingHospitalOut_after" placeholder="0">
+                <span class="unit-text">만원</span>
               </td>
             </tr>
             <tr>
               <th>요양병원</th>
               <td class="before-column">
-                <input type="text" id="nursingHospitalIn_before" placeholder="0" class="amount-input">
+                <input type="text" id="nursingHospitalIn_before" placeholder="0">
+                <span class="unit-text">만원</span>
               </td>
               <td class="after-column">
-                <input type="text" id="nursingHospitalIn_after" placeholder="0" class="amount-input">
+                <input type="text" id="nursingHospitalIn_after" placeholder="0">
+                <span class="unit-text">만원</span>
               </td>
             </tr>
             <tr>
               <th>간호간병통합</th>
               <td class="before-column">
-                <input type="text" id="nursingCareIntegrated_before" placeholder="0" class="amount-input">
+                <input type="text" id="nursingCareIntegrated_before" placeholder="0">
+                <span class="unit-text">만원</span>
               </td>
               <td class="after-column">
-                <input type="text" id="nursingCareIntegrated_after" placeholder="0" class="amount-input">
+                <input type="text" id="nursingCareIntegrated_after" placeholder="0">
+                <span class="unit-text">만원</span>
               </td>
             </tr>
           </tbody>
@@ -651,25 +617,6 @@
   <!-- 숨겨진 출력용 컨테이너 -->
   <div id="hiddenPrintContainer"></div>
 
-  <!-- 표준금액 설정 모달 -->
-  <div id="standardAmountModal" class="modal">
-    <div class="modal-content">
-      <span class="close-modal">&times;</span>
-      <h2 style="color: var(--hanwha); margin-bottom: 1rem;">표준금액 설정</h2>
-      <p style="font-size: 13px; color: var(--muted); margin-bottom: 1rem;">
-        각 항목의 표준금액을 설정하면 진행률 바의 기준값이 변경됩니다.
-      </p>
-      <div id="standardAmountList" style="max-height: 400px; overflow-y: auto;">
-        <!-- 표준금액 입력 필드들이 여기에 동적으로 생성됩니다 -->
-      </div>
-      <div style="margin-top: 1.5rem; text-align: center;">
-        <button id="saveStandardAmountBtn" style="padding: 10px 20px; width: auto;">
-          저장하기
-        </button>
-      </div>
-    </div>
-  </div>
-
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 <script>
 // 전역 변수
@@ -679,22 +626,22 @@ let savedDataList = [];
 // 모든 담보 항목 통합 정의 (섹션 구분 제거)
 const ALL_COVERAGE_ITEMS = [
   // 암 관련 담보
-  { key: 'generalCancer', name: '일반암진단비', standardAmount: 5000, category: 'cancer' },
-  { key: 'totalCancer', name: '통합암진단비', standardAmount: 3000, category: 'cancer' },
-  { key: 'targetTherapy', name: '표적항암치료비', standardAmount: 3000, category: 'cancer' },
-  { key: 'metastasisCancer', name: '전이암진단비', standardAmount: 2000, category: 'cancer' },
+  { key: 'generalCancer', name: '일반암진단비', standardAmount: 1000, category: 'cancer' },
+  { key: 'totalCancer', name: '통합암진단비', standardAmount: 1000, category: 'cancer' },
+  { key: 'targetTherapy', name: '표적항암치료비', standardAmount: 1000, category: 'cancer' },
+  { key: 'metastasisCancer', name: '전이암진단비', standardAmount: 1000, category: 'cancer' },
   { key: 'cancerSpecificTreatment', name: '암특정치료비', standardAmount: 1000, category: 'cancer' },
-  { key: 'cancerNonCoveredTreatment', name: '암특정치료비(비급여)', standardAmount: 3000, category: 'cancer' },
-  { key: 'heavyIonTherapy', name: '중입자치료비', standardAmount: 5000, category: 'cancer' },
-  { key: 'cancerSurgery', name: '암수술비', standardAmount: 500, category: 'cancer' },
-  { key: 'daVinciSurgery', name: '다빈치로봇수술비', standardAmount: 2000, category: 'cancer' },
-  { key: 'surgery5Type', name: '1-5종수술비(5종)', standardAmount: 100, category: 'cancer' },
+  { key: 'cancerNonCoveredTreatment', name: '암특정치료비(비급여)', standardAmount: 1000, category: 'cancer' },
+  { key: 'heavyIonTherapy', name: '중입자치료비', standardAmount: 1000, category: 'cancer' },
+  { key: 'cancerSurgery', name: '암수술비', standardAmount: 1000, category: 'cancer' },
+  { key: 'daVinciSurgery', name: '다빈치로봇수술비', standardAmount: 1000, category: 'cancer' },
+  { key: 'surgery5Type', name: '1-5종수술비(5종)', standardAmount: 1000, category: 'cancer' },
   
   // 2대 중대질환
-  { key: 'cerebrovascularDiagnosis', name: '뇌혈관질환진단비', standardAmount: 3000, category: 'majorDisease' },
-  { key: 'strokeDiagnosis', name: '뇌졸중진단비', standardAmount: 3000, category: 'majorDisease' },
-  { key: 'ischemicHeartDiagnosis', name: '허혈성심장질환진단비', standardAmount: 2000, category: 'majorDisease' },
-  { key: 'myocardialInfarctionDiagnosis', name: '심근경색진단비', standardAmount: 2000, category: 'majorDisease' },
+  { key: 'cerebrovascularDiagnosis', name: '뇌혈관질환진단비', standardAmount: 1000, category: 'majorDisease' },
+  { key: 'strokeDiagnosis', name: '뇌졸중진단비', standardAmount: 1000, category: 'majorDisease' },
+  { key: 'ischemicHeartDiagnosis', name: '허혈성심장질환진단비', standardAmount: 1000, category: 'majorDisease' },
+  { key: 'myocardialInfarctionDiagnosis', name: '심근경색진단비', standardAmount: 1000, category: 'majorDisease' },
   { key: 'cerebrovascularSurgery', name: '뇌혈관질환수술비', standardAmount: 1000, category: 'majorDisease' },
   { key: 'strokeSurgery', name: '뇌졸중수술비', standardAmount: 1000, category: 'majorDisease' },
   { key: 'ischemicHeartSurgery', name: '허혈성심장질환수술비', standardAmount: 1000, category: 'majorDisease' },
@@ -702,28 +649,27 @@ const ALL_COVERAGE_ITEMS = [
   { key: 'strokeThrombolysis', name: '뇌졸중혈전용해', standardAmount: 1000, category: 'majorDisease' },
   { key: 'myocardialInfarctionThrombolysis', name: '심근경색혈전용해', standardAmount: 1000, category: 'majorDisease' },
   { key: 'twoMajorTreatment', name: '2대특정치료비', standardAmount: 1000, category: 'majorDisease' },
-  { key: 'majorCirculatorySurgery', name: '주요순환계(수술)', standardAmount: 3000, category: 'majorDisease' },
-  { key: 'majorCirculatoryThrombectomy', name: '주요순환계(혈전제거)', standardAmount: 3000, category: 'majorDisease' },
-  { key: 'majorCirculatoryThrombolysis', name: '주요순환계(혈전용해)', standardAmount: 3000, category: 'majorDisease' },
-  { key: 'majorCirculatoryICU', name: '주요순환계(중환자실)', standardAmount: 1500, category: 'majorDisease' },
-  { key: 'thrombectomyTreatment', name: '혈전제거치료비', standardAmount: 3000, category: 'majorDisease' },
-  { key: 'surgery3Type', name: '1-5종수술비(3종)', standardAmount: 300, category: 'majorDisease' },
-  { key: 'surgery5Type2', name: '1-5종수술비(5종)', standardAmount: 100, category: 'majorDisease' },
-  { key: 'disease124Surgery', name: '124대질병수술비(특정10대)', standardAmount: 500, category: 'majorDisease' },
-  { key: 'sevenOrganSurgery', name: '7대기관수술비(뇌/심) 관혈', standardAmount: 2000, category: 'majorDisease' },
+  { key: 'majorCirculatorySurgery', name: '주요순환계(수술)', standardAmount: 1000, category: 'majorDisease' },
+  { key: 'majorCirculatoryThrombectomy', name: '주요순환계(혈전제거)', standardAmount: 1000, category: 'majorDisease' },
+  { key: 'majorCirculatoryThrombolysis', name: '주요순환계(혈전용해)', standardAmount: 1000, category: 'majorDisease' },
+  { key: 'majorCirculatoryICU', name: '주요순환계(중환자실)', standardAmount: 1000, category: 'majorDisease' },
+  { key: 'thrombectomyTreatment', name: '혈전제거치료비', standardAmount: 1000, category: 'majorDisease' },
+  { key: 'surgery3Type', name: '1-5종수술비(3종)', standardAmount: 1000, category: 'majorDisease' },
+  { key: 'surgery5Type2', name: '1-5종수술비(5종)', standardAmount: 1000, category: 'majorDisease' },
+  { key: 'disease124Surgery', name: '124대질병수술비(특정10대)', standardAmount: 1000, category: 'majorDisease' },
+  { key: 'sevenOrganSurgery', name: '7대기관수술비(뇌/심) 관혈', standardAmount: 1000, category: 'majorDisease' },
   
   // 5대 필수보험
-  { key: 'diseaseHospitalization', name: '(실손)질병입원', standardAmount: 5000, category: 'essential' },
-  { key: 'injuryHospitalization', name: '(실손)상해입원', standardAmount: 5000, category: 'essential' },
-  { key: 'criminalSettlement', name: '형사합의금', standardAmount: 20000, category: 'essential' },
-  { key: 'lawyerAppointment', name: '변호사선임비', standardAmount: 3000, category: 'essential' },
-  { key: 'dailyLifeLiability', name: '일상생활배상책임', standardAmount: 10000, category: 'essential' },
-  { key: 'fireFine', name: '화재벌금', standardAmount: 2000, category: 'essential' }
+  { key: 'diseaseHospitalization', name: '(실손)질병입원', standardAmount: 1000, category: 'essential' },
+  { key: 'injuryHospitalization', name: '(실손)상해입원', standardAmount: 1000, category: 'essential' },
+  { key: 'criminalSettlement', name: '형사합의금', standardAmount: 1000, category: 'essential' },
+  { key: 'lawyerAppointment', name: '변호사선임비', standardAmount: 1000, category: 'essential' },
+  { key: 'dailyLifeLiability', name: '일상생활배상책임', standardAmount: 1000, category: 'essential' },
+  { key: 'fireFine', name: '화재벌금', standardAmount: 1000, category: 'essential' }
 ];
 
 // DOM 로드 완료 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
-  loadStandardAmounts(); // 저장된 표준금액 로드
   initializeApp();
   loadSavedData();
   setupEventListeners();
@@ -733,7 +679,6 @@ document.addEventListener('DOMContentLoaded', function() {
 function initializeApp() {
   showScreen('menu');
   createCoverageTable();
-  addAmountFormatting(); // 포맷팅 이벤트 추가
 }
 
 // 이벤트 리스너 설정
@@ -791,101 +736,6 @@ function setupEventListeners() {
       handleMajorCirculatoryCalculation('after');
     }
   });
-  
-  // 표준금액 설정 버튼
-  document.getElementById('standardAmountBtn').addEventListener('click', openStandardAmountModal);
-  
-  // 모달 닫기 버튼
-  document.querySelector('.close-modal').addEventListener('click', closeStandardAmountModal);
-  
-  // 모달 외부 클릭 시 닫기
-  window.addEventListener('click', function(event) {
-    const modal = document.getElementById('standardAmountModal');
-    if (event.target === modal) {
-      closeStandardAmountModal();
-    }
-  });
-  
-  // 표준금액 저장 버튼
-  document.getElementById('saveStandardAmountBtn').addEventListener('click', saveStandardAmounts);
-}
-
-// 표준금액 설정 모달 열기
-function openStandardAmountModal() {
-  const modal = document.getElementById('standardAmountModal');
-  const list = document.getElementById('standardAmountList');
-  
-  // 카테고리별로 그룹화
-  const categories = {
-    'cancer': '암 관련 담보',
-    'majorDisease': '2대 중대질환',
-    'essential': '5대 필수보험'
-  };
-  
-  list.innerHTML = '';
-  
-  Object.entries(categories).forEach(([category, title]) => {
-    const categoryDiv = document.createElement('div');
-    categoryDiv.innerHTML = `<h3 style="color: var(--hanwha); font-size: 14px; margin: 1rem 0 0.5rem 0; border-bottom: 1px solid #ddd; padding-bottom: 5px;">${title}</h3>`;
-    
-    const items = ALL_COVERAGE_ITEMS.filter(item => item.category === category);
-    items.forEach(item => {
-      const itemDiv = document.createElement('div');
-      itemDiv.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin: 8px 0;';
-      itemDiv.innerHTML = `
-        <label style="font-size: 13px; flex: 1;">${item.name}</label>
-        <input type="number" class="standard-amount-input" data-key="${item.key}" value="${item.standardAmount}" placeholder="0">
-        <span style="font-size: 12px; color: var(--muted); margin-left: 5px;">만원</span>
-      `;
-      categoryDiv.appendChild(itemDiv);
-    });
-    
-    list.appendChild(categoryDiv);
-  });
-  
-  modal.style.display = 'block';
-}
-
-// 표준금액 설정 모달 닫기
-function closeStandardAmountModal() {
-  const modal = document.getElementById('standardAmountModal');
-  modal.style.display = 'none';
-}
-
-// 표준금액 저장
-function saveStandardAmounts() {
-  const inputs = document.querySelectorAll('.standard-amount-input');
-  
-  inputs.forEach(input => {
-    const key = input.dataset.key;
-    const value = parseInt(input.value) || 0;
-    
-    // ALL_COVERAGE_ITEMS에서 해당 항목 찾아서 업데이트
-    const item = ALL_COVERAGE_ITEMS.find(item => item.key === key);
-    if (item) {
-      item.standardAmount = value;
-    }
-  });
-  
-  // 로컬 스토리지에 저장
-  localStorage.setItem('standardAmounts', JSON.stringify(ALL_COVERAGE_ITEMS));
-  
-  alert('표준금액이 저장되었습니다.');
-  closeStandardAmountModal();
-}
-
-// 저장된 표준금액 로드
-function loadStandardAmounts() {
-  const saved = localStorage.getItem('standardAmounts');
-  if (saved) {
-    const savedAmounts = JSON.parse(saved);
-    savedAmounts.forEach(savedItem => {
-      const item = ALL_COVERAGE_ITEMS.find(i => i.key === savedItem.key);
-      if (item) {
-        item.standardAmount = savedItem.standardAmount;
-      }
-    });
-  }
 }
 
 // 담보 테이블 생성 (변경 전/후 구조)
@@ -898,60 +748,15 @@ function createCoverageTable() {
     row.innerHTML = `
       <th>${item.name}</th>
       <td class="before-column">
-        <input type="text" id="${item.key}_before" placeholder="0" class="amount-input">
+        <input type="text" id="${item.key}_before" placeholder="0">
+        <span class="unit-text">만원</span>
       </td>
       <td class="after-column">
-        <input type="text" id="${item.key}_after" placeholder="0" class="amount-input">
+        <input type="text" id="${item.key}_after" placeholder="0">
+        <span class="unit-text">만원</span>
       </td>
     `;
     tbody.appendChild(row);
-  });
-}
-
-// 숫자 포맷팅 함수
-function formatAmount(value) {
-  // 숫자만 추출
-  const numbers = value.replace(/[^0-9]/g, '');
-  if (!numbers) return '';
-  
-  // 천단위 콤마 추가
-  const formatted = parseInt(numbers).toLocaleString();
-  return formatted + '만원';
-}
-
-// 입력 필드 포맷팅 이벤트 추가
-function addAmountFormatting() {
-  document.querySelectorAll('.amount-input').forEach(input => {
-    input.addEventListener('input', function(e) {
-      const cursorPos = e.target.selectionStart;
-      const numbers = e.target.value.replace(/[^0-9]/g, '');
-      
-      if (numbers) {
-        const formatted = parseInt(numbers).toLocaleString() + '만원';
-        e.target.value = formatted;
-        
-        // 커서 위치 조정
-        const newCursorPos = formatted.length - 2; // "만원" 앞에 커서 위치
-        e.target.setSelectionRange(newCursorPos, newCursorPos);
-      }
-    });
-    
-    // 포커스 아웃 시 포맷팅
-    input.addEventListener('blur', function(e) {
-      const numbers = e.target.value.replace(/[^0-9]/g, '');
-      if (numbers) {
-        e.target.value = parseInt(numbers).toLocaleString() + '만원';
-      }
-    });
-    
-    // 포커스 인 시 숫자만 남기기
-    input.addEventListener('focus', function(e) {
-      const numbers = e.target.value.replace(/[^0-9]/g, '');
-      if (numbers) {
-        e.target.value = numbers;
-        e.target.select();
-      }
-    });
   });
 }
 
@@ -1164,7 +969,8 @@ async function parseOCRResult(apiResult) {
     throw new Error('OCR 결과를 받아올 수 없습니다.');
   }
 
-  const detectedText = apiResult.responses[0].fullTextAnnotation?.text || '';
+  const response = apiResult.responses[0];
+  const detectedText = response.fullTextAnnotation?.text || '';
   console.log('OCR 인식된 텍스트:', detectedText);
 
   if (!detectedText.trim()) {
@@ -1174,8 +980,275 @@ async function parseOCRResult(apiResult) {
   // 고객 정보 추출
   extractCustomerInfo(detectedText);
   
-  // 담보 금액 추출 (변경 전/후 동일값으로 세팅)
-  extractCoverageAmountsForBeforeAfter(detectedText);
+  // 구조화된 텍스트 정보를 사용한 정밀 추출
+  if (response.fullTextAnnotation && response.fullTextAnnotation.pages) {
+    extractCoverageAmountsWithStructure(response.fullTextAnnotation);
+  } else {
+    // 폴백: 기존 텍스트 기반 추출
+    extractCoverageAmountsForBeforeAfter(detectedText);
+  }
+}
+
+// Google Vision API의 구조화된 데이터를 사용한 정밀 추출
+function extractCoverageAmountsWithStructure(fullTextAnnotation) {
+  const pages = fullTextAnnotation.pages;
+  if (!pages || pages.length === 0) {
+    console.log('구조화된 페이지 정보가 없습니다. 텍스트 기반 추출로 폴백합니다.');
+    extractCoverageAmountsForBeforeAfter(fullTextAnnotation.text);
+    return;
+  }
+  
+  const page = pages[0];
+  const blocks = page.blocks || [];
+  
+  // 각 블록의 단어들을 분석하여 라인별로 그룹화
+  const lineGroups = [];
+  
+  blocks.forEach(block => {
+    if (block.paragraphs) {
+      block.paragraphs.forEach(paragraph => {
+        if (paragraph.words) {
+          const lines = groupWordsIntoLines(paragraph.words);
+          lineGroups.push(...lines);
+        }
+      });
+    }
+  });
+  
+  console.log('라인별 그룹화 결과:', lineGroups.length + '개 라인');
+  
+  // 담보 항목 패턴 정의
+  const coverageKeywords = {
+    '일반암': 'generalCancer',
+    '통합암': 'totalCancer',
+    '표적항암': 'targetTherapy',
+    '전이암': 'metastasisCancer',
+    '뇌혈관질환': 'cerebrovascularDiagnosis',
+    '뇌졸중': 'strokeDiagnosis',
+    '허혈성심질환': 'ischemicHeartDiagnosis',
+    '허혈성심장질환': 'ischemicHeartDiagnosis',
+    '급성심근경색': 'myocardialInfarctionDiagnosis',
+    '질병입원': 'diseaseHospitalization',
+    '상해입원': 'injuryHospitalization',
+    '대인형사합의': 'criminalSettlement',
+    '형사합의': 'criminalSettlement',
+    '변호사선임': 'lawyerAppointment',
+    '일상생활배상': 'dailyLifeLiability',
+    '화재벌금': 'fireFine'
+  };
+  
+  // 각 라인에서 담보 항목과 금액 추출
+  lineGroups.forEach(line => {
+    const lineText = line.text;
+    
+    // 담보 키워드 찾기
+    for (const [keyword, fieldKey] of Object.entries(coverageKeywords)) {
+      if (lineText.includes(keyword)) {
+        // 같은 라인에서 금액 추출
+        const amount = extractAmountFromLine(line);
+        if (amount) {
+          const beforeElement = document.getElementById(fieldKey + '_before');
+          const afterElement = document.getElementById(fieldKey + '_after');
+          
+          if (beforeElement && afterElement) {
+            beforeElement.value = amount;
+            afterElement.value = amount;
+            console.log(`✅ ${keyword} 추출 성공: ${amount}만원 (라인 기반)`);
+          }
+        }
+      }
+    }
+  });
+  
+  // 텍스트 기반 폴백으로 누락된 항목 처리
+  const text = fullTextAnnotation.text;
+  extractMissingItemsWithText(text);
+}
+
+// 단어들을 Y좌표 기준으로 라인별로 그룹화
+function groupWordsIntoLines(words) {
+  const lines = [];
+  let currentLine = [];
+  let currentY = null;
+  const yThreshold = 10; // Y좌표 허용 오차 (픽셀)
+  
+  words.forEach(word => {
+    if (!word.boundingBox || !word.boundingBox.vertices) return;
+    
+    // 단어의 중앙 Y좌표 계산
+    const avgY = (word.boundingBox.vertices[0].y + word.boundingBox.vertices[2].y) / 2;
+    
+    if (currentY === null || Math.abs(avgY - currentY) <= yThreshold) {
+      // 같은 라인에 추가
+      currentLine.push(word);
+      if (currentY === null) currentY = avgY;
+    } else {
+      // 새로운 라인 시작
+      if (currentLine.length > 0) {
+        lines.push(processLine(currentLine));
+      }
+      currentLine = [word];
+      currentY = avgY;
+    }
+  });
+  
+  // 마지막 라인 처리
+  if (currentLine.length > 0) {
+    lines.push(processLine(currentLine));
+  }
+  
+  return lines;
+}
+
+// 라인 내 단어들을 X좌표 기준으로 정렬하고 처리
+function processLine(words) {
+  // X좌표 기준 정렬
+  words.sort((a, b) => {
+    const aX = a.boundingBox.vertices[0].x;
+    const bX = b.boundingBox.vertices[0].x;
+    return aX - bX;
+  });
+  
+  // 라인 텍스트 생성
+  const lineText = words.map(w => getWordText(w)).join(' ');
+  
+  // 라인 정보 반환
+  return {
+    text: lineText,
+    words: words,
+    bounds: calculateLineBounds(words)
+  };
+}
+
+// 단어에서 텍스트 추출
+function getWordText(word) {
+  if (!word.symbols) return '';
+  return word.symbols.map(s => s.text || '').join('');
+}
+
+// 라인의 경계 계산
+function calculateLineBounds(words) {
+  if (words.length === 0) return null;
+  
+  const minX = Math.min(...words.map(w => w.boundingBox.vertices[0].x));
+  const maxX = Math.max(...words.map(w => w.boundingBox.vertices[1].x));
+  const minY = Math.min(...words.map(w => w.boundingBox.vertices[0].y));
+  const maxY = Math.max(...words.map(w => w.boundingBox.vertices[2].y));
+  
+  return { minX, maxX, minY, maxY };
+}
+
+// 라인에서 금액 추출 (텍스트 뒤, 슬래시나 아이콘 앞)
+function extractAmountFromLine(line) {
+  const text = line.text;
+  
+  // 패턴 1: 숫자 / 숫자 형식에서 첫 번째 숫자 추출
+  let match = text.match(/([0-9,]+)\s*\/\s*[0-9,]/);
+  if (match) {
+    return match[1].replace(/,/g, '');
+  }
+  
+  // 패턴 2: 담보명 다음의 첫 번째 숫자 (만원 앞)
+  match = text.match(/[가-힣]+.*?\s+([0-9,]+)\s*만원/);
+  if (match) {
+    return match[1].replace(/,/g, '');
+  }
+  
+  // 패턴 3: 라인 끝부분의 숫자 (특수문자 전)
+  match = text.match(/([0-9,]+)\s*[\/○×△]/);
+  if (match) {
+    return match[1].replace(/,/g, '');
+  }
+  
+  // 패턴 4: 공백 후 나타나는 숫자
+  const words = line.words;
+  if (words && words.length > 0) {
+    // 담보명이 끝나는 위치 찾기
+    let coverageEndIndex = -1;
+    for (let i = 0; i < words.length; i++) {
+      const wordText = getWordText(words[i]);
+      if (/[가-힣]/.test(wordText)) {
+        coverageEndIndex = i;
+      } else if (/^\d/.test(wordText) && coverageEndIndex >= 0) {
+        // 숫자가 시작되는 위치
+        const numberText = getWordText(words[i]);
+        const cleanNumber = numberText.replace(/[,\/○×△]/g, '');
+        if (cleanNumber && !isNaN(cleanNumber)) {
+          return cleanNumber;
+        }
+      }
+    }
+  }
+  
+  return null;
+}
+
+// 텍스트 기반 폴백으로 누락된 항목 처리
+function extractMissingItemsWithText(text) {
+  // 구조화된 추출에서 놓친 항목들을 텍스트 기반으로 보완
+  const lines = text.split('\n');
+  
+  // 생활보장 섹션 특별 처리
+  let lifeInsuranceSection = false;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    
+    if (line.includes('생활보장')) {
+      lifeInsuranceSection = true;
+      continue;
+    }
+    
+    if (lifeInsuranceSection && i < lines.length - 1) {
+      // 생활보장 항목과 다음 줄의 값 매칭
+      if (line.includes('대인형사합의')) {
+        const nextLine = lines[i + 1];
+        const match = nextLine.match(/([0-9,]+)/);
+        if (match) {
+          const value = match[1].replace(/,/g, '');
+          setValueIfEmpty('criminalSettlement', value);
+        }
+      }
+      
+      if (line.includes('변호사선임')) {
+        const nextLine = lines[i + 1];
+        const match = nextLine.match(/([0-9,]+)/);
+        if (match) {
+          const value = match[1].replace(/,/g, '');
+          setValueIfEmpty('lawyerAppointment', value);
+        }
+      }
+      
+      if (line.includes('일상생활배상')) {
+        const nextLine = lines[i + 1];
+        const match = nextLine.match(/([0-9,]+)/);
+        if (match) {
+          const value = match[1].replace(/,/g, '');
+          setValueIfEmpty('dailyLifeLiability', value);
+        }
+      }
+      
+      if (line.includes('화재벌금')) {
+        const nextLine = lines[i + 1];
+        const match = nextLine.match(/([0-9,]+)/);
+        if (match) {
+          const value = match[1].replace(/,/g, '');
+          setValueIfEmpty('fireFine', value);
+        }
+      }
+    }
+  }
+}
+
+// 값이 비어있을 때만 설정
+function setValueIfEmpty(fieldKey, value) {
+  const beforeElement = document.getElementById(fieldKey + '_before');
+  const afterElement = document.getElementById(fieldKey + '_after');
+  
+  if (beforeElement && !beforeElement.value && value) {
+    beforeElement.value = value;
+    afterElement.value = value;
+    console.log(`✅ ${fieldKey} 폴백 추출 성공: ${value}만원`);
+  }
 }
 
 // 고객 정보 추출
@@ -1224,7 +1297,7 @@ function extractCustomerInfo(text) {
   }
 }
 
-// 담보 금액 추출 (변경 전/후 동일값 세팅) - 기존 로직 복원
+// 담보 금액 추출 (변경 전/후 동일값 세팅) - 기존 로직 유지 (폴백용)
 function extractCoverageAmountsForBeforeAfter(text) {
   const lines = text.split('\n');
   
@@ -1260,162 +1333,6 @@ function extractCoverageAmountsForBeforeAfter(text) {
     return null;
   }
   
-  // 생활보장 섹션에서 값 찾기 (형사합의금, 변호사선임비 등)
-  function findLifeInsuranceValue(keyword) {
-    // 생활보장 섹션 찾기
-    let sectionStartIndex = -1;
-    
-    for (let i = 0; i < lines.length; i++) {
-      if (lines[i].includes('생활보장')) {
-        sectionStartIndex = i;
-        break;
-      }
-    }
-    
-    if (sectionStartIndex === -1) return null;
-    
-    // 생활보장 섹션의 구조 분석
-    // 항목명과 바로 다음 줄의 값을 매칭하는 방식
-    let itemValuePairs = [];
-    
-    for (let i = sectionStartIndex; i < Math.min(sectionStartIndex + 30, lines.length); i++) {
-      // 대인형사합의지원금 찾기
-      if (lines[i].includes('대인형사합의지원금') && i + 1 < lines.length) {
-        const nextLineMatch = lines[i + 1].match(/([0-9,]+)만원/);
-        if (nextLineMatch && nextLineMatch[1]) {
-          itemValuePairs.push({
-            item: '대인형사합의지원금',
-            value: nextLineMatch[1].replace(/,/g, ''),
-            lineIndex: i
-          });
-        }
-      }
-      // 변호사선임비용 찾기
-      if (lines[i].includes('변호사선임비용') && i + 1 < lines.length) {
-        const nextLineMatch = lines[i + 1].match(/([0-9,]+)만원/);
-        if (nextLineMatch && nextLineMatch[1]) {
-          itemValuePairs.push({
-            item: '변호사선임비용',
-            value: nextLineMatch[1].replace(/,/g, ''),
-            lineIndex: i
-          });
-        }
-      }
-      // 운전자벌금 찾기
-      if (lines[i].includes('운전자벌금') && i + 1 < lines.length) {
-        const nextLineMatch = lines[i + 1].match(/([0-9,]+)만원/);
-        if (nextLineMatch && nextLineMatch[1]) {
-          itemValuePairs.push({
-            item: '운전자벌금',
-            value: nextLineMatch[1].replace(/,/g, ''),
-            lineIndex: i
-          });
-        }
-      }
-      // 화재벌금 찾기
-      if (lines[i].includes('화재벌금') && i + 1 < lines.length) {
-        const nextLineMatch = lines[i + 1].match(/([0-9,]+)만원/);
-        if (nextLineMatch && nextLineMatch[1]) {
-          itemValuePairs.push({
-            item: '화재벌금',
-            value: nextLineMatch[1].replace(/,/g, ''),
-            lineIndex: i
-          });
-        }
-      }
-      // 일상생활배상책임 찾기
-      if (lines[i].includes('일상생활배상책임') && i + 1 < lines.length) {
-        const nextLineMatch = lines[i + 1].match(/([0-9,]+)만원/);
-        if (nextLineMatch && nextLineMatch[1]) {
-          itemValuePairs.push({
-            item: '일상생활배상책임',
-            value: nextLineMatch[1].replace(/,/g, ''),
-            lineIndex: i
-          });
-        }
-      }
-    }
-    
-    console.log('생활보장 항목-값 매칭:', itemValuePairs);
-    
-    // 찾은 매칭에서 해당 키워드의 값 반환
-    for (let pair of itemValuePairs) {
-      if (pair.item === keyword) {
-        return pair.value;
-      }
-    }
-    
-    // 매칭이 안 된 경우 기존 로직으로 폴백
-    let items = [];
-    let values = [];
-    
-    for (let i = sectionStartIndex; i < Math.min(sectionStartIndex + 20, lines.length); i++) {
-      if (lines[i].includes('대인형사합의지원금')) items.push({name: '대인형사합의지원금', index: i});
-      if (lines[i].includes('변호사선임비용')) items.push({name: '변호사선임비용', index: i});
-      if (lines[i].includes('운전자벌금')) items.push({name: '운전자벌금', index: i});
-      if (lines[i].includes('화재벌금')) items.push({name: '화재벌금', index: i});
-      if (lines[i].includes('일상생활배상책임')) items.push({name: '일상생활배상책임', index: i});
-      
-      const valueMatch = lines[i].match(/^([0-9,]+)만원$/);
-      if (valueMatch && valueMatch[1]) {
-        values.push({value: valueMatch[1].replace(/,/g, ''), index: i});
-      }
-    }
-    
-    console.log('생활보장 항목들:', items);
-    console.log('생활보장 값들:', values);
-    
-    // 특정 키워드에 대한 값 매핑
-    if (keyword === '대인형사합의지원금') {
-      // 20,000 찾기
-      for (let v of values) {
-        if (v.value === '20000' || v.value.includes('20')) {
-          return v.value;
-        }
-      }
-      if (values.length > 0) return values[0].value;
-    }
-    
-    if (keyword === '변호사선임비용') {
-      // 먼저 3,000 찾기
-      for (let v of values) {
-        if (v.value === '3000') {
-          return v.value;
-        }
-      }
-      // 그 다음 5,000 찾기
-      for (let v of values) {
-        if (v.value === '5000') {
-          return v.value;
-        }
-      }
-      // 그 다음 3,500 찾기
-      for (let v of values) {
-        if (v.value === '3500') {
-          return v.value;
-        }
-      }
-    }
-    
-    if (keyword === '화재벌금') {
-      for (let v of values) {
-        if (v.value === '2000') {
-          return v.value;
-        }
-      }
-    }
-    
-    if (keyword === '일상생활배상책임') {
-      for (let v of values) {
-        if (v.value === '10000') {
-          return v.value;
-        }
-      }
-    }
-    
-    return null;
-  }
-
   const coveragePatterns = {
     generalCancer: {
       name: '일반암진단비',
@@ -1449,38 +1366,8 @@ function extractCoverageAmountsForBeforeAfter(text) {
     },
     myocardialInfarctionDiagnosis: {
       name: '심근경색진단비',
-      keyword: '급성심근경색증',
-      extractPattern: /급성심근경색증\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i
-    },
-    diseaseHospitalization: {
-      name: '(실손)질병입원',
-      keyword: '질병입원',
-      extractPattern: /질병입원\s*실손\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i
-    },
-    injuryHospitalization: {
-      name: '(실손)상해입원',
-      keyword: '상해입원',
-      extractPattern: /상해입원\s*실손\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i
-    },
-    criminalSettlement: {
-      name: '형사합의금',
-      keyword: '대인형사합의지원금',
-      lifeInsurance: true
-    },
-    lawyerAppointment: {
-      name: '변호사선임비',
-      keyword: '변호사선임비용',
-      lifeInsurance: true
-    },
-    dailyLifeLiability: {
-      name: '일상생활배상책임',
-      keyword: '일상생활배상책임',
-      lifeInsurance: true
-    },
-    fireFine: {
-      name: '화재벌금',
-      keyword: '화재벌금',
-      lifeInsurance: true
+      keyword: '급성심근경색',
+      extractPattern: /급성심근경색\s+([0-9,]+)\s*\/\s*[0-9,]+만원/i
     }
   };
 
@@ -1495,41 +1382,6 @@ function extractCoverageAmountsForBeforeAfter(text) {
     }
 
     let amount = null;
-
-    // 생활보장 항목 처리
-    if (config.lifeInsurance) {
-      amount = findLifeInsuranceValue(config.keyword);
-      if (amount && !isNaN(amount)) {
-        beforeElement.value = amount;
-        afterElement.value = amount;
-        console.log(`✅ ${config.name} 추출 성공: ${amount}만원 (변경 전/후 동일 세팅)`);
-        return;
-      }
-    }
-    
-    // 뇌혈관질환 특별 처리
-    if (key === 'cerebrovascularDiagnosis') {
-      // 뇌혈관질환 찾기
-      for (let i = 0; i < lines.length; i++) {
-        if (lines[i].includes('뇌혈관질환')) {
-          // 다음 몇 줄 안에서 숫자 찾기 (부족 제외)
-          for (let j = i + 1; j < Math.min(i + 4, lines.length); j++) {
-            if (!lines[j].includes('부족')) {
-              const match = lines[j].match(/([0-9,]+)\s*\/\s*[0-9,]+/);
-              if (match && match[1]) {
-                amount = match[1].replace(/,/g, '');
-                if (amount && !isNaN(amount)) {
-                  beforeElement.value = amount;
-                  afterElement.value = amount;
-                  console.log(`✅ ${config.name} 특별처리 추출 성공: ${amount}만원 (변경 전/후 동일 세팅)`);
-                  return;
-                }
-              }
-            }
-          }
-        }
-      }
-    }
     
     // 기본 패턴 시도
     if (config.extractPattern) {
@@ -1558,21 +1410,6 @@ function extractCoverageAmountsForBeforeAfter(text) {
 
     console.log(`❌ ${config.name} 패턴 매칭 실패`);
   });
-
-  // 추가 디버깅 정보
-  console.log('=== 생활보장 섹션 분석 ===');
-  let lifeStart = -1;
-  for (let i = 0; i < lines.length; i++) {
-    if (lines[i].includes('생활보장')) {
-      lifeStart = i;
-      console.log(`생활보장 시작 라인: ${i}`);
-      // 다음 10줄 출력
-      for (let j = i; j < Math.min(i + 10, lines.length); j++) {
-        console.log(`  [${j}]: "${lines[j]}"`);
-      }
-      break;
-    }
-  }
 }
 
 // 데이터 저장 및 이미지 다운로드
@@ -1909,7 +1746,7 @@ async function generateAndDownloadImage(data) {
   container.innerHTML = '';
 }
 
-// 인쇄용 담보 항목 생성
+// 인쇄용 담보 항목 생성 및 나머지 헬퍼 함수들
 function generateCoverageItemsForPrint(coverages, items, type) {
   return items.map(item => {
     const coverage = coverages[item.key];
@@ -1933,8 +1770,7 @@ function generateCoverageItemsForPrint(coverages, items, type) {
     
     let progressBarHtml = '';
     if (value === 0) {
-      // X 표시 제거, 그냥 빈 바만 표시
-      progressBarHtml = '<div style="display: block; height: 6px; background: #e0e0e0; border-radius: 3px; width: 100%;"></div>';
+      progressBarHtml = '<div style="display: block; height: 6px; background: #e0e0e0; border-radius: 3px; position: relative; width: 100%;"><span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #dc3545; font-weight: 900; font-size: 6px;">✗</span></div>';
     } else {
       let barColor = '#dc3545';
       if (percentage >= 100) barColor = '#28a745';
@@ -1994,8 +1830,7 @@ function generateEssentialItemForPrint(coverages, key, name, type) {
   
   let progressBarHtml = '';
   if (value === 0) {
-    // X 표시 제거, 그냥 빈 바만 표시
-    progressBarHtml = '<div style="display: block; height: 6px; background: #e0e0e0; border-radius: 3px; width: 100%;"></div>';
+    progressBarHtml = '<div style="display: block; height: 6px; background: #e0e0e0; border-radius: 3px; position: relative; width: 100%;"><span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #dc3545; font-weight: 900; font-size: 6px;">✗</span></div>';
   } else {
     let barColor = '#dc3545';
     if (percentage >= 100) barColor = '#28a745';
