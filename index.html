@@ -1321,6 +1321,12 @@ async function generateAndDownloadImage(data) {
           display: flex;
           gap: 40px;
           height: calc(100% - 140px);
+          flex-direction: column;
+        }
+        .main-sections-container {
+          display: flex;
+          gap: 40px;
+          flex: 1;
         }
         .comparison-section {
           flex: 1;
@@ -1346,13 +1352,12 @@ async function generateAndDownloadImage(data) {
           background: linear-gradient(135deg, #E8F4FD, #D1E7DD);
           border: 3px solid #1976D2;
         }
-.sections-container {
-  display: flex;
-  gap: 25px;
-  margin-bottom: 25px;  /* 기존 20px에서 25px로 증가 */
-  justify-content: center;
-  height: 850px;  /* 기존 1000px에서 850px로 축소 */
-}
+        .sections-container {
+          display: flex;
+          gap: 25px;
+          justify-content: center;
+          flex: 1;
+        }
         .section {
           width: 520px;
           border-radius: 16px;
@@ -1386,13 +1391,13 @@ async function generateAndDownloadImage(data) {
           border-radius: 12px 12px 0 0;
           text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
-.subsection {
-  margin-bottom: 12px;  /* 기존 16px에서 12px로 축소 */
-  border: 2px solid #ddd;
-  padding: 12px;  /* 기존 15px에서 12px로 축소 */
-  border-radius: 12px;
-  background: rgba(255,255,255,0.7);
-}
+        .subsection {
+          margin-bottom: 12px;
+          border: 2px solid #ddd;
+          padding: 12px;
+          border-radius: 12px;
+          background: rgba(255,255,255,0.7);
+        }
         .before-sections .subsection {
           background: rgba(248,248,248,0.9);
         }
@@ -1411,12 +1416,12 @@ async function generateAndDownloadImage(data) {
           border-radius: 10px 10px 0 0;
           color: #333;
         }
-.coverage-item {
-  margin-bottom: 12px;  /* 기존 16px에서 12px로 축소 */
-  display: flex;
-  flex-direction: column;
-  padding: 6px 0;  /* 기존 8px에서 6px로 축소 */
-}
+        .coverage-item {
+          margin-bottom: 12px;
+          display: flex;
+          flex-direction: column;
+          padding: 6px 0;
+        }
         .coverage-name {
           font-size: 28px;
           margin-bottom: 8px;
@@ -1451,18 +1456,17 @@ async function generateAndDownloadImage(data) {
           min-width: 140px;
           text-align: right;
         }
-.examples-container {
-  display: flex;
-  gap: 25px;
-  margin-top: auto;  /* 기존 20px에서 auto로 변경하여 하단 정렬 */
-  justify-content: center;
-  height: 700px;  /* 기존 600px에서 700px로 증가 */
-}
+        .examples-container {
+          display: flex;
+          gap: 25px;
+          justify-content: center;
+          height: auto;
+          margin-top: 30px;
+        }
         .example-section {
           width: 520px;
           padding: 20px;
           border-radius: 15px;
-          overflow-y: auto;
         }
         .before-sections .example-section {
           border: 3px solid #999;
@@ -1491,16 +1495,16 @@ async function generateAndDownloadImage(data) {
           margin: -16px -16px 15px -16px;
           text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
-.example-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 12px 0;  /* 기존 16px에서 12px로 축소 */
-  padding: 8px 0;  /* 기존 12px에서 8px로 축소 */
-  border-bottom: 2px dotted #ccc;
-  white-space: nowrap;
-  line-height: 1.4;
-}
+        .example-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin: 12px 0;
+          padding: 8px 0;
+          border-bottom: 2px dotted #ccc;
+          white-space: nowrap;
+          line-height: 1.4;
+        }
         .example-name {
           flex: 1;
           font-size: 32px;
@@ -1524,57 +1528,62 @@ async function generateAndDownloadImage(data) {
       </div>
       
       <div class="print-container">
-        <!-- 변경 전 섹션 -->
-        <div class="comparison-section">
-          <div class="section-header before-header">변경 전 보장내용</div>
-          <div class="before-sections">
-            <div class="sections-container">
-              <div class="section">
-                <div class="section-title">암</div>
-                ${generateCoverageItemsForPrint(data.coverages_before, ALL_COVERAGE_ITEMS.filter(i => i.category === 'cancer'), 'before')}
-              </div>
-              
-              <div class="section">
-                <div class="section-title">2대 중대질환</div>
-                ${generateCoverageItemsForPrint(data.coverages_before, ALL_COVERAGE_ITEMS.filter(i => i.category === 'majorDisease'), 'before')}
-              </div>
-              
-              <div class="section">
-                <div class="section-title">5대 필수 보험</div>
-                ${generateEssentialSectionForPrint(data.coverages_before, data.caregiverOption, 'before')}
+        <!-- 상단: 변경 전/후 주요 섹션들 -->
+        <div class="main-sections-container">
+          <!-- 변경 전 섹션 -->
+          <div class="comparison-section">
+            <div class="section-header before-header">변경 전 보장내용</div>
+            <div class="before-sections">
+              <div class="sections-container">
+                <div class="section">
+                  <div class="section-title">암</div>
+                  ${generateCoverageItemsForPrint(data.coverages_before, ALL_COVERAGE_ITEMS.filter(i => i.category === 'cancer'), 'before')}
+                </div>
+                
+                <div class="section">
+                  <div class="section-title">2대 중대질환</div>
+                  ${generateCoverageItemsForPrint(data.coverages_before, ALL_COVERAGE_ITEMS.filter(i => i.category === 'majorDisease'), 'before')}
+                </div>
+                
+                <div class="section">
+                  <div class="section-title">5대 필수 보험</div>
+                  ${generateEssentialSectionForPrint(data.coverages_before, data.caregiverOption, 'before')}
+                </div>
               </div>
             </div>
-            
-            <div class="examples-container">
-              ${generateExampleSectionsForPrint(data.coverages_before, 'before')}
+          </div>
+          
+          <!-- 변경 후 섹션 -->
+          <div class="comparison-section">
+            <div class="section-header after-header">변경 후 보장내용</div>
+            <div class="after-sections">
+              <div class="sections-container">
+                <div class="section">
+                  <div class="section-title">암</div>
+                  ${generateCoverageItemsForPrint(data.coverages_after, ALL_COVERAGE_ITEMS.filter(i => i.category === 'cancer'), 'after')}
+                </div>
+                
+                <div class="section">
+                  <div class="section-title">2대 중대질환</div>
+                  ${generateCoverageItemsForPrint(data.coverages_after, ALL_COVERAGE_ITEMS.filter(i => i.category === 'majorDisease'), 'after')}
+                </div>
+                
+                <div class="section">
+                  <div class="section-title">5대 필수 보험</div>
+                  ${generateEssentialSectionForPrint(data.coverages_after, data.caregiverOption, 'after')}
+                </div>
+              </div>
             </div>
           </div>
         </div>
         
-        <!-- 변경 후 섹션 -->
-        <div class="comparison-section">
-          <div class="section-header after-header">변경 후 보장내용</div>
+        <!-- 하단: 예시 섹션들 -->
+        <div class="examples-container">
+          <div class="before-sections">
+            ${generateExampleSectionsForPrint(data.coverages_before, 'before')}
+          </div>
           <div class="after-sections">
-            <div class="sections-container">
-              <div class="section">
-                <div class="section-title">암</div>
-                ${generateCoverageItemsForPrint(data.coverages_after, ALL_COVERAGE_ITEMS.filter(i => i.category === 'cancer'), 'after')}
-              </div>
-              
-              <div class="section">
-                <div class="section-title">2대 중대질환</div>
-                ${generateCoverageItemsForPrint(data.coverages_after, ALL_COVERAGE_ITEMS.filter(i => i.category === 'majorDisease'), 'after')}
-              </div>
-              
-              <div class="section">
-                <div class="section-title">5대 필수 보험</div>
-                ${generateEssentialSectionForPrint(data.coverages_after, data.caregiverOption, 'after')}
-              </div>
-            </div>
-            
-            <div class="examples-container">
-              ${generateExampleSectionsForPrint(data.coverages_after, 'after')}
-            </div>
+            ${generateExampleSectionsForPrint(data.coverages_after, 'after')}
           </div>
         </div>
       </div>
