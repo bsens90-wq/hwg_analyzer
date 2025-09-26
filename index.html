@@ -1699,7 +1699,7 @@ async function generateAndDownloadImage(data) {
   
   // HTML 내용 생성 (A4 가로 레이아웃 - 확대된 크기)
   container.innerHTML = `
-    <div style="background: white; padding: 20px; width: 1800px; height: 1100px; font-family: 'Noto Sans KR', Arial, sans-serif;">
+    <div style="background: white; padding: 20px; width: 2000px; height: 1200px; font-family: 'Noto Sans KR', Arial, sans-serif;">
       <style>
         .main-title {
           text-align: left;
@@ -1740,15 +1740,15 @@ async function generateAndDownloadImage(data) {
         }
         .sections-container {
           display: flex;
-          gap: 10px;
+          gap: 15px;
           margin-bottom: 10px;
           justify-content: center;
         }
         .section {
-          width: 300px;
+          width: 330px;
           border-radius: 8px;
-          padding: 6px;
-          min-height: 420px;
+          padding: 8px;
+          min-height: 450px;
         }
         .before-sections .section {
           border: 1.5px solid #999;
@@ -1799,13 +1799,13 @@ async function generateAndDownloadImage(data) {
         }
         .examples-container {
           display: flex;
-          gap: 10px;
+          gap: 15px;
           margin-top: 8px;
           justify-content: center;
         }
         .example-section {
-          width: 300px;
-          padding: 6px;
+          width: 330px;
+          padding: 8px;
           border-radius: 6px;
         }
         .before-sections .example-section {
