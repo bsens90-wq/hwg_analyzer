@@ -1572,13 +1572,13 @@ function extractCoverageAmountsForBeforeAfter(text) {
     // 생활보장 항목 처리
     if (config.lifeInsurance) {
       amount = findLifeInsuranceValue(config.keyword);
-if (amount && !isNaN(amount)) {
-  const formatted = formatToDisplayValue(parseInt(amount));
-  beforeElement.value = formatted;
-  afterElement.value = formatted;
-  console.log(`✅ ${config.name} 추출 성공: ${formatted} (변경 전/후 동일 세팅)`);
-  return;
-}
+      if (amount && !isNaN(amount)) {
+        const formatted = formatToDisplayValue(parseInt(amount));
+        beforeElement.value = formatted;
+        afterElement.value = formatted;
+        console.log(`✅ ${config.name} 추출 성공: ${formatted} (변경 전/후 동일 세팅)`);
+        return;
+      }
     }
     
     // 뇌혈관질환 특별 처리
@@ -1593,9 +1593,10 @@ if (amount && !isNaN(amount)) {
               if (match && match[1]) {
                 amount = match[1].replace(/,/g, '');
                 if (amount && !isNaN(amount)) {
-                  beforeElement.value = amount;
-                  afterElement.value = amount;
-                  console.log(`✅ ${config.name} 특별처리 추출 성공: ${amount}만원 (변경 전/후 동일 세팅)`);
+                  const formatted = formatToDisplayValue(parseInt(amount));
+                  beforeElement.value = formatted;
+                  afterElement.value = formatted;
+                  console.log(`✅ ${config.name} 특별처리 추출 성공: ${formatted} (변경 전/후 동일 세팅)`);
                   return;
                 }
               }
@@ -1611,10 +1612,10 @@ if (amount && !isNaN(amount)) {
       if (match && match[1]) {
         amount = match[1].replace(/,/g, '');
         if (amount && !isNaN(amount)) {
-const formatted = formatToDisplayValue(parseInt(amount));
-beforeElement.value = formatted;
-afterElement.value = formatted;
-          console.log(`✅ ${config.name} 추출 성공: ${amount}만원 (변경 전/후 동일 세팅)`);
+          const formatted = formatToDisplayValue(parseInt(amount));
+          beforeElement.value = formatted;
+          afterElement.value = formatted;
+          console.log(`✅ ${config.name} 추출 성공: ${formatted} (변경 전/후 동일 세팅)`);
           return;
         }
       }
@@ -1624,10 +1625,10 @@ afterElement.value = formatted;
     if (!amount && config.keyword) {
       amount = findValueByKeyword(config.keyword, lines);
       if (amount && !isNaN(amount)) {
-const formatted = formatToDisplayValue(parseInt(amount));
-beforeElement.value = formatted;
-afterElement.value = formatted;
-        console.log(`✅ ${config.name} 라인기반 추출 성공: ${amount}만원 (변경 전/후 동일 세팅)`);
+        const formatted = formatToDisplayValue(parseInt(amount));
+        beforeElement.value = formatted;
+        afterElement.value = formatted;
+        console.log(`✅ ${config.name} 라인기반 추출 성공: ${formatted} (변경 전/후 동일 세팅)`);
         return;
       }
     }
@@ -1733,13 +1734,13 @@ function generateProgressBar(percentage, value) {
   return `<div class="coverage-progress"><div class="progress-bar ${colorClass}" style="width: ${width}%"></div></div>`;
 }
 
-// 이미지 생성 및 다운로드 (A4 가로 최적화)
+// 이미지 생성 및 다운로드 (A4 가로 최적화 - 수정된 버전)
 async function generateAndDownloadImage(data) {
   const container = document.getElementById('hiddenPrintContainer');
   
-  // HTML 내용 생성 (A4 가로 레이아웃 - 297mm x 210mm)
+  // HTML 내용 생성 (A4 가로 레이아웃 - 확대된 크기)
   container.innerHTML = `
-    <div style="background: white; padding: 15px; width: 1122px; height: 794px; font-family: 'Noto Sans KR', Arial, sans-serif;">
+    <div style="background: white; padding: 20px; width: 1400px; height: 1100px; font-family: 'Noto Sans KR', Arial, sans-serif;">
       <style>
         .main-title {
           text-align: center;
@@ -1784,10 +1785,10 @@ async function generateAndDownloadImage(data) {
           justify-content: center;
         }
         .section {
-          width: 150px;
+          width: 190px;
           border-radius: 8px;
-          padding: 8px;
-          min-height: 320px;
+          padding: 6px;
+          min-height: 420px;
         }
         .before-sections .section {
           border: 1.5px solid #999;
@@ -1806,15 +1807,15 @@ async function generateAndDownloadImage(data) {
         .section-title {
           text-align: center;
           font-weight: 700;
-          font-size: 12px;
+          font-size: 22px;
           margin-bottom: 6px;
           color: white;
-          margin: -8px -8px 6px -8px;
+          margin: -6px -6px 6px -6px;
           padding: 5px;
           border-radius: 6px 6px 0 0;
         }
         .subsection {
-          margin-bottom: 6px;
+          margin-bottom: 4px;
           border: 1px solid #ddd;
           padding: 4px;
           border-radius: 4px;
@@ -1825,18 +1826,17 @@ async function generateAndDownloadImage(data) {
         .after-sections .subsection {
           background: #F5FAFF;
         }
-.subsection-title {
-  font-weight: 600;
-  font-size: 9px      /* ← 항목명 글씨 크기를 크게 변경 */
-  margin-bottom: 2px;
-  text-align: center;
-  background: white;
-  padding: 2px;
-  border: 1px solid #ddd;
-  margin: -4px -4px 2px -4px;
-  border-radius: 3px 3px 0 0;
-}
-
+        .subsection-title {
+          font-weight: 600;
+          font-size: 22px;
+          margin-bottom: 2px;
+          text-align: center;
+          background: white;
+          padding: 2px;
+          border: 1px solid #ddd;
+          margin: -4px -4px 2px -4px;
+          border-radius: 3px 3px 0 0;
+        }
         .examples-container {
           display: flex;
           gap: 10px;
@@ -1844,7 +1844,7 @@ async function generateAndDownloadImage(data) {
           justify-content: center;
         }
         .example-section {
-          width: 150px;
+          width: 190px;
           padding: 6px;
           border-radius: 6px;
         }
@@ -1864,7 +1864,7 @@ async function generateAndDownloadImage(data) {
         }
         .example-title {
           font-weight: 700;
-          font-size: 12px;
+          font-size: 22px;
           margin-bottom: 4px;
           text-align: center;
           padding: 3px;
@@ -1882,14 +1882,14 @@ async function generateAndDownloadImage(data) {
         }
         .example-name {
           flex: 0 0 auto;
-          font-size: 12px;
+          font-size: 10px;
           overflow: hidden;
           text-overflow: ellipsis;
           max-width: 90px;
         }
         .example-value {
           font-weight: 600;
-          font-size: 12px;
+          font-size: 10px;
           flex: 0 0 auto;
           margin-left: 3px;
         }
@@ -1992,7 +1992,7 @@ async function generateAndDownloadImage(data) {
   container.innerHTML = '';
 }
 
-// 인쇄용 담보 항목 생성
+// 인쇄용 담보 항목 생성 (수정된 버전)
 function generateCoverageItemsForPrint(coverages, items, type) {
   return items.map(item => {
     const coverage = coverages[item.key];
@@ -2043,7 +2043,7 @@ function generateCoverageItemsForPrint(coverages, items, type) {
   }).join('');
 }
 
-// 필수보험 개별 항목 생성
+// 필수보험 개별 항목 생성 (수정된 버전)
 function generateEssentialItemForPrint(coverages, key, name, type) {
   const coverage = coverages[key];
   const value = coverage ? extractNumber(coverage.value) : 0;
@@ -2069,31 +2069,27 @@ function generateEssentialItemForPrint(coverages, key, name, type) {
   
   let progressBarHtml = '';
   if (value === 0) {
-    progressBarHtml = '<div style="display: block; height: 6px; background: #e0e0e0; border-radius: 3px; width: 100%;"></div>';
+    progressBarHtml = '<div style="display: inline-block; height: 6px; background: #e0e0e0; border-radius: 3px; width: 48%;"></div>';
   } else {
     let barColor = '#dc3545';
     if (percentage >= 100) barColor = '#28a745';
     else if (percentage >= 30) barColor = '#ffc107';
     const width = Math.min(percentage, 100);
-    progressBarHtml = `<div style="display: block; height: 6px; background: #e0e0e0; border-radius: 3px; width: 100%;"><div style="height: 100%; width: ${width}%; background: ${barColor}; border-radius: 3px;"></div></div>`;
+    progressBarHtml = `<div style="display: inline-block; height: 6px; background: #e0e0e0; border-radius: 3px; width: 48%;"><div style="height: 100%; width: ${width}%; background: ${barColor}; border-radius: 3px;"></div></div>`;
   }
   
   return `
-    <table style="width: 100%; margin: 0; padding: 0; border: 0; border-spacing: 0; margin-bottom: 6px;">
-      <tr>
-        <td style="padding: 0; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; ${value === 0 ? 'color: #dc3545;' : ''}">${name}</td>
-        <td style="padding: 0; text-align: right; font-size: 12px; font-weight: 600; color: ${valueColor}; white-space: nowrap;">${displayValue}</td>
-      </tr>
-      <tr>
-        <td colspan="2" style="padding: 0; padding-top: 2px;">
-          ${progressBarHtml}
-        </td>
-      </tr>
-    </table>
+    <div style="margin-bottom: 3px;">
+      <div style="padding: 0; font-size: 10px; margin-bottom: 1px; ${value === 0 ? 'color: #dc3545;' : ''}">${name}</div>
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        ${progressBarHtml}
+        <span style="font-size: 10px; font-weight: 600; color: ${valueColor}; white-space: nowrap; margin-left: 4px;">${displayValue}</span>
+      </div>
+    </div>
   `;
 }
 
-// 5대 필수보험 섹션 생성
+// 5대 필수보험 섹션 생성 (수정된 버전)
 function generateEssentialSectionForPrint(coverages, caregiverOption, type) {
   let html = '';
   
@@ -2117,7 +2113,7 @@ function generateEssentialSectionForPrint(coverages, caregiverOption, type) {
     <div class="subsection">
       <div class="subsection-title">간병인일당</div>
       ${caregiverOption === 'support' ? 
-        '<table style="width: 100%; margin: 0; padding: 0; border: 0; border-spacing: 0; margin-bottom: 6px;"><tr><td style="padding: 0; font-size: 12px;">외국 간병인 현물지원</td><td style="padding: 0; text-align: right; font-size: 12px; font-weight: 600;">-</td></tr></table>' :
+        '<div style="margin-bottom: 3px;"><div style="display: flex; align-items: center; justify-content: space-between;"><div style="display: inline-block; height: 6px; background: #e0e0e0; border-radius: 3px; width: 48%;"></div><span style="font-size: 10px; font-weight: 600; margin-left: 4px;">-</span></div></div>' :
         `
         ${generateEssentialItemForPrint(coverages, 'nursingHospitalOut', '요양병원 외', type)}
         ${generateEssentialItemForPrint(coverages, 'nursingHospitalIn', '요양병원', type)}
@@ -2130,14 +2126,88 @@ function generateEssentialSectionForPrint(coverages, caregiverOption, type) {
   html += `
     <div class="subsection">
       <div class="subsection-title">일상생활배상책임</div>
-      ${generateEssentialItemForPrint(coverages, 'dailyLifeLiability', '일상생활배상책임', type)}
+      <div style="margin-bottom: 3px;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          ${(() => {
+            const coverage = coverages['dailyLifeLiability'];
+            const value = coverage ? extractNumber(coverage.value) : 0;
+            const standardItem = ALL_COVERAGE_ITEMS.find(item => item.key === 'dailyLifeLiability') || { standardAmount: 1000 };
+            const percentage = calculateProgressPercentage(value, standardItem.standardAmount);
+            
+            let displayValue = '';
+            let valueColor = type === 'before' ? '#666' : '#1565C0';
+            
+            if (value === 0) {
+              displayValue = '✗';
+              valueColor = '#dc3545';
+            } else {
+              displayValue = value.toLocaleString() + '만원';
+              if (percentage >= 100) {
+                valueColor = '#28a745';
+              } else if (percentage < 30) {
+                valueColor = '#dc3545';
+              }
+            }
+            
+            let progressBarHtml = '';
+            if (value === 0) {
+              progressBarHtml = '<div style="display: inline-block; height: 6px; background: #e0e0e0; border-radius: 3px; width: 48%;"></div>';
+            } else {
+              let barColor = '#dc3545';
+              if (percentage >= 100) barColor = '#28a745';
+              else if (percentage >= 30) barColor = '#ffc107';
+              const width = Math.min(percentage, 100);
+              progressBarHtml = `<div style="display: inline-block; height: 6px; background: #e0e0e0; border-radius: 3px; width: 48%;"><div style="height: 100%; width: ${width}%; background: ${barColor}; border-radius: 3px;"></div></div>`;
+            }
+            
+            return progressBarHtml + `<span style="font-size: 10px; font-weight: 600; color: ${valueColor}; white-space: nowrap; margin-left: 4px;">${displayValue}</span>`;
+          })()}
+        </div>
+      </div>
     </div>
   `;
   
   html += `
     <div class="subsection">
       <div class="subsection-title">화재벌금</div>
-      ${generateEssentialItemForPrint(coverages, 'fireFine', '화재벌금', type)}
+      <div style="margin-bottom: 3px;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          ${(() => {
+            const coverage = coverages['fireFine'];
+            const value = coverage ? extractNumber(coverage.value) : 0;
+            const standardItem = ALL_COVERAGE_ITEMS.find(item => item.key === 'fireFine') || { standardAmount: 1000 };
+            const percentage = calculateProgressPercentage(value, standardItem.standardAmount);
+            
+            let displayValue = '';
+            let valueColor = type === 'before' ? '#666' : '#1565C0';
+            
+            if (value === 0) {
+              displayValue = '✗';
+              valueColor = '#dc3545';
+            } else {
+              displayValue = value.toLocaleString() + '만원';
+              if (percentage >= 100) {
+                valueColor = '#28a745';
+              } else if (percentage < 30) {
+                valueColor = '#dc3545';
+              }
+            }
+            
+            let progressBarHtml = '';
+            if (value === 0) {
+              progressBarHtml = '<div style="display: inline-block; height: 6px; background: #e0e0e0; border-radius: 3px; width: 48%;"></div>';
+            } else {
+              let barColor = '#dc3545';
+              if (percentage >= 100) barColor = '#28a745';
+              else if (percentage >= 30) barColor = '#ffc107';
+              const width = Math.min(percentage, 100);
+              progressBarHtml = `<div style="display: inline-block; height: 6px; background: #e0e0e0; border-radius: 3px; width: 48%;"><div style="height: 100%; width: ${width}%; background: ${barColor}; border-radius: 3px;"></div></div>`;
+            }
+            
+            return progressBarHtml + `<span style="font-size: 10px; font-weight: 600; color: ${valueColor}; white-space: nowrap; margin-left: 4px;">${displayValue}</span>`;
+          })()}
+        </div>
+      </div>
     </div>
   `;
   
