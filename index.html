@@ -1572,12 +1572,13 @@ function extractCoverageAmountsForBeforeAfter(text) {
     // 생활보장 항목 처리
     if (config.lifeInsurance) {
       amount = findLifeInsuranceValue(config.keyword);
-      if (amount && !isNaN(amount)) {
-        beforeElement.value = amount;
-        afterElement.value = amount;
-        console.log(`✅ ${config.name} 추출 성공: ${amount}만원 (변경 전/후 동일 세팅)`);
-        return;
-      }
+if (amount && !isNaN(amount)) {
+  const formatted = formatToDisplayValue(parseInt(amount));
+  beforeElement.value = formatted;
+  afterElement.value = formatted;
+  console.log(`✅ ${config.name} 추출 성공: ${formatted} (변경 전/후 동일 세팅)`);
+  return;
+}
     }
     
     // 뇌혈관질환 특별 처리
@@ -1610,8 +1611,9 @@ function extractCoverageAmountsForBeforeAfter(text) {
       if (match && match[1]) {
         amount = match[1].replace(/,/g, '');
         if (amount && !isNaN(amount)) {
-          beforeElement.value = amount;
-          afterElement.value = amount;
+const formatted = formatToDisplayValue(parseInt(amount));
+beforeElement.value = formatted;
+afterElement.value = formatted;
           console.log(`✅ ${config.name} 추출 성공: ${amount}만원 (변경 전/후 동일 세팅)`);
           return;
         }
@@ -1622,8 +1624,9 @@ function extractCoverageAmountsForBeforeAfter(text) {
     if (!amount && config.keyword) {
       amount = findValueByKeyword(config.keyword, lines);
       if (amount && !isNaN(amount)) {
-        beforeElement.value = amount;
-        afterElement.value = amount;
+const formatted = formatToDisplayValue(parseInt(amount));
+beforeElement.value = formatted;
+afterElement.value = formatted;
         console.log(`✅ ${config.name} 라인기반 추출 성공: ${amount}만원 (변경 전/후 동일 세팅)`);
         return;
       }
