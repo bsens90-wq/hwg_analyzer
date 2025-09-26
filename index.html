@@ -367,7 +367,7 @@
       position: absolute;
       left: -9999px;
       top: -9999px;
-      width: 3800px;
+      width: 3900px;
     }
     
     /* 자동계산 표시 스타일 */
@@ -1235,7 +1235,7 @@ async function generateAndDownloadImage(data) {
   
   // HTML 내용 생성 (최적화된 크기 - 3500px x 2500px)
   container.innerHTML = `
-    <div style="background: white; padding: 50px 50px 100px 50px; width: 3800px; height: 3000px; font-family: 'Noto Sans KR', Arial, sans-serif; overflow: hidden;">
+    <div style="background: white; padding: 50px 50px 100px 50px; width: 3900px; height: 3100px; font-family: 'Noto Sans KR', Arial, sans-serif; overflow: hidden;">
       <style>
         .main-title {
           text-align: center;
@@ -1457,7 +1457,7 @@ async function generateAndDownloadImage(data) {
           font-weight: 800;
           font-size: 32px;
           margin-left: 15px;
-          color: #1976D2;
+          color: #333;
           min-width: 200px;
           text-align: right;
         }
@@ -1545,8 +1545,8 @@ async function generateAndDownloadImage(data) {
       logging: false,
       useCORS: true,
       backgroundColor: '#ffffff',
-      width: 3800,
-      height: 3000
+      width: 3900,
+      height: 3100
     });
     
     // 캔버스를 이미지로 변환
@@ -1688,7 +1688,7 @@ function generateCoverageItemsForPrint(coverages, items, type) {
       valueColor = '#dc3545';
     } else {
       displayValue = value.toLocaleString() + '만원';
-      valueColor = '#1976D2';
+      valueColor = '#333';
     }
     
     let progressBarHtml = '';
@@ -1733,7 +1733,7 @@ function generateEssentialItemForPrint(coverages, key, name, type) {
     valueColor = '#dc3545';
   } else {
     displayValue = value.toLocaleString() + '만원';
-    valueColor = '#1976D2';
+    valueColor = '#333';
   }
   
   let progressBarHtml = '';
