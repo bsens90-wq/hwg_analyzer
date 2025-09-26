@@ -2032,11 +2032,11 @@ function generateCoverageItemsForPrint(coverages, items, type) {
     }
     
     return `
-      <div style="margin-bottom: 6px;">
-        <div style="padding: 0; font-size: 9px; margin-bottom: 2px; ${value === 0 ? 'color: #dc3545;' : ''}">${shortName}</div>
-        <div style="display: flex; align-items: center; gap: 8px;">
+      <div style="margin-bottom: 3px;">
+        <div style="padding: 0; font-size: 9px; margin-bottom: 1px; ${value === 0 ? 'color: #dc3545;' : ''}">${shortName}</div>
+        <div style="display: flex; align-items: center; justify-content: space-between;">
           ${progressBarHtml}
-          <span style="font-size: 9px; font-weight: 600; color: ${valueColor}; white-space: nowrap;">${displayValue}</span>
+          <span style="font-size: 9px; font-weight: 600; color: ${valueColor}; white-space: nowrap; margin-left: 4px;">${displayValue}</span>
         </div>
       </div>
     `;
