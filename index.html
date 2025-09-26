@@ -1711,17 +1711,17 @@ async function generateAndDownloadImage(data) {
             <div class="sections-container">
               <div class="section">
                 <div class="section-title">암</div>
-                ${generateCoverageItemsForPrint(data.coverages_before, ALL_COVERAGE_ITEMS.filter(i => i.category === 'cancer'))}
+                ${generateCoverageItemsForPrint(data.coverages_before, ALL_COVERAGE_ITEMS.filter(i => i.category === 'cancer'), 'before')}
               </div>
               
               <div class="section">
                 <div class="section-title">2대 중대질환</div>
-                ${generateCoverageItemsForPrint(data.coverages_before, ALL_COVERAGE_ITEMS.filter(i => i.category === 'majorDisease'))}
+                ${generateCoverageItemsForPrint(data.coverages_before, ALL_COVERAGE_ITEMS.filter(i => i.category === 'majorDisease'), 'before')}
               </div>
               
               <div class="section">
                 <div class="section-title">5대 필수 보험</div>
-                ${generateEssentialSectionForPrint(data.coverages_before, data.caregiverOption)}
+                ${generateEssentialSectionForPrint(data.coverages_before, data.caregiverOption, 'before')}
               </div>
             </div>
             
@@ -1738,17 +1738,17 @@ async function generateAndDownloadImage(data) {
             <div class="sections-container">
               <div class="section">
                 <div class="section-title">암</div>
-                ${generateCoverageItemsForPrint(data.coverages_after, ALL_COVERAGE_ITEMS.filter(i => i.category === 'cancer'))}
+                ${generateCoverageItemsForPrint(data.coverages_after, ALL_COVERAGE_ITEMS.filter(i => i.category === 'cancer'), 'after')}
               </div>
               
               <div class="section">
                 <div class="section-title">2대 중대질환</div>
-                ${generateCoverageItemsForPrint(data.coverages_after, ALL_COVERAGE_ITEMS.filter(i => i.category === 'majorDisease'))}
+                ${generateCoverageItemsForPrint(data.coverages_after, ALL_COVERAGE_ITEMS.filter(i => i.category === 'majorDisease'), 'after')}
               </div>
               
               <div class="section">
                 <div class="section-title">5대 필수 보험</div>
-                ${generateEssentialSectionForPrint(data.coverages_after, data.caregiverOption)}
+                ${generateEssentialSectionForPrint(data.coverages_after, data.caregiverOption, 'after')}
               </div>
             </div>
             
