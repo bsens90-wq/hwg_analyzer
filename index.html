@@ -1827,7 +1827,7 @@ async function generateAndDownloadImage(data) {
         }
 .subsection-title {
   font-weight: 600;
-   font-size: 12px !important;     /* ← 항목명 글씨 크기를 크게 변경 */
+  font-size: 9px      /* ← 항목명 글씨 크기를 크게 변경 */
   margin-bottom: 2px;
   text-align: center;
   background: white;
@@ -1864,7 +1864,7 @@ async function generateAndDownloadImage(data) {
         }
         .example-title {
           font-weight: 700;
-          font-size: 8px;
+          font-size: 12px;
           margin-bottom: 4px;
           text-align: center;
           padding: 3px;
@@ -1882,14 +1882,14 @@ async function generateAndDownloadImage(data) {
         }
         .example-name {
           flex: 0 0 auto;
-          font-size: 6px;
+          font-size: 12px;
           overflow: hidden;
           text-overflow: ellipsis;
           max-width: 90px;
         }
         .example-value {
           font-weight: 600;
-          font-size: 7px;
+          font-size: 12px;
           flex: 0 0 auto;
           margin-left: 3px;
         }
@@ -2034,8 +2034,8 @@ function generateCoverageItemsForPrint(coverages, items, type) {
     return `
       <table style="width: 100%; margin: 0; padding: 0; border: 0; border-spacing: 0; margin-bottom: 6px;">
         <tr>
-          <td style="padding: 0; font-size: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; ${value === 0 ? 'color: #dc3545;' : ''}">${shortName}</td>
-          <td style="padding: 0; text-align: right; font-size: 6px; font-weight: 600; color: ${valueColor}; white-space: nowrap;">${displayValue}</td>
+          <td style="padding: 0; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; ${value === 0 ? 'color: #dc3545;' : ''}">${shortName}</td>
+          <td style="padding: 0; text-align: right; font-size: 12px; font-weight: 600; color: ${valueColor}; white-space: nowrap;">${displayValue}</td>
         </tr>
         <tr>
           <td colspan="2" style="padding: 0; padding-top: 2px;">
