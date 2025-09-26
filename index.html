@@ -1235,7 +1235,7 @@ async function generateAndDownloadImage(data) {
   
   // HTML 내용 생성 (최적화된 크기 - 3500px x 2500px)
   container.innerHTML = `
-    <div style="background: white; padding: 50px; width: 3500px; height: 3500px; font-family: 'Noto Sans KR', Arial, sans-serif; overflow: hidden;">
+    <div style="background: white; padding: 50px 50px 100px 50px; width: 3500px; height: 3500px; font-family: 'Noto Sans KR', Arial, sans-serif; overflow: hidden;">
       <style>
         .main-title {
           text-align: center;
@@ -1249,12 +1249,13 @@ async function generateAndDownloadImage(data) {
           text-shadow: 0 3px 6px rgba(0,0,0,0.2);
           box-shadow: 0 8px 24px rgba(255,102,0,0.3);
         }
-        .print-container {
-          display: flex;
-          gap: 40px;
-          height: calc(100% - 140px);
-          flex-direction: column;
-        }
+.print-container {
+  display: flex;
+  gap: 40px;
+  height: calc(100% - 140px);
+  flex-direction: column;
+  align-items: stretch;  /* 이 줄 추가 */
+}
         .main-sections-container {
           display: flex;
           gap: 40px;
@@ -1291,7 +1292,7 @@ async function generateAndDownloadImage(data) {
           flex: 1;
         }
         .section {
-          width: 520px;
+          width: 600px;
           border-radius: 16px;
           padding: 20px;
           overflow-y: auto;
@@ -1388,13 +1389,14 @@ async function generateAndDownloadImage(data) {
           min-width: 140px;
           text-align: right;
         }
-        .examples-container {
-          display: flex;
-          gap: 25px;
-          justify-content: center;
-          height: auto;
-          margin-top: 30px;
-        }
+.examples-container {
+  display: flex;
+  gap: 25px;
+  justify-content: center;
+  height: auto;
+  margin-top: 30px;
+  align-items: flex-start;  /* 이 줄 추가 */
+}
         .examples-row {
           display: flex;
           gap: 25px;
@@ -1402,7 +1404,7 @@ async function generateAndDownloadImage(data) {
           flex: 1;
         }
         .example-section {
-          width: 520px;
+          width: 600px;
           padding: 20px;
           border-radius: 15px;
         }
