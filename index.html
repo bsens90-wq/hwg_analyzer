@@ -1715,38 +1715,123 @@ async function generateAndDownloadImage(data) {
 }
 
 // 인쇄용 담보 항목 생성
-function generateCoverageItemsForPrint(coverages, items) {
+function generateCoverageItemsForPrint(coverages, items, type) {
   return items.map(item => {
     const coverage = coverages[item.key];
     const value = coverage ? parseInt(coverage.value) : 0;
     const percentage = calculateProgressPercentage(value, item.standardAmount);
     
-    let nameClass = '';
-    if (value === 0) nameClass = 'no-coverage';
+    let displayValue = '';
+    let valueColor = type === 'before' ? '#666' : '#1565C0';
     
-    const displayValue = value ? `${value}만원` : '0만원';
-    const progressBar = generateProgressBar(percentage, value);
+    if (value === 0) {
+      displayValue = '✗';
+      valueColor = '#dc3545';
+    } else {
+      displayValue = value.toLocaleString() + '만원';
+      if (percentage >= 100) {
+        valueColor = '#28a745';
+      } else if (percentage < 30) {
+        valueColor = '#dc3545';
+      }
+    }
+    
+    let progressBarHtml = '';
+    if (value === 0) {
+      progressBarHtml = '<div style="display: block; height: 6px; background: #e0e0e0; border-radius: 3px; position: relative; width: 100%;"><span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #dc3545; font-weight: 900; font-size: 6px;">✗</span></div>';
+    } else {
+      let barColor = '#dc3545';
+      if (percentage >= 100) barColor = '#28a745';
+      else if (percentage >= 30) barColor = '#ffc107';
+      const width = Math.min(percentage, 100);
+      progressBarHtml = `<div style="display: block; height: 6px; background: #e0e0e0; border-radius: 3px; width: 100%;"><div style="height: 100%; width: ${width}%; background: ${barColor}; border-radius: 3px;"></div></div>`;
+    }
+    
+    // 텍스트 길이를 줄이기 위한 축약 처리
+    let shortName = item.name;
+    if (shortName.length > 10) {
+      shortName = shortName.replace('질환진단비', '진단비');
+      shortName = shortName.replace('질환수술비', '수술비');
+    }
     
     return `
-      <div class="coverage-item">
-        <div class="coverage-name ${nameClass}">${item.name}</div>
-        ${progressBar}
-        <div class="coverage-value">${displayValue}</div>
-      </div>
+      <table style="width: 100%; margin: 0; padding: 0; border: 0; border-spacing: 0; margin-bottom: 6px;">
+        <tr>
+          <td style="padding: 0; font-size: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; ${value === 0 ? 'color: #dc3545;' : ''}">${shortName}</td>
+          <td style="padding: 0; text-align: right; font-size: 6px; font-weight: 600; color: ${valueColor}; white-space: nowrap;">${displayValue}</td>
+        </tr>
+        <tr>
+          <td colspan="2" style="padding: 0; padding-top: 2px;">
+            ${progressBarHtml}
+          </td>
+        </tr>
+      </table>
     `;
   }).join('');
 }
 
+// 필수보험 개별 항목 생성
+function generateEssentialItemForPrint(coverages, key, name, type) {
+  const coverage = coverages[key];
+  const value = coverage ? parseInt(coverage.value) : 0;
+  
+  // 표준금액 찾기
+  const standardItem = ALL_COVERAGE_ITEMS.find(item => item.key === key) || 
+                       { standardAmount: 1000 };
+  const standardAmount = standardItem.standardAmount;
+  const percentage = calculateProgressPercentage(value, standardAmount);
+  
+  let displayValue = '';
+  let valueColor = type === 'before' ? '#666' : '#1565C0';
+  
+  if (value === 0) {
+    displayValue = '✗';
+    valueColor = '#dc3545';
+  } else {
+    displayValue = value.toLocaleString() + '만원';
+    if (percentage >= 100) {
+      valueColor = '#28a745';
+    } else if (percentage < 30) {
+      valueColor = '#dc3545';
+    }
+  }
+  
+  let progressBarHtml = '';
+  if (value === 0) {
+    progressBarHtml = '<div style="display: block; height: 6px; background: #e0e0e0; border-radius: 3px; position: relative; width: 100%;"><span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #dc3545; font-weight: 900; font-size: 6px;">✗</span></div>';
+  } else {
+    let barColor = '#dc3545';
+    if (percentage >= 100) barColor = '#28a745';
+    else if (percentage >= 30) barColor = '#ffc107';
+    const width = Math.min(percentage, 100);
+    progressBarHtml = `<div style="display: block; height: 6px; background: #e0e0e0; border-radius: 3px; width: 100%;"><div style="height: 100%; width: ${width}%; background: ${barColor}; border-radius: 3px;"></div></div>`;
+  }
+  
+  return `
+    <table style="width: 100%; margin: 0; padding: 0; border: 0; border-spacing: 0; margin-bottom: 6px;">
+      <tr>
+        <td style="padding: 0; font-size: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; ${value === 0 ? 'color: #dc3545;' : ''}">${name}</td>
+        <td style="padding: 0; text-align: right; font-size: 6px; font-weight: 600; color: ${valueColor}; white-space: nowrap;">${displayValue}</td>
+      </tr>
+      <tr>
+        <td colspan="2" style="padding: 0; padding-top: 2px;">
+          ${progressBarHtml}
+        </td>
+      </tr>
+    </table>
+  `;
+}
+
 // 5대 필수보험 섹션 생성
-function generateEssentialSectionForPrint(coverages, caregiverOption) {
+function generateEssentialSectionForPrint(coverages, caregiverOption, type) {
   let html = '';
   
   // 실손의료비
   html += `
     <div class="subsection">
       <div class="subsection-title">실손의료비</div>
-      ${generateEssentialItemForPrint(coverages, 'diseaseHospitalization', '(실손)질병입원')}
-      ${generateEssentialItemForPrint(coverages, 'injuryHospitalization', '(실손)상해입원')}
+      ${generateEssentialItemForPrint(coverages, 'diseaseHospitalization', '(실손)질병입원', type)}
+      ${generateEssentialItemForPrint(coverages, 'injuryHospitalization', '(실손)상해입원', type)}
     </div>
   `;
   
@@ -1754,8 +1839,8 @@ function generateEssentialSectionForPrint(coverages, caregiverOption) {
   html += `
     <div class="subsection">
       <div class="subsection-title">운전자</div>
-      ${generateEssentialItemForPrint(coverages, 'criminalSettlement', '형사합의금')}
-      ${generateEssentialItemForPrint(coverages, 'lawyerAppointment', '변호사선임비')}
+      ${generateEssentialItemForPrint(coverages, 'criminalSettlement', '형사합의금', type)}
+      ${generateEssentialItemForPrint(coverages, 'lawyerAppointment', '변호사선임비', type)}
     </div>
   `;
   
@@ -1764,11 +1849,11 @@ function generateEssentialSectionForPrint(coverages, caregiverOption) {
     <div class="subsection">
       <div class="subsection-title">간병인일당</div>
       ${caregiverOption === 'support' ? 
-        '<div class="coverage-item"><div class="coverage-name">외국 간병인 현물지원</div><div class="coverage-value">-</div></div>' :
+        '<table style="width: 100%; margin: 0; padding: 0; border: 0; border-spacing: 0; margin-bottom: 6px;"><tr><td style="padding: 0; font-size: 5px;">외국 간병인 현물지원</td><td style="padding: 0; text-align: right; font-size: 6px; font-weight: 600;">-</td></tr></table>' :
         `
-        ${generateEssentialItemForPrint(coverages, 'nursingHospitalOut', '요양병원 외')}
-        ${generateEssentialItemForPrint(coverages, 'nursingHospitalIn', '요양병원')}
-        ${generateEssentialItemForPrint(coverages, 'nursingCareIntegrated', '간호간병통합')}
+        ${generateEssentialItemForPrint(coverages, 'nursingHospitalOut', '요양병원 외', type)}
+        ${generateEssentialItemForPrint(coverages, 'nursingHospitalIn', '요양병원', type)}
+        ${generateEssentialItemForPrint(coverages, 'nursingCareIntegrated', '간호간병통합', type)}
         `
       }
     </div>
@@ -1778,7 +1863,7 @@ function generateEssentialSectionForPrint(coverages, caregiverOption) {
   html += `
     <div class="subsection">
       <div class="subsection-title">일상생활배상책임</div>
-      ${generateEssentialItemForPrint(coverages, 'dailyLifeLiability', '일상생활배상책임')}
+      ${generateEssentialItemForPrint(coverages, 'dailyLifeLiability', '일상생활배상책임', type)}
     </div>
   `;
   
@@ -1786,26 +1871,11 @@ function generateEssentialSectionForPrint(coverages, caregiverOption) {
   html += `
     <div class="subsection">
       <div class="subsection-title">화재벌금</div>
-      ${generateEssentialItemForPrint(coverages, 'fireFine', '화재벌금')}
+      ${generateEssentialItemForPrint(coverages, 'fireFine', '화재벌금', type)}
     </div>
   `;
   
   return html;
-}
-
-// 필수보험 개별 항목 생성
-function generateEssentialItemForPrint(coverages, key, name) {
-  const coverage = coverages[key];
-  const value = coverage ? parseInt(coverage.value) : 0;
-  
-  const displayValue = value ? `${value}만원` : '0만원';
-  
-  return `
-    <div class="coverage-item">
-      <div class="coverage-name ${value === 0 ? 'no-coverage' : ''}">${name}</div>
-      <div class="coverage-value">${displayValue}</div>
-    </div>
-  `;
 }
 
 // 예시 섹션 생성
