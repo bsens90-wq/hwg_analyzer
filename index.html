@@ -1300,6 +1300,12 @@ function extractNumberFromLineAndNextLines(line, targetText, allLines, currentIn
     const nextLine = allLines[currentIndex + i];
     console.log(`다음 라인 ${i} 검사: "${nextLine}"`);
     
+    // "부족" 키워드가 있는 라인은 건너뛰기
+    if (nextLine.includes('부족')) {
+      console.log(`부족 키워드가 있는 라인 건너뛰기: "${nextLine}"`);
+      continue;
+    }
+    
     // 다른 담보 항목이 나타나면 검사 중지
     const hasOtherCoverage = otherCoverageKeywords.some(keyword => {
       const normalizedLine = nextLine.toLowerCase().replace(/\s+/g, '');
@@ -1338,6 +1344,12 @@ function extractNumberFromSingleLine(line, targetText) {
 // 텍스트에서 숫자 추출 (공통 로직)
 function extractNumberFromText(text) {
   console.log(`텍스트에서 숫자 추출: "${text}"`);
+  
+  // "부족" 키워드가 포함된 텍스트는 완전 배제
+  if (text.includes('부족')) {
+    console.log('부족 키워드 발견 - 해당 라인 숫자 무시');
+    return null;
+  }
   
   // 숫자 패턴들 (우선순위 순)
   const patterns = [
