@@ -1161,70 +1161,68 @@ function extractCustomerInfo(text) {
   }
 }
 
-// 담보 금액 추출
+// 담보 금액 추출 (정교화된 버전)
 function extractCoverageAmountsForBeforeAfter(text) {
-  console.log('담보 금액 추출 중...');
+  console.log('정교한 담보 금액 추출 시작...');
   
-  // 인식된 텍스트에서 보장금액 추출 및 매핑
-  const coveragePatterns = [
-    // 암 관련
-    { pattern: /일반암[^\d]*(\d{1,3}(?:,\d{3})*)/i, key: 'generalCancer' },
-    { pattern: /통합암[^\d]*(\d{1,3}(?:,\d{3})*)/i, key: 'totalCancer' },
-    { pattern: /유사암[^\d]*(\d{1,3}(?:,\d{3})*)/i, key: 'metastasisCancer' },
-    { pattern: /표적항암[^\d]*(\d{1,3}(?:,\d{3})*)/i, key: 'targetTherapy' },
+  // 매핑 테이블 정의
+  const coverageMappings = [
+    // 암 섹션
+    { imageText: '일반암', codeKey: 'generalCancer', section: '암' },
+    { imageText: '통합암', codeKey: 'totalCancer', section: '암' },
+    { imageText: '표적항암약물', codeKey: 'targetTherapy', section: '암' },
     
-    // 2대 중대질환
-    { pattern: /뇌혈관질환[^\d]*(\d{1,3}(?:,\d{3})*)/i, key: 'cerebrovascularDiagnosis' },
-    { pattern: /뇌졸중[^\d]*(\d{1,3}(?:,\d{3})*)/i, key: 'strokeDiagnosis' },
-    { pattern: /허혈성심질환[^\d]*(\d{1,3}(?:,\d{3})*)/i, key: 'ischemicHeartDiagnosis' },
-    { pattern: /급성심근경색[^\d]*(\d{1,3}(?:,\d{3})*)/i, key: 'myocardialInfarctionDiagnosis' },
+    // 2대 중대질환 섹션
+    { imageText: '뇌혈관질환', codeKey: 'cerebrovascularDiagnosis', section: '2대중대질환' },
+    { imageText: '뇌졸중', codeKey: 'strokeDiagnosis', section: '2대중대질환' },
+    { imageText: '허혈성심질환', codeKey: 'ischemicHeartDiagnosis', section: '2대중대질환' },
+    { imageText: '급성심근경색증', codeKey: 'myocardialInfarctionDiagnosis', section: '2대중대질환' },
     
-    // 실손의료비
-    { pattern: /질병입원\s*실손[^\d]*(\d{1,3}(?:,\d{3})*)/i, key: 'diseaseHospitalization' },
-    { pattern: /상해입원\s*실손[^\d]*(\d{1,3}(?:,\d{3})*)/i, key: 'injuryHospitalization' },
-    
-    // 운전자보험
-    { pattern: /대인형사합의[^\d]*(\d{1,3}(?:,\d{3})*)/i, key: 'criminalSettlement' },
-    { pattern: /변호사선임[^\d]*(\d{1,3}(?:,\d{3})*)/i, key: 'lawyerAppointment' },
-    { pattern: /화재벌금[^\d]*(\d{1,3}(?:,\d{3})*)/i, key: 'fireFine' },
-    { pattern: /일상생활배상[^\d]*(\d{1,3}(?:,\d{3})*)/i, key: 'dailyLifeLiability' },
-    
-    // 치매 관련
-    { pattern: /경증치매[^\d]*(\d{1,3}(?:,\d{3})*)/i, key: 'mildDementia' },
-    { pattern: /중증치매[^\d]*(\d{1,3}(?:,\d{3})*)/i, key: 'severeDementia' },
-    
-    // 수술비
-    { pattern: /질병수술비[^\d]*(\d{1,3}(?:,\d{3})*)/i, key: 'diseaseSurgery' },
-    { pattern: /상해수술비[^\d]*(\d{1,3}(?:,\d{3})*)/i, key: 'injurySurgery' }
+    // 5대 필수보험 섹션
+    { imageText: '질병입원 실손', codeKey: 'diseaseHospitalization', section: '5대필수보험' },
+    { imageText: '상해입원 실손', codeKey: 'injuryHospitalization', section: '5대필수보험' },
+    { imageText: '간병인질병입원', codeKey: 'nursingHospitalOut', section: '5대필수보험' },
+    { imageText: '대인형사합의지원금', codeKey: 'criminalSettlement', section: '5대필수보험' },
+    { imageText: '변호사선임비용', codeKey: 'lawyerAppointment', section: '5대필수보험' },
+    { imageText: '일상생활배상책임', codeKey: 'dailyLifeLiability', section: '5대필수보험' },
+    { imageText: '화재벌금', codeKey: 'fireFine', section: '5대필수보험' }
   ];
   
-  // 각 패턴에 대해 매칭 시도
-  coveragePatterns.forEach(({ pattern, key }) => {
-    const match = text.match(pattern);
-    if (match) {
-      const value = match[1].replace(/,/g, ''); // 쉼표 제거
-      const amount = parseInt(value);
+  // 텍스트를 줄 단위로 분할
+  const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+  
+  coverageMappings.forEach(mapping => {
+    const extractedValue = extractValueFromSameLine(lines, mapping.imageText);
+    
+    if (extractedValue && extractedValue > 0) {
+      console.log(`${mapping.section} - ${mapping.imageText}: ${extractedValue}만원 추출`);
       
-      if (amount > 0) {
-        // 변경 전과 변경 후 모두에 같은 값 설정
-        const beforeInput = document.getElementById(key + '_before');
-        const afterInput = document.getElementById(key + '_after');
-        
-        if (beforeInput) {
-          beforeInput.value = amount.toLocaleString() + '만원';
-          console.log(`${key}_before에 ${amount}만원 설정`);
-        }
-        
-        if (afterInput) {
-          afterInput.value = amount.toLocaleString() + '만원';
-          console.log(`${key}_after에 ${amount}만원 설정`);
-        }
+      // 변경 전과 변경 후 모두에 값 설정
+      const beforeInput = document.getElementById(mapping.codeKey + '_before');
+      const afterInput = document.getElementById(mapping.codeKey + '_after');
+      
+      if (beforeInput) {
+        beforeInput.value = extractedValue.toLocaleString() + '만원';
+        console.log(`${mapping.codeKey}_before에 ${extractedValue}만원 설정`);
       }
+      
+      if (afterInput) {
+        afterInput.value = extractedValue.toLocaleString() + '만원';
+        console.log(`${mapping.codeKey}_after에 ${extractedValue}만원 설정`);
+      }
+    } else {
+      console.log(`${mapping.section} - ${mapping.imageText}: 값을 찾을 수 없음`);
     }
   });
   
-  // 특별한 케이스들 처리
-  extractSpecialCases(text);
+  // OCR 완료 후 자동계산 트리거
+  setTimeout(() => {
+    handleMajorCirculatoryCalculation('before');
+    handleMajorCirculatoryCalculation('after');
+  }, 100);
+
+    // 특수 케이스 처리
+  handleSpecialCases(text);
   
   // OCR 완료 후 자동계산 트리거
   setTimeout(() => {
@@ -1233,40 +1231,132 @@ function extractCoverageAmountsForBeforeAfter(text) {
   }, 100);
 }
 
-// 특별한 케이스들 처리 함수
-function extractSpecialCases(text) {
-  // 분수 형태의 값들 처리 (예: "13,133 / 7,000만원")
-  const fractionPatterns = [
-    { pattern: /일반암[^\d]*(\d{1,3}(?:,\d{3})*)\s*\/\s*\d{1,3}(?:,\d{3})*만원/i, key: 'generalCancer' },
-    { pattern: /통합암[^\d]*(\d{1,3}(?:,\d{3})*)\s*\/\s*\d{1,3}(?:,\d{3})*만원/i, key: 'totalCancer' },
-    { pattern: /표적항암[^\d]*(\d{1,3}(?:,\d{3})*)\s*\/\s*\d{1,3}(?:,\d{3})*만원/i, key: 'targetTherapy' },
-    { pattern: /뇌혈관질환[^\d]*(\d{1,3}(?:,\d{3})*)\s*\/\s*\d{1,3}(?:,\d{3})*만원/i, key: 'cerebrovascularDiagnosis' },
-    { pattern: /뇌졸중[^\d]*(\d{1,3}(?:,\d{3})*)\s*\/\s*\d{1,3}(?:,\d{3})*만원/i, key: 'strokeDiagnosis' },
-    { pattern: /허혈성심질환[^\d]*(\d{1,3}(?:,\d{3})*)\s*\/\s*\d{1,3}(?:,\d{3})*만원/i, key: 'ischemicHeartDiagnosis' },
-    { pattern: /급성심근경색[^\d]*(\d{1,3}(?:,\d{3})*)\s*\/\s*\d{1,3}(?:,\d{3})*만원/i, key: 'myocardialInfarctionDiagnosis' },
-    { pattern: /질병입원\s*실손[^\d]*(\d{1,3}(?:,\d{3})*)\s*\/\s*\d{1,3}(?:,\d{3})*만원/i, key: 'diseaseHospitalization' },
-    { pattern: /상해입원\s*실손[^\d]*(\d{1,3}(?:,\d{3})*)\s*\/\s*\d{1,3}(?:,\d{3})*만원/i, key: 'injuryHospitalization' }
+// 같은 라인에서 텍스트 우측의 숫자 추출
+function extractValueFromSameLine(lines, targetText) {
+  for (const line of lines) {
+    // 대소문자 구분 없이 텍스트 포함 여부 확인
+    if (line.toLowerCase().includes(targetText.toLowerCase())) {
+      console.log(`매칭된 라인: "${line}"`);
+      
+      // 타겟 텍스트 이후의 부분만 추출
+      const targetIndex = line.toLowerCase().indexOf(targetText.toLowerCase());
+      const afterTargetText = line.substring(targetIndex + targetText.length);
+      
+      // 숫자 추출 (여러 패턴 시도)
+      const numberPatterns = [
+        // 1. 기본 숫자 패턴 (쉼표 포함/미포함)
+        /(\d{1,3}(?:,\d{3})*)/,
+        // 2. 분수 형태에서 첫 번째 숫자 (13,133 / 7,000 형태)
+        /(\d{1,3}(?:,\d{3})*)\s*\/\s*\d{1,3}(?:,\d{3})*/,
+        // 3. 단순 숫자
+        /(\d+)/
+      ];
+      
+      for (const pattern of numberPatterns) {
+        const match = afterTargetText.match(pattern);
+        if (match) {
+          let numberStr = match[1].replace(/,/g, ''); // 쉼표 제거
+          const number = parseInt(numberStr);
+          
+          // 0이 아닌 유효한 숫자인 경우만 반환
+          if (number > 0) {
+            console.log(`추출된 숫자: ${number}`);
+            return number;
+          }
+        }
+      }
+      
+      // 패턴 매칭이 실패한 경우 더 세밀한 분석
+      const detailedValue = extractNumberWithDetailedAnalysis(afterTargetText);
+      if (detailedValue > 0) {
+        return detailedValue;
+      }
+    }
+  }
+  
+  // 완전히 일치하지 않는 경우 유사한 텍스트 검색
+  return findSimilarTextAndExtractNumber(lines, targetText);
+}
+
+// 더 세밀한 숫자 추출 분석
+function extractNumberWithDetailedAnalysis(text) {
+  console.log(`세밀한 분석 대상 텍스트: "${text}"`);
+  
+  // 공백을 기준으로 토큰 분할
+  const tokens = text.trim().split(/\s+/);
+  
+  for (const token of tokens) {
+    // 각 토큰에서 숫자 추출 시도
+    const cleanToken = token.replace(/[^\d,]/g, ''); // 숫자와 쉼표만 남김
+    
+    if (cleanToken.length > 0) {
+      const numbers = cleanToken.replace(/,/g, '');
+      const number = parseInt(numbers);
+      
+      if (!isNaN(number) && number > 0) {
+        console.log(`토큰 분석으로 추출된 숫자: ${number}`);
+        return number;
+      }
+    }
+  }
+  
+  return 0;
+}
+
+// 유사한 텍스트 검색 및 숫자 추출
+function findSimilarTextAndExtractNumber(lines, targetText) {
+  const targetWords = targetText.toLowerCase().split(/\s+/);
+  
+  for (const line of lines) {
+    const lineLower = line.toLowerCase();
+    
+    // 타겟 텍스트의 주요 단어들이 포함되어 있는지 확인
+    const matchedWords = targetWords.filter(word => lineLower.includes(word));
+    
+    // 50% 이상의 단어가 매칭되면 유사한 것으로 판단
+    if (matchedWords.length >= Math.ceil(targetWords.length * 0.5)) {
+      console.log(`유사한 라인 발견: "${line}"`);
+      
+      // 숫자 추출 시도
+      const numberMatch = line.match(/(\d{1,3}(?:,\d{3})*)/);
+      if (numberMatch) {
+        const number = parseInt(numberMatch[1].replace(/,/g, ''));
+        if (number > 0) {
+          console.log(`유사 텍스트에서 추출된 숫자: ${number}`);
+          return number;
+        }
+      }
+    }
+  }
+  
+  return 0;
+}
+
+// 추가: 특수 케이스 처리 함수
+function handleSpecialCases(text) {
+  // 경증치매, 중증치매 등 추가 항목들 처리
+  const specialMappings = [
+    { imageText: '경증치매', codeKey: 'mildDementia' },
+    { imageText: '중증치매', codeKey: 'severeDementia' },
+    { imageText: '장기요양', codeKey: 'longTermCare' },
+    { imageText: '질병수술비', codeKey: 'diseaseSurgery' },
+    { imageText: '상해수술비', codeKey: 'injurySurgery' }
   ];
   
-  fractionPatterns.forEach(({ pattern, key }) => {
-    const match = text.match(pattern);
-    if (match) {
-      const value = match[1].replace(/,/g, '');
-      const amount = parseInt(value);
+  const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+  
+  specialMappings.forEach(mapping => {
+    const extractedValue = extractValueFromSameLine(lines, mapping.imageText);
+    
+    if (extractedValue && extractedValue > 0) {
+      // 해당 키가 있는 입력 필드가 있는지 확인 후 설정
+      const beforeInput = document.getElementById(mapping.codeKey + '_before');
+      const afterInput = document.getElementById(mapping.codeKey + '_after');
       
-      if (amount > 0) {
-        const beforeInput = document.getElementById(key + '_before');
-        const afterInput = document.getElementById(key + '_after');
-        
-        if (beforeInput) {
-          beforeInput.value = amount.toLocaleString() + '만원';
-          console.log(`분수형태에서 ${key}_before에 ${amount}만원 설정`);
-        }
-        
-        if (afterInput) {
-          afterInput.value = amount.toLocaleString() + '만원';
-          console.log(`분수형태에서 ${key}_after에 ${amount}만원 설정`);
-        }
+      if (beforeInput && afterInput) {
+        beforeInput.value = extractedValue.toLocaleString() + '만원';
+        afterInput.value = extractedValue.toLocaleString() + '만원';
+        console.log(`특수케이스 ${mapping.codeKey}에 ${extractedValue}만원 설정`);
       }
     }
   });
