@@ -1356,7 +1356,7 @@ async function generateAndDownloadImage(data) {
           padding: 3px 0;
         }
         .coverage-name {
-          font-size: 38px;
+          font-size: 40px;
           margin-bottom: 4px;
           font-weight: 600;
           line-height: 1.3;
@@ -1368,7 +1368,7 @@ async function generateAndDownloadImage(data) {
         }
         .progress-container {
           flex: 1;
-          max-width: 100px;  /* 최대 너비 제한 */
+          max-width: 250px;  /* 최대 너비 제한 */
          min-width: 20px;  /* 최소 너비 보장 */
           height: 20px;
           background: #e0e0e0;
@@ -1385,7 +1385,7 @@ async function generateAndDownloadImage(data) {
         .progress-yellow { background: linear-gradient(90deg, #ffc107, #ffdb4d); }
         .progress-red { background: linear-gradient(90deg, #dc3545, #e85d6d); }
         .coverage-value {
-          font-size: 38px;
+          font-size: 40px;
           font-weight: 700;
           white-space: nowrap;
           min-width: 140px;
@@ -1449,7 +1449,7 @@ async function generateAndDownloadImage(data) {
         }
         .example-name {
           flex: 1;
-          font-size: 38px;
+          font-size: 40px;
           overflow: hidden;
           text-overflow: ellipsis;
           font-weight: 600;
@@ -1457,7 +1457,7 @@ async function generateAndDownloadImage(data) {
         }
         .example-value {
           font-weight: 800;
-          font-size: 38px;
+          font-size: 40px;
           margin-left: 15px;
           color: #333;
           min-width: 200px;
@@ -1853,7 +1853,7 @@ html += `
 
 html += `
   <div class="subsection">
-    <div class="subsection-title">화재</div>
+    <div class="subsection-title">화재벌금</div>
     ${generateSimpleItemForPrint(coverages, 'fireFine', type)}
   </div>
 `;
