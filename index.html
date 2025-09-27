@@ -1722,6 +1722,46 @@ function generateCoverageItemsForPrint(coverages, items, type) {
   }).join('');
 }
 
+
+  // 진행률 바와 금액만 표시하는 함수
+function generateSimpleItemForPrint(coverages, key, type) {
+  const coverage = coverages[key];
+  const value = coverage ? extractNumber(coverage.value) : 0;
+  
+  let displayValue = '';
+  let valueColor = '#333';
+  
+  if (value === 0) {
+    displayValue = '✗';
+    valueColor = '#dc3545';
+  } else {
+    displayValue = value.toLocaleString() + '만원';
+    valueColor = '#333';
+  }
+  
+  let progressBarHtml = '';
+  if (value === 0) {
+    progressBarHtml = '<div class="progress-container"><div class="progress-bar" style="width: 0%; background: #e0e0e0;"></div></div>';
+  } else {
+    const standardItem = ALL_COVERAGE_ITEMS.find(item => item.key === key) || { standardAmount: 1000 };
+    const percentage = calculateProgressPercentage(value, standardItem.standardAmount);
+    let barColor = '#dc3545';
+    if (percentage >= 100) barColor = '#28a745';
+    else if (percentage >= 30) barColor = '#ffc107';
+    const width = Math.min(percentage, 100);
+    progressBarHtml = `<div class="progress-container"><div class="progress-bar" style="width: ${width}%; background: ${barColor};"></div></div>`;
+  }
+  
+  return `
+    <div class="coverage-item">
+      <div class="coverage-display">
+        ${progressBarHtml}
+        <span class="coverage-value" style="color: ${valueColor};">${displayValue}</span>
+      </div>
+    </div>
+  `;
+}
+
 // 필수보험 개별 항목 생성 (최적화된 크기)
 function generateEssentialItemForPrint(coverages, key, name, type) {
   const coverage = coverages[key];
