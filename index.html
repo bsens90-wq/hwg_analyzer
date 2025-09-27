@@ -1338,8 +1338,8 @@ async function generateAndDownloadImage(data) {
           background: rgba(245,250,255,0.9);
         }
         .subsection-title {
-          font-weight: 700;
-          font-size: 32px;
+          font-weight: 800;
+          font-size: 40px;
           margin-bottom: 12px;
           text-align: center;
           background: white;
@@ -1368,6 +1368,8 @@ async function generateAndDownloadImage(data) {
         }
         .progress-container {
           flex: 1;
+          max-width: 100px;  /* 최대 너비 제한 */
+         min-width: 20px;  /* 최소 너비 보장 */
           height: 20px;
           background: #e0e0e0;
           border-radius: 10px;
@@ -1802,19 +1804,19 @@ function generateEssentialSectionForPrint(coverages, caregiverOption, type) {
   
   html += `</div>`;
   
-  html += `
-    <div class="subsection">
-      <div class="subsection-title">일상생활배상책임</div>
-      ${generateEssentialItemForPrint(coverages, 'dailyLifeLiability', '일상생활배상책임', type)}
-    </div>
-  `;
-  
-  html += `
-    <div class="subsection">
-      <div class="subsection-title">화재</div>
-      ${generateEssentialItemForPrint(coverages, 'fireFine', '화재벌금', type)}
-    </div>
-  `;
+html += `
+  <div class="subsection">
+    <div class="subsection-title">일상생활배상책임</div>
+    ${generateSimpleItemForPrint(coverages, 'dailyLifeLiability', type)}
+  </div>
+`;
+
+html += `
+  <div class="subsection">
+    <div class="subsection-title">화재</div>
+    ${generateSimpleItemForPrint(coverages, 'fireFine', type)}
+  </div>
+`;
   
   return html;
 }
