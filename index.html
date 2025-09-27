@@ -1274,16 +1274,91 @@ function extractValueWithPrecision(text, targetText) {
   return null;
 }
 
-  // 라인과 다음 라인들에서 숫자 추출 함수 (멀티라인 지원)
+ // 라인과 다음 라인들에서 숫자 추출 함수 (강화된 구조 통일 버전)
 function extractNumberFromLineAndNextLines(line, targetText, allLines, currentIndex) {
-  console.log(`멀티라인 숫자 추출 시도: "${line}", 타겟: "${targetText}"`);
+  console.log(`강화된 구조 통일 숫자 추출 시도: "${line}", 타겟: "${targetText}"`);
   
-  // 다른 담보 항목 키워드 목록 (현재 찾는 항목 제외)
-  const otherCoverageKeywords = [
+  // 특별 처리 항목들 (기존 로직 유지)
+  const specialItems = ['형사합의지원금', '변호사선임비용', '화재벌금', '일상생활배상책임'];
+  const isSpecialItem = specialItems.includes(targetText);
+  
+  if (isSpecialItem) {
+    console.log(`특별 항목 "${targetText}" - 기존 로직 사용`);
+    return extractNumberFromLineAndNextLinesLegacy(line, targetText, allLines, currentIndex);
+  }
+  
+  // 일반 항목들 - 통일된 구조로 처리
+  console.log(`일반 항목 "${targetText}" - 통일된 구조 처리`);
+  
+  // 다음 라인들에서 통일된 패턴 찾기
+  for (let i = 1; i <= 5 && currentIndex + i < allLines.length; i++) {
+    const nextLine = allLines[currentIndex + i];
+    console.log(`라인 ${i} 검사: "${nextLine}"`);
+    
+    // 다른 담보 항목이 나타나면 검사 중지
+    if (isNextCoverageItem(nextLine, targetText)) {
+      console.log(`다른 담보 항목 발견으로 검사 중지: "${nextLine}"`);
+      break;
+    }
+    
+    // 통일된 패턴: A/B만원 형태 찾기
+    const unifiedPatternResult = extractFromUnifiedPattern(nextLine);
+    if (unifiedPatternResult !== null) {
+      console.log(`통일된 패턴에서 추출 성공: ${unifiedPatternResult}`);
+      return unifiedPatternResult;
+    }
+  }
+  
+  console.log('통일된 구조에서 숫자 추출 실패 - 0값 반환');
+  return 0;
+}
+
+// 통일된 패턴에서 숫자 추출 (A/B만원 형태)
+function extractFromUnifiedPattern(text) {
+  console.log(`통일된 패턴 검사: "${text}"`);
+  
+  // "부족" 키워드가 있는 라인은 건너뛰기
+  if (text.includes('부족')) {
+    console.log('부족 키워드가 있는 라인 건너뛰기');
+    return null;
+  }
+  
+  // A/B만원 패턴 (통일된 구조)
+  const unifiedPattern = /(\d{1,3}(?:,\d{3})*)\s*\/\s*\d{1,3}(?:,\d{3})*만원/;
+  const match = text.match(unifiedPattern);
+  
+  if (match) {
+    const numberStr = match[1].replace(/,/g, '');
+    const number = parseInt(numberStr);
+    
+    console.log(`통일된 패턴 매칭: "${match[0]}" -> 숫자: ${number}`);
+    
+    // 0값도 정상적으로 반환 (0으로 표기되어 인식됨)
+    return number;
+  }
+  
+  console.log('통일된 패턴에서 매칭 실패');
+  return null;
+}
+
+// 다음 담보 항목인지 확인
+function isNextCoverageItem(line, currentTarget) {
+  const allCoverageKeywords = [
     '일반암', '통합암', '표적항암약물', '뇌혈관질환', '뇌졸중', 
     '허혈성심질환', '급성심근경색증', '질병입원 실손', '상해입원실손', 
-    '형사합의지원금', '변호사선임비용', '간병인질병입원', '화재벌금', '일상생활배상책임'
-  ].filter(keyword => keyword !== targetText); // 현재 타겟은 제외
+    '간병인질병입원', '형사합의지원금', '변호사선임비용', '화재벌금', '일상생활배상책임'
+  ].filter(keyword => keyword !== currentTarget);
+  
+  return allCoverageKeywords.some(keyword => {
+    const normalizedLine = line.toLowerCase().replace(/\s+/g, '');
+    const normalizedKeyword = keyword.toLowerCase().replace(/\s+/g, '');
+    return normalizedLine.includes(normalizedKeyword);
+  });
+}
+
+// 특별 항목용 기존 로직 (형사합의지원금, 변호사선임비용, 화재벌금, 일상생활배상책임)
+function extractNumberFromLineAndNextLinesLegacy(line, targetText, allLines, currentIndex) {
+  console.log(`특별 항목 기존 로직: "${line}", 타겟: "${targetText}"`);
   
   // 먼저 현재 라인에서 시도
   const currentLineResult = extractNumberFromSingleLine(line, targetText);
@@ -1292,42 +1367,27 @@ function extractNumberFromLineAndNextLines(line, targetText, allLines, currentIn
     return currentLineResult;
   }
   
-  // 현재 라인에서 실패했다면, 다음 라인들에서 숫자 찾기
-  console.log(`현재 라인에서 실패, 다음 라인들 검사 시작...`);
-  
-  // 다음 최대 5개 라인까지 검사
+  // 다음 라인들에서 숫자 찾기 (기존 방식)
   for (let i = 1; i <= 5 && currentIndex + i < allLines.length; i++) {
     const nextLine = allLines[currentIndex + i];
-    console.log(`다음 라인 ${i} 검사: "${nextLine}"`);
-    
-    // "부족" 키워드가 있는 라인은 건너뛰기
-    if (nextLine.includes('부족')) {
-      console.log(`부족 키워드가 있는 라인 건너뛰기: "${nextLine}"`);
-      continue;
-    }
+    console.log(`특별 항목 다음 라인 ${i} 검사: "${nextLine}"`);
     
     // 다른 담보 항목이 나타나면 검사 중지
-    const hasOtherCoverage = otherCoverageKeywords.some(keyword => {
-      const normalizedLine = nextLine.toLowerCase().replace(/\s+/g, '');
-      const normalizedKeyword = keyword.toLowerCase().replace(/\s+/g, '');
-      return normalizedLine.includes(normalizedKeyword);
-    });
-    
-    if (hasOtherCoverage) {
+    if (isNextCoverageItem(nextLine, targetText)) {
       console.log(`다른 담보 항목 발견으로 검사 중지: "${nextLine}"`);
-      break; // 검사 중지
+      break;
     }
     
-    // 숫자 패턴 검사
+    // 기존 방식으로 숫자 패턴 검사
     const numberResult = extractNumberFromText(nextLine);
     if (numberResult !== null) {
-      console.log(`다음 라인 ${i}에서 숫자 추출 성공: ${numberResult}`);
+      console.log(`특별 항목 다음 라인 ${i}에서 숫자 추출 성공: ${numberResult}`);
       return numberResult;
     }
   }
   
-  console.log('멀티라인 검사에서도 숫자 추출 실패 - 0값 반환');
-  return 0; // 실패 시 0값 반환
+  console.log('특별 항목 기존 로직에서도 숫자 추출 실패 - 0값 반환');
+  return 0;
 }
 
 // 단일 라인에서 숫자 추출 (기존 로직)
