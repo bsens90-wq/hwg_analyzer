@@ -1235,7 +1235,7 @@ async function generateAndDownloadImage(data) {
   
   // HTML 내용 생성 (최적화된 크기 - 3500px x 2500px)
   container.innerHTML = `
-    <div style="background: white; padding: 50px 50px 100px 50px; width: 3900px; height: 3100px; font-family: 'Noto Sans KR', Arial, sans-serif; overflow: hidden;">
+   <div style="background: white; padding: 50px; width: auto; min-width: 3500px; height: auto; min-height: 2000px; font-family: 'Noto Sans KR', Arial, sans-serif; overflow: visible;">
       <style>
         .main-title {
           text-align: center;
@@ -1350,7 +1350,7 @@ async function generateAndDownloadImage(data) {
           color: #333;
         }
         .coverage-item {
-          margin-bottom: 8px;
+          margin-bottom: 4px;
           display: flex;
           flex-direction: column;
           padding: 3px 0;
@@ -1439,8 +1439,8 @@ async function generateAndDownloadImage(data) {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin: 12px 0;
-          padding: 8px 0;
+          margin: 4px 0;
+          padding: 4px 0;
           border-bottom: 2px dotted #ccc;
           white-space: nowrap;
           line-height: 1.4;
@@ -1540,14 +1540,14 @@ async function generateAndDownloadImage(data) {
   
   // html2canvas를 사용하여 이미지 생성
   try {
-    const canvas = await html2canvas(container.firstElementChild, {
-      scale: 2,
-      logging: false,
-      useCORS: true,
-      backgroundColor: '#ffffff',
-      width: 3900,
-      height: 3100
-    });
+const canvas = await html2canvas(container.firstElementChild, {
+  scale: 2,
+  logging: false,
+  useCORS: true,
+  backgroundColor: '#ffffff',
+  // width: 3500,  // 이 줄 제거
+  // height: 3500  // 이 줄 제거
+});
     
     // 캔버스를 이미지로 변환
     canvas.toBlob(function(blob) {
