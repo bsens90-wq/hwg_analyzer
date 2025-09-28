@@ -1179,30 +1179,30 @@ function divideImageIntoRegions(textAnnotations) {
   const regions = {
     customerInfo: {
       top: topY,
-      bottom: topY + imageHeight * 0.1,
+      bottom: topY + imageHeight * 0.2,
       left: leftX,
       right: leftX + imageWidth
     },
     majorDisease: {
-      top: topY + imageHeight * 0.1,
-      bottom: topY + imageHeight * 0.9,
+      top: topY + imageHeight * 0.2,
+      bottom: topY + imageHeight * 0.8,
       left: leftX + imageWidth * 0.25,
       right: leftX + imageWidth * 0.5
     },
     medical: {
-      top: topY + imageHeight * 0.1,
-      bottom: topY + imageHeight * 0.9,
+      top: topY + imageHeight * 0.2,
+      bottom: topY + imageHeight * 0.8,
       left: leftX + imageWidth * 0.5,
       right: leftX + imageWidth * 0.75
     },
     caregiver: {
-      top: topY + imageHeight * 0.1,
-      bottom: topY + imageHeight * 0.9,
+      top: topY + imageHeight * 0.2,
+      bottom: topY + imageHeight * 0.8,
       left: leftX + imageWidth * 0.75,
       right: leftX + imageWidth
     },
     lifestyle: {
-      top: topY + imageHeight * 0.9,
+      top: topY + imageHeight * 0.8,
       bottom: topY + imageHeight,
       left: leftX,
       right: leftX + imageWidth
@@ -1266,7 +1266,7 @@ function extractCustomerInfoFromRegion(customerInfoBlocks) {
     return a.y - b.y; // Y좌표로 정렬
   });
 
-  const fullText = sortedBlocks.map(block => block.text).join(' ');
+  const fullText = sortedBlocks.map(block => block.text).join('');
   console.log('고객 정보 구역 텍스트:', fullText);
 
   // 고객명 추출: "○○○님의 한 장 요약" 패턴
@@ -1343,7 +1343,7 @@ function extractFractionFormatData(blocks, sectionName) {
     return a.y - b.y;
   });
 
-  const fullText = sortedBlocks.map(block => block.text).join(' ');
+  const fullText = sortedBlocks.map(block => block.text).join('');
   console.log(`${sectionName} 전체 텍스트:`, fullText);
 
   // 라벨명 A/B만원 패턴 추출
@@ -1386,7 +1386,7 @@ function extractSimpleFormatData(blocks, sectionName) {
     return a.y - b.y;
   });
 
-  const fullText = sortedBlocks.map(block => block.text).join(' ');
+  const fullText = sortedBlocks.map(block => block.text).join('');
   console.log(`${sectionName} 전체 텍스트:`, fullText);
 
   // 라벨명 A만원 패턴 추출
