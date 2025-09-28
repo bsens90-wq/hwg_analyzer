@@ -776,6 +776,26 @@ function handleMajorCirculatoryCalculation(type) {
   }
 }
 
+// 전역 헬퍼 함수: 필드 값 설정
+function setFieldValue(fieldKey, value) {
+  console.log(`setFieldValue 호출: ${fieldKey} = ${value}`);
+  
+  const beforeInput = document.getElementById(fieldKey + '_before');
+  const afterInput = document.getElementById(fieldKey + '_after');
+  
+  const displayValue = value === 0 ? '' : value.toLocaleString() + '만원';
+  
+  if (beforeInput) {
+    beforeInput.value = displayValue;
+    console.log(`${fieldKey}_before 값 설정: ${displayValue}`);
+  }
+  
+  if (afterInput) {
+    afterInput.value = displayValue;
+    console.log(`${fieldKey}_after 값 설정: ${displayValue}`);
+  }
+}
+
 // 표준금액 설정 모달 열기
 function openStandardAmountModal() {
   const modal = document.getElementById('standardAmountModal');
@@ -880,6 +900,22 @@ function formatAmount(value) {
   
   const formatted = parseInt(numbers).toLocaleString();
   return formatted + '만원';
+}
+
+// 포맷팅 이벤트 핸들러 함수 분리
+function handleAmountInput(e) {
+  if (e.target.classList.contains('amount-input')) {
+    const cursorPos = e.target.selectionStart;
+    const numbers = e.target.value.replace(/[^0-9]/g, '');
+    
+    if (numbers) {
+      const formatted = parseInt(numbers).toLocaleString() + '만원';
+      e.target.value = formatted;
+      
+      const newCursorPos = formatted.length - 2;
+      e.target.setSelectionRange(newCursorPos, newCursorPos);
+    }
+  }
 }
 
 // 입력 필드 포맷팅 이벤트 추가
@@ -1094,127 +1130,6 @@ async function parseOCRResult(apiResult) {
   extractCoverageAmountsForBeforeAfter(sortedText);
 }
 
-// 라인을 의미 단위별로 분할하는 함수 (완전히 새로운 접근)
-function splitLineIntoMeaningfulChunks(lineBlocks) {
-  // 1. 전체 라인을 하나의 텍스트로 합치기
-  const fullText = lineBlocks.map(block => block.text).join(' ');
-  console.log(`전체 라인 텍스트: "${fullText}"`);
-  
-  // 2. 패턴들을 찾아서 인덱스 저장
-  const patterns = [];
-  
-  // 패턴1: 분수형태 (담보명 + 숫자/숫자만원)
-  let fractionMatches = [...fullText.matchAll(/([가-힣\s]*?)(\d{1,3}(?:,\d{3})*)\s*\/\s*(\d{1,3}(?:,\d{3})*)\s*만원/g)];
-  fractionMatches.forEach(match => {
-    patterns.push({
-      start: match.index,
-      end: match.index + match[0].length,
-      text: match[0],
-      type: 'fraction'
-    });
-  });
-  
-  // 패턴2: 부족형태 (숫자만원 부족)
-  let deficitMatches = [...fullText.matchAll(/(\d{1,3}(?:,\d{3})*)\s*만원\s*부족/g)];
-  deficitMatches.forEach(match => {
-    patterns.push({
-      start: match.index,
-      end: match.index + match[0].length,
-      text: match[0],
-      type: 'deficit'
-    });
-  });
-  
-  // 패턴3: 단순 만원형태 (분수나 부족이 아닌 경우)
-  let simpleMatches = [...fullText.matchAll(/([가-힣\s]*?)(\d{1,3}(?:,\d{3})*)\s*만원(?!\s*[\/부족])/g)];
-  simpleMatches.forEach(match => {
-    // 이미 다른 패턴에 포함되지 않은 경우만 추가
-    const isOverlapped = patterns.some(p => 
-      (match.index >= p.start && match.index < p.end) ||
-      (match.index + match[0].length > p.start && match.index + match[0].length <= p.end)
-    );
-    if (!isOverlapped) {
-      patterns.push({
-        start: match.index,
-        end: match.index + match[0].length,
-        text: match[0],
-        type: 'simple'
-      });
-    }
-  });
-  
-  // 3. 패턴을 시작 위치 순으로 정렬
-  patterns.sort((a, b) => a.start - b.start);
-  
-  console.log('찾은 패턴들:', patterns);
-  
-  // 4. 패턴에 따라 청크 생성
-  const chunks = [];
-  let lastEnd = 0;
-  
-  patterns.forEach(pattern => {
-    // 패턴 사이의 텍스트가 있으면 별도 청크로 추가
-    if (pattern.start > lastEnd) {
-      const betweenText = fullText.substring(lastEnd, pattern.start).trim();
-      if (betweenText) {
-        // 해당 텍스트에 맞는 블록들 찾기
-        const betweenBlocks = findBlocksForText(lineBlocks, betweenText, lastEnd, pattern.start);
-        if (betweenBlocks.length > 0) {
-          chunks.push(betweenBlocks);
-        }
-      }
-    }
-    
-    // 현재 패턴의 블록들 찾기
-    const patternBlocks = findBlocksForText(lineBlocks, pattern.text, pattern.start, pattern.end);
-    if (patternBlocks.length > 0) {
-      chunks.push(patternBlocks);
-    }
-    
-    lastEnd = pattern.end;
-  });
-  
-  // 마지막 남은 텍스트 처리
-  if (lastEnd < fullText.length) {
-    const remainingText = fullText.substring(lastEnd).trim();
-    if (remainingText) {
-      const remainingBlocks = findBlocksForText(lineBlocks, remainingText, lastEnd, fullText.length);
-      if (remainingBlocks.length > 0) {
-        chunks.push(remainingBlocks);
-      }
-    }
-  }
-  
-  return chunks;
-}
-
-// 텍스트에 해당하는 블록들을 찾는 헬퍼 함수
-function findBlocksForText(lineBlocks, targetText, startPos, endPos) {
-  const blocks = [];
-  let currentPos = 0;
-  let targetWords = targetText.replace(/\s+/g, ' ').trim().split(' ');
-  let wordIndex = 0;
-  
-  for (let i = 0; i < lineBlocks.length && wordIndex < targetWords.length; i++) {
-    const block = lineBlocks[i];
-    const blockText = block.text.trim();
-    
-    if (blockText === targetWords[wordIndex] || 
-        (blockText.includes(targetWords[wordIndex]) && targetWords[wordIndex].length > 2)) {
-      blocks.push(block);
-      wordIndex++;
-    } else if (targetWords[wordIndex].includes(blockText) && blockText.length > 1) {
-      blocks.push(block);
-      // 부분 매칭인 경우 다음 단어는 건너뛰지 않음
-    }
-  }
-  
-  return blocks;
-}
-
-
-
-  
 // OCR 텍스트 인식 순서 분석 함수 (개선된 버전 - 좌상단에서 우하단 순서)
 function analyzeOCRTextOrder(response) {
   console.log('=== OCR 텍스트 인식 순서 분석 (개선된 버전) ===');
@@ -1451,634 +1366,83 @@ function extractCustomerInfo(text) {
   }
 }
 
-
-// 전체 블록에서 글로벌 패턴을 추출하는 함수
-function extractGlobalPatterns(allBlocks) {
-  const fullText = allBlocks.map(block => block.text).join(' ');
-  console.log(`전체 텍스트: "${fullText}"`);
-  
-  const patterns = [];
-  let remainingText = fullText;
-  
-  // 패턴들을 순차적으로 찾아서 제거하며 처리
-  while (remainingText.trim().length > 0) {
-    let foundPattern = false;
-    
-    // 패턴1: 항목 A/B만원 (담보명 + 분수)
-    const fractionMatch = remainingText.match(/^([가-힣\s]*?)(\d{1,3}(?:,\d{3})*)\s*\/\s*(\d{1,3}(?:,\d{3})*)\s*만원/);
-    if (fractionMatch) {
-      const coverageName = fractionMatch[1].trim().replace(/\s+/g, '');
-      const valueA = fractionMatch[2].replace(/,/g, '');
-      const valueB = fractionMatch[3].replace(/,/g, '');
-      const patternText = `${coverageName}${valueA}/${valueB}만원`;
-      
-      patterns.push({
-        text: patternText,
-        type: 'fraction',
-        name: coverageName,
-        value: parseInt(valueA)
-      });
-      
-      remainingText = remainingText.substring(fractionMatch[0].length).trim();
-      foundPattern = true;
-      continue;
-    }
-    
-    // 패턴2: A만원부족
-    const deficitMatch = remainingText.match(/^(\d{1,3}(?:,\d{3})*)\s*만원\s*부족/);
-    if (deficitMatch) {
-      const value = deficitMatch[1].replace(/,/g, '');
-      const patternText = `${value}만원부족`;
-      
-      patterns.push({
-        text: patternText,
-        type: 'deficit',
-        value: parseInt(value)
-      });
-      
-      remainingText = remainingText.substring(deficitMatch[0].length).trim();
-      foundPattern = true;
-      continue;
-    }
-    
-    // 패턴3: 항목A만원 (단순형태)
-    const simpleMatch = remainingText.match(/^([가-힣\s]*?)(\d{1,3}(?:,\d{3})*)\s*만원(?!\s*[\/부족])/);
-    if (simpleMatch) {
-      const coverageName = simpleMatch[1].trim().replace(/\s+/g, '');
-      const value = simpleMatch[2].replace(/,/g, '');
-      const patternText = `${coverageName}${value}만원`;
-      
-      patterns.push({
-        text: patternText,
-        type: 'simple',
-        name: coverageName,
-        value: parseInt(value)
-      });
-      
-      remainingText = remainingText.substring(simpleMatch[0].length).trim();
-      foundPattern = true;
-      continue;
-    }
-    
-    // 패턴을 찾지 못한 경우 - 첫 단어만 건너뛰기
-    if (!foundPattern) {
-      const firstWord = remainingText.split(/\s+/)[0];
-      if (firstWord) {
-        // 단순 텍스트로 추가 (숫자나 만원이 없는 경우)
-        if (!/\d/.test(firstWord) && !firstWord.includes('만원')) {
-          patterns.push({
-            text: firstWord,
-            type: 'text'
-          });
-        }
-        remainingText = remainingText.substring(firstWord.length).trim();
-      } else {
-        break;
-      }
-    }
-  }
-  
-  return patterns;
-}
-  
-
-// 헬퍼 함수: 필드 값 설정 (전역 함수로 이동)
-function setFieldValue(fieldKey, value) {
-  console.log(`setFieldValue 호출: ${fieldKey} = ${value}`);
-  
-  const beforeInput = document.getElementById(fieldKey + '_before');
-  const afterInput = document.getElementById(fieldKey + '_after');
-  
-  const displayValue = value === 0 ? '' : value.toLocaleString() + '만원';
-  
-  if (beforeInput) {
-    // 포맷팅 이벤트를 일시적으로 비활성화
-    beforeInput.removeEventListener('input', handleAmountInput);
-    beforeInput.value = displayValue;
-    console.log(`${fieldKey}_before 값 설정: ${displayValue}`);
-    // 이벤트 리스너 다시 활성화
-    setTimeout(() => {
-      beforeInput.addEventListener('input', handleAmountInput);
-    }, 100);
-  } else {
-    console.log(`${fieldKey}_before 필드를 찾을 수 없음`);
-  }
-  
-  if (afterInput) {
-    // 포맷팅 이벤트를 일시적으로 비활성화
-    afterInput.removeEventListener('input', handleAmountInput);
-    afterInput.value = displayValue;
-    console.log(`${fieldKey}_after 값 설정: ${displayValue}`);
-    // 이벤트 리스너 다시 활성화
-    setTimeout(() => {
-      afterInput.addEventListener('input', handleAmountInput);
-    }, 100);
-  } else {
-    console.log(`${fieldKey}_after 필드를 찾을 수 없음`);
-  }
-}
-
-// 개선된 OCR 담보 금액 추출 (구조화된 패턴 인식)
+// 새로운 OCR 값 추출 로직
 function extractCoverageAmountsForBeforeAfter(text) {
-  console.log('개선된 OCR 담보 금액 추출 시작...');
+  console.log('새로운 OCR 값 추출 시작...');
+  console.log('OCR 텍스트:', text);
   
-  // 1단계: "부족" 키워드가 포함된 라인들을 완전히 제거
-  const cleanedText = removeDeficitLines(text);
-  console.log('부족 라인 제거 후:', cleanedText);
+  // 1단계: 필요한 패턴들을 정규식으로 추출
+  const patterns = [
+    /생활보장변호사선임비용(\d+)만원/,
+    /대인형사합의지원금(\d+)만원/,
+    /뇌혈관질환(\d+)\/\d+만원/,
+    /질병입원실손(\d+)\/\d+만원/,
+    /일반암(\d+)\/\d+만원/,
+    /상해입원실손(\d+)\/\d+만원/,
+    /통합암(\d+)\/\d+만원/,
+    /표적항암약물(\d+)\/\d+만원/,
+    /뇌졸중(\d+)\/\d+만원/,
+    /간병인상해입원(\d+)\/\d+만원/,
+    /허혈성심질환(\d+)\/\d+만원/,
+    /간병인질병입원(\d+)\/\d+만원/,
+    /급성심근경색증(\d+)\/\d+만원/,
+    /일상생활(\d+)만원/
+  ];
   
-  // OCR 텍스트 정규화 및 매핑 테이블
-  const ocrMappings = {
-    '일반암': 'generalCancer',
-    '통합암': 'totalCancer',
-    '표적항암약물': 'targetTherapy',
-    '표적항암': 'targetTherapy',
-    '뇌혈관질환': 'cerebrovascularDiagnosis',
-    '뇌혈관': 'cerebrovascularDiagnosis',
-    '뇌졸중': 'strokeDiagnosis',
-    '허혈성심질환': 'ischemicHeartDiagnosis',
-    '허혈성': 'ischemicHeartDiagnosis',
-    '급성심근경색증': 'myocardialInfarctionDiagnosis',
-    '심근경색': 'myocardialInfarctionDiagnosis',
-    '질병입원실손': 'diseaseHospitalization',
-    '질병입원': 'diseaseHospitalization',
-    '상해입원실손': 'injuryHospitalization',
-    '상해입원': 'injuryHospitalization',
-    '간병인질병입원': 'nursingHospitalOut',
-    '간병인': 'nursingHospitalOut',
-    '대인형사합의지원금': 'criminalSettlement',
-    '형사합의': 'criminalSettlement',
-    '생활보장변호사선임비용': 'lawyerAppointment',
-    '변호사': 'lawyerAppointment',
-    '화재벌금': 'fireFine',
-    '일상생활': 'dailyLifeLiability'
-  };
-
-  // 2단계: 라인별 직접 매칭 및 값 설정
-  const lines = cleanedText.split('\n').filter(line => line.trim());
-  lines.forEach(line => {
-    console.log(`처리 중인 라인: "${line}"`);
-    
-    // 분수 패턴 매칭 (A/B만원)
-    const fractionMatch = line.match(/([가-힣\s]+?)(\d{1,3}(?:,\d{3})*)\/(\d{1,3}(?:,\d{3})*)만원/);
-    if (fractionMatch) {
-      const name = fractionMatch[1].trim().replace(/\s+/g, '');
-      const valueA = parseInt(fractionMatch[2].replace(/,/g, ''));
+  // 2단계: 각 패턴별로 값 추출
+  const extractedData = {};
+  
+  patterns.forEach(pattern => {
+    const match = text.match(pattern);
+    if (match) {
+      const fullMatch = match[0]; // 전체 매치 (예: "뇌졸중1000/3000만원")
+      const value = parseInt(match[1]); // 첫 번째 숫자 (예: 1000)
       
-      // 매핑 테이블에서 필드키 찾기
-      let fieldKey = null;
-      for (const [key, value] of Object.entries(ocrMappings)) {
-        if (name.includes(key) || key.includes(name)) {
-          fieldKey = value;
-          break;
-        }
-      }
+      // 항목명 추출 (숫자와 "만원" 제거)
+      const itemName = fullMatch.replace(/\d+.*$/, ''); // 숫자부터 끝까지 제거
       
-      if (fieldKey) {
-        setFieldValue(fieldKey, valueA);
-        console.log(`${name}: ${valueA}만원 설정 (패턴: fraction)`);
-      } else {
-        console.log(`매핑되지 않은 항목: "${name}"`);
-      }
-      return;
-    }
-
-    // 단순 패턴 매칭 (A만원)
-    const simpleMatch = line.match(/([가-힣\s]+?)(\d{1,3}(?:,\d{3})*)만원(?!.*\/)/);
-    if (simpleMatch) {
-      const name = simpleMatch[1].trim().replace(/\s+/g, '');
-      const value = parseInt(simpleMatch[2].replace(/,/g, ''));
-      
-      // 매핑 테이블에서 필드키 찾기
-      let fieldKey = null;
-      for (const [key, val] of Object.entries(ocrMappings)) {
-        if (name.includes(key) || key.includes(name)) {
-          fieldKey = val;
-          break;
-        }
-      }
-      
-      if (fieldKey) {
-        setFieldValue(fieldKey, value);
-        console.log(`${name}: ${value}만원 설정 (패턴: simple)`);
-      } else {
-        console.log(`매핑되지 않은 항목: "${name}"`);
-      }
-      return;
+      extractedData[itemName] = value;
+      console.log(`추출됨: ${itemName} = ${value}`);
     }
   });
   
-  // OCR 완료 후 자동계산 트리거
+  console.log('추출된 데이터:', extractedData);
+  
+  // 3단계: 매핑 테이블을 사용하여 입력창에 값 설정
+  const mappingTable = {
+    '일반암': 'generalCancer',
+    '통합암': 'totalCancer',
+    '표적항암약물': 'targetTherapy',
+    '뇌혈관질환': 'cerebrovascularDiagnosis',
+    '뇌졸중': 'strokeDiagnosis',
+    '허혈성심질환': 'ischemicHeartDiagnosis',
+    '급성심근경색증': 'myocardialInfarctionDiagnosis',
+    '질병입원실손': 'diseaseHospitalization',
+    '상해입원실손': 'injuryHospitalization',
+    '간병인질병입원': 'nursingHospitalOut',
+    '대인형사합의지원금': 'criminalSettlement',
+    '생활보장변호사선임비용': 'lawyerAppointment',
+    '일상생활': 'dailyLifeLiability'
+  };
+  
+  // 4단계: 매핑하여 입력창에 값 설정
+  Object.entries(extractedData).forEach(([itemName, value]) => {
+    const fieldKey = mappingTable[itemName];
+    if (fieldKey) {
+      setFieldValue(fieldKey, value);
+      console.log(`매핑 성공: ${itemName} -> ${fieldKey} = ${value}`);
+    } else {
+      console.log(`매핑 실패: ${itemName}에 해당하는 필드를 찾을 수 없음`);
+    }
+  });
+  
+  // 5단계: 자동계산 트리거
   setTimeout(() => {
     handleMajorCirculatoryCalculation('before');
     handleMajorCirculatoryCalculation('after');
   }, 100);
-}
-
-// 포맷팅 이벤트 핸들러 함수 분리
-function handleAmountInput(e) {
-  if (e.target.classList.contains('amount-input')) {
-    const cursorPos = e.target.selectionStart;
-    const numbers = e.target.value.replace(/[^0-9]/g, '');
-    
-    if (numbers) {
-      const formatted = parseInt(numbers).toLocaleString() + '만원';
-      e.target.value = formatted;
-      
-      const newCursorPos = formatted.length - 2;
-      e.target.setSelectionRange(newCursorPos, newCursorPos);
-    }
-  }
-}
-
-// 담보명 분리 함수
-function separateCoverageNames(line) {
-  const cleanLine = line.trim();
   
-  // 일반적인 담보명 패턴들
-  const coveragePatterns = [
-    '일반암', '통합암', '전이암', '표적항암', '뇌혈관', '뇌졸중', 
-    '허혈성', '심근경색', '질병입원', '상해입원', '형사합의', 
-    '변호사선임', '화재벌금', '일상생활배상', '간병인'
-  ];
-  
-  const foundNames = [];
-  let remainingText = cleanLine;
-  
-  // 각 패턴을 찾아서 분리
-  for (const pattern of coveragePatterns) {
-    if (remainingText.includes(pattern)) {
-      foundNames.push(pattern);
-      remainingText = remainingText.replace(pattern, '').trim();
-    }
-  }
-  
-  // 찾은 것이 없으면 원본 라인을 반환
-  return foundNames.length > 0 ? foundNames : [cleanLine];
-}
-
-// 앞쪽 라인들에서 모든 분수 값들을 미리 찾는 함수
-function findAllFractionValuesAhead(lines, currentIndex, processedLines) {
-  const values = [];
-  
-  // 다음 라인부터 최대 5라인까지 검사
-  for (let i = currentIndex + 1; i < Math.min(lines.length, currentIndex + 6); i++) {
-    const line = lines[i];
-    
-    // 이미 처리된 라인이거나 새로운 담보명이 나오면 중단
-    if (processedLines.has(i) || isCoverageNameLine(line)) {
-      break;
-    }
-    
-    // "부족" 라인은 건너뛰기
-    if (line.includes('부족')) {
-      continue;
-    }
-    
-    // A / B만원 패턴 매칭
-    const fractionMatch = line.match(/(\d{1,3}(?:,\d{3})*)\s*\/\s*(\d{1,3}(?:,\d{3})*)만원/);
-    
-    if (fractionMatch) {
-      const valueA = parseInt(fractionMatch[1].replace(/,/g, ''));
-      const valueB = parseInt(fractionMatch[2].replace(/,/g, ''));
-      
-      values.push({
-        valueA: valueA,
-        valueB: valueB,
-        rawLine: line,
-        lineIndex: i
-      });
-    }
-  }
-  
-  return values;
-}
-
-// 데이터가 이미 존재하는지 확인하는 함수
-function isDataAlreadyExists(structuredData, coverageName) {
-  return structuredData.some(data => {
-    const normalizedDataName = data.name.toLowerCase().replace(/\s+/g, '');
-    const normalizedCoverageName = coverageName.toLowerCase().replace(/\s+/g, '');
-    return normalizedDataName.includes(normalizedCoverageName) || 
-           normalizedCoverageName.includes(normalizedDataName);
-  });
-}
-
-// 패턴별 구조화된 데이터 추출 함수 (순서 보장 개선)
-function extractStructuredDataByPattern(text) {
-  const lines = text.split(/\r?\n/)
-    .map(line => line.trim())
-    .filter(line => line.length > 0);
-  
-  const structuredData = [];
-  const processedLines = new Set(); // 이미 처리된 라인 추적
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    
-    // 이미 처리된 라인은 건너뛰기
-    if (processedLines.has(i)) continue;
-    
-    // 패턴 1: 한 라인에 담보명과 값이 모두 있는 경우 (우선 처리)
-    const inlineData = extractInlinePattern(line);
-    if (inlineData) {
-      structuredData.push(inlineData);
-      console.log(`인라인 패턴 추출: ${line} -> ${inlineData.value}`);
-      processedLines.add(i);
-      continue;
-    }
-    
-    // 패턴 2: 담보명이 별도 라인에 있는 경우
-    if (isCoverageNameLine(line)) {
-      console.log(`담보명 후보 발견: "${line}"`);
-      
-      // 개별 담보명 분리 처리
-      const separatedNames = separateCoverageNames(line);
-      
-      if (separatedNames.length > 1) {
-        // 여러 담보명이 연속으로 있는 경우 개별 처리
-        console.log(`여러 담보명 발견: ${separatedNames.join(', ')}`);
-        
-        // 다음 라인들에서 분수 패턴들을 미리 찾기
-        const availableValues = findAllFractionValuesAhead(lines, i, processedLines);
-        console.log(`사용 가능한 값들: ${JSON.stringify(availableValues)}`);
-        
-        for (let nameIndex = 0; nameIndex < separatedNames.length; nameIndex++) {
-          const coverageName = separatedNames[nameIndex];
-          
-          if (nameIndex < availableValues.length && !isDataAlreadyExists(structuredData, coverageName)) {
-            const valueData = availableValues[nameIndex];
-            const fractionData = {
-              name: coverageName,
-              value: valueData.valueA,
-              pattern: 'fraction',
-              rawLine: valueData.rawLine,
-              usedLineIndex: valueData.lineIndex
-            };
-            
-            structuredData.push(fractionData);
-            console.log(`분리된 담보 패턴 추출: ${coverageName} -> ${fractionData.value}`);
-            
-            // 사용된 라인 마킹
-            processedLines.add(valueData.lineIndex);
-          }
-        }
-        
-        // 처리된 라인 마킹
-        processedLines.add(i);
-        continue;
-      } else {
-        // 단일 담보명인 경우 기존 로직 사용
-        const fractionData = extractFractionPatternSequential(lines, i, line, processedLines);
-        if (fractionData) {
-          structuredData.push(fractionData);
-          console.log(`순차 분수 패턴 추출: ${line} -> ${fractionData.value}`);
-          // 사용된 라인들을 processedLines에 추가
-          for (let j = i + 1; j <= fractionData.usedLineIndex; j++) {
-            processedLines.add(j);
-          }
-          continue;
-        }
-        
-        // 단순 패턴
-        const simpleData = extractSimplePatternSequential(lines, i, line, processedLines);
-        if (simpleData) {
-          structuredData.push(simpleData);
-          console.log(`순차 단순 패턴 추출: ${line} -> ${simpleData.value}`);
-          for (let j = i + 1; j <= simpleData.usedLineIndex; j++) {
-            processedLines.add(j);
-          }
-          continue;
-        }
-      }
-    }
-  }
-  
-  return structuredData;
-}
-
-// 순차적 분수 패턴 추출 (가장 가까운 값 우선)
-function extractFractionPatternSequential(lines, currentIndex, coverageName, processedLines) {
-  // 다음 라인부터 순차적으로 검사 (최대 3라인까지)
-  for (let i = 1; i <= 3 && currentIndex + i < lines.length; i++) {
-    const targetLineIndex = currentIndex + i;
-    const targetLine = lines[targetLineIndex];
-    
-    // 이미 처리된 라인이거나 다른 담보명이 나오면 중단
-    if (processedLines.has(targetLineIndex) || isCoverageNameLine(targetLine)) {
-      break;
-    }
-    
-    // "부족" 라인은 건너뛰기
-    if (targetLine.includes('부족')) {
-      continue;
-    }
-    
-    // A / B만원 패턴 매칭 (공백 허용)
-    const fractionMatch = targetLine.match(/(\d{1,3}(?:,\d{3})*)\s*\/\s*(\d{1,3}(?:,\d{3})*)만원/);
-    
-    if (fractionMatch) {
-      const valueA = parseInt(fractionMatch[1].replace(/,/g, ''));
-      const valueB = parseInt(fractionMatch[2].replace(/,/g, ''));
-      
-      console.log(`순차 분수 패턴 발견: "${coverageName}" + "${targetLine}" -> A=${valueA}, B=${valueB}`);
-      
-      // 첫 번째로 발견된 분수 패턴을 즉시 반환 (가장 가까운 값 우선)
-      return {
-        name: coverageName,
-        value: valueA, // A 값을 추출
-        pattern: 'fraction',
-        rawLine: targetLine,
-        usedLineIndex: targetLineIndex
-      };
-    }
-  }
-  
-  return null;
-}
-
-// 순차적 단순 패턴 추출
-function extractSimplePatternSequential(lines, currentIndex, coverageName, processedLines) {
-  // 특수 항목들만 체크
-  const specialItems = ['형사합의지원금', '변호사선임비용', '화재벌금', '일상생활배상책임'];
-  const isSpecialItem = specialItems.some(item => coverageName.includes(item));
-  
-  if (!isSpecialItem) {
-    return null;
-  }
-  
-  // 다음 라인부터 순차적으로 검사
-  for (let i = 1; i <= 3 && currentIndex + i < lines.length; i++) {
-    const targetLineIndex = currentIndex + i;
-    const targetLine = lines[targetLineIndex];
-    
-    // 이미 처리된 라인이거나 다른 담보명이 나오면 중단
-    if (processedLines.has(targetLineIndex) || isCoverageNameLine(targetLine)) {
-      break;
-    }
-    
-    // A만원 패턴 매칭 (분수가 아닌 단순 형태)
-    const simpleMatch = targetLine.match(/(?<!\/\s*)(\d{1,3}(?:,\d{3})*)만원(?!\s*\/)/);
-    
-    if (simpleMatch) {
-      const value = parseInt(simpleMatch[1].replace(/,/g, ''));
-      
-      console.log(`순차 단순 패턴 발견: "${coverageName}" + "${targetLine}" -> ${value}`);
-      
-      return {
-        name: coverageName,
-        value: value,
-        pattern: 'simple',
-        rawLine: targetLine,
-        usedLineIndex: targetLineIndex
-      };
-    }
-  }
-  
-  return null;
-}
-
-// 인라인 패턴 추출 (담보명과 값이 한 라인에 있는 경우)
-function extractInlinePattern(line) {
-  console.log(`인라인 패턴 검사: "${line}"`);
-  
-  // 단일 담보명 + 분수 패턴 (예: "일반암6,000/7,000만원")
-  const inlineFractionMatch = line.match(/^([가-힣]+)(\d{1,3}(?:,\d{3})*)\s*\/\s*(\d{1,3}(?:,\d{3})*)만원/);
-  if (inlineFractionMatch) {
-    const coverageName = inlineFractionMatch[1].trim();
-    const valueA = parseInt(inlineFractionMatch[2].replace(/,/g, ''));
-    const valueB = parseInt(inlineFractionMatch[3].replace(/,/g, ''));
-    
-    console.log(`인라인 분수 패턴 발견: "${coverageName}" -> A=${valueA}, B=${valueB}`);
-    
-    return {
-      name: coverageName,
-      value: valueA, // A 값을 추출
-      pattern: 'inline_fraction',
-      rawLine: line
-    };
-  }
-  
-  // 공백이 있는 경우도 처리 (예: "일반 암 6,000 / 7,000 만원")
-  const spacedFractionMatch = line.match(/^([가-힣\s]+?)(\d{1,3}(?:,\d{3})*)\s*\/\s*(\d{1,3}(?:,\d{3})*)만원/);
-  if (spacedFractionMatch) {
-    const coverageName = spacedFractionMatch[1].trim().replace(/\s+/g, '');
-    const valueA = parseInt(spacedFractionMatch[2].replace(/,/g, ''));
-    const valueB = parseInt(spacedFractionMatch[3].replace(/,/g, ''));
-    
-    console.log(`공백포함 인라인 분수 패턴 발견: "${coverageName}" -> A=${valueA}, B=${valueB}`);
-    
-    return {
-      name: coverageName,
-      value: valueA, // A 값을 추출
-      pattern: 'inline_fraction',
-      rawLine: line
-    };
-  }
-  
-  // 특수 항목들의 단순 패턴 (예: "형사합의지원금20,000만원")
-  const inlineSimpleMatch = line.match(/([가-힣]+)(\d{1,3}(?:,\d{3})*)만원(?!\s*\/)/);
-  if (inlineSimpleMatch) {
-    const coverageName = inlineSimpleMatch[1].trim();
-    const value = parseInt(inlineSimpleMatch[2].replace(/,/g, ''));
-    
-    // 특수 항목들만 단순 패턴 허용
-    const specialItems = ['형사합의지원금', '변호사선임비용', '화재벌금', '일상생활배상책임'];
-    const isSpecialItem = specialItems.some(item => coverageName.includes(item.replace('형사합의지원금', '형사')) || item.includes(coverageName));
-    
-    if (isSpecialItem) {
-      console.log(`인라인 단순 패턴 발견: "${coverageName}" -> ${value}`);
-      
-      return {
-        name: coverageName,
-        value: value,
-        pattern: 'inline_simple',
-        rawLine: line
-      };
-    }
-  }
-  
-  return null;
-}
-
-// 패턴별 매칭 데이터 찾기 (정확한 매칭 우선)
-function findMatchingDataByPattern(structuredData, targetText, expectedPattern) {
-  console.log(`매칭 시도: "${targetText}" (패턴: ${expectedPattern})`);
-  
-  // 1단계: 완전 일치 우선
-  let match = structuredData.find(data => {
-    const normalizedName = data.name.toLowerCase().replace(/\s+/g, '');
-    const normalizedTarget = targetText.toLowerCase().replace(/\s+/g, '');
-    return normalizedName === normalizedTarget && 
-           (expectedPattern === 'any' || data.pattern === expectedPattern || 
-            data.pattern.includes(expectedPattern.replace('fraction', '')));
-  });
-  
-  if (match) {
-    console.log(`완전 일치 발견: "${match.name}" -> ${match.value} (패턴: ${match.pattern})`);
-    return match;
-  }
-  
-  // 2단계: 정확한 단어 포함 매칭 (전체 타겟 단어가 포함되어야 함)
-  match = structuredData.find(data => {
-    const normalizedName = data.name.toLowerCase().replace(/\s+/g, '');
-    const normalizedTarget = targetText.toLowerCase().replace(/\s+/g, '');
-    // 타겟 전체가 데이터명에 포함되어야 하고, 타겟이 충분히 구체적이어야 함
-    return normalizedName.includes(normalizedTarget) && 
-           normalizedTarget.length >= 3 && // 최소 3글자 이상으로 변경
-           (expectedPattern === 'any' || data.pattern === expectedPattern || 
-            data.pattern.includes(expectedPattern.replace('fraction', '')));
-  });
-  
-  if (match) {
-    console.log(`정확한 포함 매칭 발견: "${match.name}" -> ${match.value} (패턴: ${match.pattern})`);
-    return match;
-  }
-  
-  // 3단계: 데이터명이 타겟에 포함되는 경우만 허용 (역방향 포함 제거)
-  match = structuredData.find(data => {
-    const normalizedName = data.name.toLowerCase().replace(/\s+/g, '');
-    const normalizedTarget = targetText.toLowerCase().replace(/\s+/g, '');
-    // "뇌졸중"이 "뇌혈관질환"에 잘못 매칭되는 것을 방지
-    return normalizedTarget.includes(normalizedName) &&
-           normalizedName.length >= 3 && // 데이터명도 충분히 구체적이어야 함
-           (expectedPattern === 'any' || data.pattern === expectedPattern || 
-            data.pattern.includes(expectedPattern.replace('fraction', '')));
-  });
-  
-  if (match) {
-    console.log(`역방향 포함 매칭 발견: "${match.name}" -> ${match.value} (패턴: ${match.pattern})`);
-    return match;
-  }
-  
-  console.log(`매칭 실패: "${targetText}"`);
-  return null;
-}
-
-// "부족" 키워드가 포함된 라인들을 완전히 제거하는 함수
-function removeDeficitLines(text) {
-  const lines = text.split(/\r?\n/);
-  const cleanedLines = lines.filter(line => {
-    const trimmedLine = line.trim();
-    // "부족" 키워드가 포함된 라인을 완전히 제거
-    return !trimmedLine.includes('부족');
-  });
-  
-  return cleanedLines.join('\n');
-}
-
-// 담보명 라인인지 확인하는 함수
-function isCoverageNameLine(line) {
-  // 담보명 패턴을 더 정확하게 인식
-  const hasKorean = /[가-힣]/.test(line);
-  const hasNumbers = /\d/.test(line);
-  const hasWon = line.includes('만원');
-  const hasSlash = line.includes('/');
-
-  // 담보명 키워드가 포함된 경우도 담보명으로 인식
-  const coverageKeywords = ['암', '질환', '치매', '사망', '입원', '수술', '후유', '실손', '간병', '형사', '변호사', '벌금', '배상'];
-  const hasCoverageKeyword = coverageKeywords.some(keyword => line.includes(keyword));
-
-  return hasKorean && (hasCoverageKeyword || (!hasNumbers && !hasWon && !hasSlash)) && line.length >= 2;
+  console.log('OCR 값 추출 완료');
 }
 
 // 데이터 저장 및 이미지 다운로드
