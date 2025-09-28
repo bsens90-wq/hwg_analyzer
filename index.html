@@ -1297,27 +1297,70 @@ sortedBlocks.forEach((block, index) => {
     console.log('\n📍 정렬된 텍스트 (좌상단 → 우하단 순서):');
     const sortedText = [];
     
-    organizedLines.forEach((line, lineIndex) => {
-  // 의미 단위별로 블록을 분할
-  const meaningfulChunks = splitLineIntoMeaningfulChunks(line);
-  
-  meaningfulChunks.forEach((chunk, chunkIndex) => {
-// 의미 단위별로는 공백 유지하되, 담보명 부분만 공백 제거
-let chunkText = chunk.map(block => block.text).join(' ').replace(/\s+/g, ' ').trim();
+// 라인 경계를 무시하고 전체 블록에서 패턴 추출
+const allBlocks = organizedLines.flat();
+const globalPatterns = extractGlobalPatterns(allBlocks);
 
-// 담보명으로 보이는 부분의 공백 제거 (한글+한글 사이의 공백)
-chunkText = chunkText.replace(/([가-힣])\s+([가-힣])/g, '$1$2');
-    if (chunkText) {
-      console.log(`줄 ${lineIndex + 1}-${chunkIndex + 1}: "${chunkText}"`);
-      sortedText.push(chunkText);
+globalPatterns.forEach((pattern, index) => {
+  console.log(`패턴 ${index + 1}: "${pattern.text}"`);
+  sortedText.push(pattern.text);
+});
+
+// 개별 블록 정보도 출력
+allBlocks.forEach((block, blockIndex) => {
+  console.log(`  블록 ${blockIndex + 1}: "${block.text}" (${block.x}, ${block.y})`);
+});
+
+    // 전체 블록에서 글로벌 패턴을 추출하는 함수
+function extractGlobalPatterns(allBlocks) {
+  const fullText = allBlocks.map(block => block.text).join(' ');
+  console.log(`전체 텍스트: "${fullText}"`);
+  
+  const patterns = [];
+  let processedIndices = new Set();
+  
+  // 패턴1: 분수형태 찾기
+  const fractionMatches = [...fullText.matchAll(/([가-힣\s]*?)(\d{1,3}(?:,\d{3})*)\s*\/\s*(\d{1,3}(?:,\d{3})*)\s*만원/g)];
+  fractionMatches.forEach(match => {
+    const patternText = match[0].trim().replace(/\s+/g, '');
+    patterns.push({
+      text: patternText,
+      originalMatch: match[0],
+      type: 'fraction'
+    });
+  });
+  
+  // 패턴2: 부족형태 찾기
+  const deficitMatches = [...fullText.matchAll(/(\d{1,3}(?:,\d{3})*)\s*만원\s*부족/g)];
+  deficitMatches.forEach(match => {
+    const patternText = match[0].trim().replace(/\s+/g, '');
+    patterns.push({
+      text: patternText,
+      originalMatch: match[0], 
+      type: 'deficit'
+    });
+  });
+  
+  // 패턴3: 단순형태 찾기
+  const simpleMatches = [...fullText.matchAll(/([가-힣\s]*?)(\d{1,3}(?:,\d{3})*)\s*만원(?!\s*[\/부족])/g)];
+  simpleMatches.forEach(match => {
+    // 이미 분수나 부족 패턴에 포함되지 않은 경우만
+    const isAlreadyMatched = patterns.some(p => p.originalMatch.includes(match[0]));
+    if (!isAlreadyMatched) {
+      const patternText = match[0].trim().replace(/\s+/g, '');
+      patterns.push({
+        text: patternText,
+        originalMatch: match[0],
+        type: 'simple'
+      });
     }
   });
   
-  // 개별 블록 정보도 출력
-  line.forEach((block, blockIndex) => {
-    console.log(`  블록 ${blockIndex + 1}: "${block.text}" (${block.x}, ${block.y})`);
-  });
-});
+  return patterns;
+}
+
+
+    
     
     // 정렬된 텍스트를 전체 텍스트로 결합
     const organizedFullText = sortedText.join('\n');
