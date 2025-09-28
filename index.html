@@ -1314,6 +1314,7 @@ function extractFractionPatternSequential(lines, currentIndex, coverageName, pro
       
       console.log(`순차 분수 패턴 발견: "${coverageName}" + "${targetLine}" -> A=${valueA}, B=${valueB}`);
       
+      // 첫 번째로 발견된 분수 패턴을 즉시 반환 (가장 가까운 값 우선)
       return {
         name: coverageName,
         value: valueA, // A 값을 추출
