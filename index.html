@@ -1232,22 +1232,27 @@ function extractCoverageAmountsForBeforeAfter(text) {
   }, 100);
 }
 
-// 패턴별 구조화된 데이터 추출 함수 (개선된 버전)
+// 패턴별 구조화된 데이터 추출 함수 (순서 보장 개선)
 function extractStructuredDataByPattern(text) {
   const lines = text.split(/\r?\n/)
     .map(line => line.trim())
     .filter(line => line.length > 0);
   
   const structuredData = [];
+  const processedLines = new Set(); // 이미 처리된 라인 추적
   
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
+    
+    // 이미 처리된 라인은 건너뛰기
+    if (processedLines.has(i)) continue;
     
     // 패턴 1: 한 라인에 담보명과 값이 모두 있는 경우 (우선 처리)
     const inlineData = extractInlinePattern(line);
     if (inlineData) {
       structuredData.push(inlineData);
       console.log(`인라인 패턴 추출: ${line} -> ${inlineData.value}`);
+      processedLines.add(i);
       continue;
     }
     
@@ -1255,25 +1260,112 @@ function extractStructuredDataByPattern(text) {
     if (isCoverageNameLine(line)) {
       console.log(`담보명 후보 발견: "${line}"`);
       
-      // 분수 패턴 (A / B만원)
-      const fractionData = extractFractionPattern(lines, i, line);
+      // 바로 다음 라인부터 순차적으로 값 찾기 (가장 가까운 값 우선)
+      const fractionData = extractFractionPatternSequential(lines, i, line, processedLines);
       if (fractionData) {
         structuredData.push(fractionData);
-        console.log(`분수 패턴 추출: ${line} -> ${fractionData.value}`);
+        console.log(`순차 분수 패턴 추출: ${line} -> ${fractionData.value}`);
+        // 사용된 라인들을 processedLines에 추가
+        for (let j = i + 1; j <= fractionData.usedLineIndex; j++) {
+          processedLines.add(j);
+        }
         continue;
       }
       
-      // 단순 패턴 (A만원)
-      const simpleData = extractSimplePattern(lines, i, line);
+      // 단순 패턴
+      const simpleData = extractSimplePatternSequential(lines, i, line, processedLines);
       if (simpleData) {
         structuredData.push(simpleData);
-        console.log(`단순 패턴 추출: ${line} -> ${simpleData.value}`);
+        console.log(`순차 단순 패턴 추출: ${line} -> ${simpleData.value}`);
+        for (let j = i + 1; j <= simpleData.usedLineIndex; j++) {
+          processedLines.add(j);
+        }
         continue;
       }
     }
   }
   
   return structuredData;
+}
+
+// 순차적 분수 패턴 추출 (가장 가까운 값 우선)
+function extractFractionPatternSequential(lines, currentIndex, coverageName, processedLines) {
+  // 다음 라인부터 순차적으로 검사 (최대 3라인까지)
+  for (let i = 1; i <= 3 && currentIndex + i < lines.length; i++) {
+    const targetLineIndex = currentIndex + i;
+    const targetLine = lines[targetLineIndex];
+    
+    // 이미 처리된 라인이거나 다른 담보명이 나오면 중단
+    if (processedLines.has(targetLineIndex) || isCoverageNameLine(targetLine)) {
+      break;
+    }
+    
+    // "부족" 라인은 건너뛰기
+    if (targetLine.includes('부족')) {
+      continue;
+    }
+    
+    // A / B만원 패턴 매칭 (공백 허용)
+    const fractionMatch = targetLine.match(/(\d{1,3}(?:,\d{3})*)\s*\/\s*(\d{1,3}(?:,\d{3})*)만원/);
+    
+    if (fractionMatch) {
+      const valueA = parseInt(fractionMatch[1].replace(/,/g, ''));
+      const valueB = parseInt(fractionMatch[2].replace(/,/g, ''));
+      
+      console.log(`순차 분수 패턴 발견: "${coverageName}" + "${targetLine}" -> A=${valueA}, B=${valueB}`);
+      
+      return {
+        name: coverageName,
+        value: valueA, // A 값을 추출
+        pattern: 'fraction',
+        rawLine: targetLine,
+        usedLineIndex: targetLineIndex
+      };
+    }
+  }
+  
+  return null;
+}
+
+// 순차적 단순 패턴 추출
+function extractSimplePatternSequential(lines, currentIndex, coverageName, processedLines) {
+  // 특수 항목들만 체크
+  const specialItems = ['형사합의지원금', '변호사선임비용', '화재벌금', '일상생활배상책임'];
+  const isSpecialItem = specialItems.some(item => coverageName.includes(item));
+  
+  if (!isSpecialItem) {
+    return null;
+  }
+  
+  // 다음 라인부터 순차적으로 검사
+  for (let i = 1; i <= 3 && currentIndex + i < lines.length; i++) {
+    const targetLineIndex = currentIndex + i;
+    const targetLine = lines[targetLineIndex];
+    
+    // 이미 처리된 라인이거나 다른 담보명이 나오면 중단
+    if (processedLines.has(targetLineIndex) || isCoverageNameLine(targetLine)) {
+      break;
+    }
+    
+    // A만원 패턴 매칭 (분수가 아닌 단순 형태)
+    const simpleMatch = targetLine.match(/(?<!\/\s*)(\d{1,3}(?:,\d{3})*)만원(?!\s*\/)/);
+    
+    if (simpleMatch) {
+      const value = parseInt(simpleMatch[1].replace(/,/g, ''));
+      
+      console.log(`순차 단순 패턴 발견: "${coverageName}" + "${targetLine}" -> ${value}`);
+      
+      return {
+        name: coverageName,
+        value: value,
+        pattern: 'simple',
+        rawLine: targetLine,
+        usedLineIndex: targetLineIndex
+      };
+    }
+  }
+  
+  return null;
 }
 
 // 인라인 패턴 추출 (담보명과 값이 한 라인에 있는 경우) - 신규 함수
