@@ -1161,49 +1161,50 @@ function extractCustomerInfo(text) {
   }
 }
 
-  // 강화된 OCR 담보 금액 추출 (구조화된 데이터 처리)
+// 개선된 OCR 담보 금액 추출 (구조화된 패턴 인식)
 function extractCoverageAmountsForBeforeAfter(text) {
-  console.log('강화된 OCR 담보 금액 추출 시작...');
+  console.log('개선된 OCR 담보 금액 추출 시작...');
   
   // 1단계: "부족" 키워드가 포함된 라인들을 완전히 제거
   const cleanedText = removeDeficitLines(text);
   console.log('부족 라인 제거 후:', cleanedText);
   
-  // 정교화된 매핑 테이블 (실제 이미지 텍스트와 코드 매핑)
+  // 정확한 매핑 테이블 (이미지 텍스트와 코드 매핑)
   const coverageMappings = [
     // 암 섹션
-    { imageText: '일반암', codeKey: 'generalCancer', section: '암' },
-    { imageText: '통합암', codeKey: 'totalCancer', section: '암' },
-    { imageText: '표적항암약물', codeKey: 'targetTherapy', section: '암' },
+    { imageText: '일반암', codeKey: 'generalCancer', type: 'fraction' },
+    { imageText: '통합암', codeKey: 'totalCancer', type: 'fraction' },
+    { imageText: '표적항암약물', codeKey: 'targetTherapy', type: 'fraction' },
     
     // 2대 중대질환 섹션
-    { imageText: '뇌혈관질환', codeKey: 'cerebrovascularDiagnosis', section: '2대중대질환' },
-    { imageText: '뇌졸중', codeKey: 'strokeDiagnosis', section: '2대중대질환' },
-    { imageText: '허혈성심질환', codeKey: 'ischemicHeartDiagnosis', section: '2대중대질환' },
-    { imageText: '급성심근경색증', codeKey: 'myocardialInfarctionDiagnosis', section: '2대중대질환' },
+    { imageText: '뇌혈관질환', codeKey: 'cerebrovascularDiagnosis', type: 'fraction' },
+    { imageText: '뇌졸중', codeKey: 'strokeDiagnosis', type: 'fraction' },
+    { imageText: '허혈성심질환', codeKey: 'ischemicHeartDiagnosis', type: 'fraction' },
+    { imageText: '급성심근경색증', codeKey: 'myocardialInfarctionDiagnosis', type: 'fraction' },
     
-    // 5대 필수보험 섹션
-    { imageText: '질병입원 실손', codeKey: 'diseaseHospitalization', section: '5대필수보험' },
-    { imageText: '상해입원실손', codeKey: 'injuryHospitalization', section: '5대필수보험' },
-    { imageText: '상해입원 실손', codeKey: 'injuryHospitalization', section: '5대필수보험' },
-    { imageText: '간병인질병입원', codeKey: 'nursingHospitalOut', section: '5대필수보험' },
-    { imageText: '대인형사합의지원금', codeKey: 'criminalSettlement', section: '5대필수보험' },
-    { imageText: '변호사선임비용', codeKey: 'lawyerAppointment', section: '5대필수보험' },
-    { imageText: '일상생활배상책임', codeKey: 'dailyLifeLiability', section: '5대필수보험' },
-    { imageText: '화재벌금', codeKey: 'fireFine', section: '5대필수보험' }
+    // 5대 필수보험 섹션 (일반 구조)
+    { imageText: '질병입원 실손', codeKey: 'diseaseHospitalization', type: 'fraction' },
+    { imageText: '상해입원실손', codeKey: 'injuryHospitalization', type: 'fraction' },
+    { imageText: '간병인질병입원', codeKey: 'nursingHospitalOut', type: 'fraction' },
+    
+    // 5대 필수보험 섹션 (특수 구조 - A만원 형태)
+    { imageText: '형사합의지원금', codeKey: 'criminalSettlement', type: 'simple' },
+    { imageText: '변호사선임비용', codeKey: 'lawyerAppointment', type: 'simple' },
+    { imageText: '화재벌금', codeKey: 'fireFine', type: 'simple' },
+    { imageText: '일상생활배상책임', codeKey: 'dailyLifeLiability', type: 'simple' }
   ];
   
-  // 2단계: 구조화된 데이터 추출
-  const structuredData = extractStructuredCoverageData(cleanedText);
+  // 2단계: 구조화된 데이터 추출 (패턴별 분리)
+  const structuredData = extractStructuredDataByPattern(cleanedText);
   console.log('구조화된 데이터:', structuredData);
   
   // 3단계: 매핑 테이블과 매칭하여 값 설정
   coverageMappings.forEach(mapping => {
-    const matchedData = findMatchingCoverageData(structuredData, mapping.imageText);
+    const matchedData = findMatchingDataByPattern(structuredData, mapping.imageText, mapping.type);
     
     if (matchedData) {
       const extractedValue = matchedData.value;
-      console.log(`${mapping.section} - ${mapping.imageText}: ${extractedValue}만원 추출`);
+      console.log(`${mapping.imageText}: ${extractedValue}만원 추출 (패턴: ${mapping.type})`);
       
       // 변경 전과 변경 후 모두에 값 설정
       const beforeInput = document.getElementById(mapping.codeKey + '_before');
@@ -1225,7 +1226,7 @@ function extractCoverageAmountsForBeforeAfter(text) {
         }
       }
     } else {
-      console.log(`${mapping.section} - ${mapping.imageText}: 매칭되는 데이터를 찾을 수 없음`);
+      console.log(`${mapping.imageText}: 매칭되는 데이터를 찾을 수 없음`);
     }
   });
   
@@ -1234,6 +1235,134 @@ function extractCoverageAmountsForBeforeAfter(text) {
     handleMajorCirculatoryCalculation('before');
     handleMajorCirculatoryCalculation('after');
   }, 100);
+}
+
+// 패턴별 구조화된 데이터 추출 함수 (신규)
+function extractStructuredDataByPattern(text) {
+  const lines = text.split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(line => line.length > 0);
+  
+  const structuredData = [];
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    
+    // 담보명 후보 라인인지 확인
+    if (isCoverageNameLine(line)) {
+      console.log(`담보명 후보 발견: "${line}"`);
+      
+      // 패턴 1: fraction 형태 (A / B만원)
+      const fractionData = extractFractionPattern(lines, i, line);
+      if (fractionData) {
+        structuredData.push(fractionData);
+        console.log(`분수 패턴 추출: ${line} -> ${fractionData.value}`);
+        continue;
+      }
+      
+      // 패턴 2: simple 형태 (A만원)
+      const simpleData = extractSimplePattern(lines, i, line);
+      if (simpleData) {
+        structuredData.push(simpleData);
+        console.log(`단순 패턴 추출: ${line} -> ${simpleData.value}`);
+        continue;
+      }
+    }
+  }
+  
+  return structuredData;
+}
+
+// 분수 패턴 추출 (A / B만원 형태)
+function extractFractionPattern(lines, currentIndex, coverageName) {
+  // 현재 라인 또는 다음 2-3라인에서 A / B만원 패턴 찾기
+  for (let i = 0; i <= 3 && currentIndex + i < lines.length; i++) {
+    const targetLine = lines[currentIndex + i];
+    
+    // A / B만원 패턴 매칭 (공백 허용)
+    const fractionMatch = targetLine.match(/(\d{1,3}(?:,\d{3})*)\s*\/\s*(\d{1,3}(?:,\d{3})*)만원/);
+    
+    if (fractionMatch) {
+      const valueA = parseInt(fractionMatch[1].replace(/,/g, ''));
+      const valueB = parseInt(fractionMatch[2].replace(/,/g, ''));
+      
+      console.log(`분수 패턴 발견: "${targetLine}" -> A=${valueA}, B=${valueB}`);
+      
+      return {
+        name: coverageName,
+        value: valueA, // A 값을 추출
+        pattern: 'fraction',
+        rawLine: targetLine
+      };
+    }
+  }
+  
+  return null;
+}
+
+// 단순 패턴 추출 (A만원 형태) - 특수 항목용
+function extractSimplePattern(lines, currentIndex, coverageName) {
+  // 특수 항목들만 체크
+  const specialItems = ['형사합의지원금', '변호사선임비용', '화재벌금', '일상생활배상책임'];
+  const isSpecialItem = specialItems.some(item => coverageName.includes(item));
+  
+  if (!isSpecialItem) {
+    return null;
+  }
+  
+  // 현재 라인 또는 다음 2-3라인에서 A만원 패턴 찾기
+  for (let i = 0; i <= 3 && currentIndex + i < lines.length; i++) {
+    const targetLine = lines[currentIndex + i];
+    
+    // A만원 패턴 매칭 (분수가 아닌 단순 형태)
+    const simpleMatch = targetLine.match(/(?<!\/\s*)(\d{1,3}(?:,\d{3})*)만원(?!\s*\/)/);
+    
+    if (simpleMatch) {
+      const value = parseInt(simpleMatch[1].replace(/,/g, ''));
+      
+      console.log(`단순 패턴 발견: "${targetLine}" -> ${value}`);
+      
+      return {
+        name: coverageName,
+        value: value,
+        pattern: 'simple',
+        rawLine: targetLine
+      };
+    }
+  }
+  
+  return null;
+}
+
+// 패턴별 매칭 데이터 찾기
+function findMatchingDataByPattern(structuredData, targetText, expectedPattern) {
+  // 정확한 매칭 우선
+  let match = structuredData.find(data => {
+    const normalizedName = data.name.toLowerCase().replace(/\s+/g, '');
+    const normalizedTarget = targetText.toLowerCase().replace(/\s+/g, '');
+    return normalizedName.includes(normalizedTarget) && 
+           (expectedPattern === 'any' || data.pattern === expectedPattern);
+  });
+  
+  if (match) {
+    console.log(`정확한 매칭 발견: "${match.name}" -> ${match.value} (패턴: ${match.pattern})`);
+    return match;
+  }
+  
+  // 부분 매칭
+  match = structuredData.find(data => {
+    const normalizedName = data.name.toLowerCase().replace(/\s+/g, '');
+    const normalizedTarget = targetText.toLowerCase().replace(/\s+/g, '');
+    return (normalizedName.includes(normalizedTarget) || normalizedTarget.includes(normalizedName)) &&
+           (expectedPattern === 'any' || data.pattern === expectedPattern);
+  });
+  
+  if (match) {
+    console.log(`부분 매칭 발견: "${match.name}" -> ${match.value} (패턴: ${match.pattern})`);
+    return match;
+  }
+  
+  return null;
 }
 
 // "부족" 키워드가 포함된 라인들을 완전히 제거하는 함수
