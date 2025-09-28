@@ -1351,34 +1351,21 @@ function extractCustomerInfo(text) {
   const birthPatterns = [
     /생년월일\s*(\d{2}-\d{1,2}-\d{1,2})/,
     /생년월일\s*(\d{4}-\d{1,2}-\d{1,2})/,
-    /생년월일\s*(\d{2}\.\d{1,2}\.\d{1,2})/,
-    /생년월일\s*(\d{2}\s*-\s*\d{1,2}\s*-\s*\d{1,2})/
+    /생년월일\s*(\d{2}\.\d{1,2}\.\d{1,2})/
   ];
 
   for (const pattern of birthPatterns) {
     const match = text.match(pattern);
     if (match) {
       let date = match[1];
-      // 공백 제거
-      date = date.replace(/\s/g, '');
-      // 점을 하이픈으로 변경
       if (date.includes('.')) {
         date = date.replace(/\./g, '-');
       }
-      // 4자리 연도를 2자리로 변경
       if (date.length > 8) {
         const parts = date.split('-');
         if (parts[0].length === 4) {
           date = `${parts[0].slice(2)}-${parts[1]}-${parts[2]}`;
         }
-      }
-      // 월과 일을 2자리로 맞춤 (필요시)
-      const dateParts = date.split('-');
-      if (dateParts.length === 3) {
-        const year = dateParts[0].padStart(2, '0');
-        const month = dateParts[1].padStart(2, '0');
-        const day = dateParts[2].padStart(2, '0');
-        date = `${year}-${month}-${day}`;
       }
       document.getElementById('birthDate').value = date;
       console.log(`생년월일 추출 성공: ${date}`);
