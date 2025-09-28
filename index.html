@@ -1161,9 +1161,13 @@ function extractCustomerInfo(text) {
   }
 }
 
-// 95% 정확도 목표 담보 금액 추출 (정교화 버전)
+  // 강화된 OCR 담보 금액 추출 (구조화된 데이터 처리)
 function extractCoverageAmountsForBeforeAfter(text) {
-  console.log('95% 정확도 목표 OCR 담보 금액 추출 시작...');
+  console.log('강화된 OCR 담보 금액 추출 시작...');
+  
+  // 1단계: "부족" 키워드가 포함된 라인들을 완전히 제거
+  const cleanedText = removeDeficitLines(text);
+  console.log('부족 라인 제거 후:', cleanedText);
   
   // 정교화된 매핑 테이블 (실제 이미지 텍스트와 코드 매핑)
   const coverageMappings = [
@@ -1181,18 +1185,24 @@ function extractCoverageAmountsForBeforeAfter(text) {
     // 5대 필수보험 섹션
     { imageText: '질병입원 실손', codeKey: 'diseaseHospitalization', section: '5대필수보험' },
     { imageText: '상해입원실손', codeKey: 'injuryHospitalization', section: '5대필수보험' },
+    { imageText: '상해입원 실손', codeKey: 'injuryHospitalization', section: '5대필수보험' },
     { imageText: '간병인질병입원', codeKey: 'nursingHospitalOut', section: '5대필수보험' },
-    { imageText: '형사합의지원금', codeKey: 'criminalSettlement', section: '5대필수보험' },
+    { imageText: '대인형사합의지원금', codeKey: 'criminalSettlement', section: '5대필수보험' },
     { imageText: '변호사선임비용', codeKey: 'lawyerAppointment', section: '5대필수보험' },
     { imageText: '일상생활배상책임', codeKey: 'dailyLifeLiability', section: '5대필수보험' },
     { imageText: '화재벌금', codeKey: 'fireFine', section: '5대필수보험' }
   ];
   
-  // 정교화된 텍스트 인식 및 값 추출
+  // 2단계: 구조화된 데이터 추출
+  const structuredData = extractStructuredCoverageData(cleanedText);
+  console.log('구조화된 데이터:', structuredData);
+  
+  // 3단계: 매핑 테이블과 매칭하여 값 설정
   coverageMappings.forEach(mapping => {
-    const extractedValue = extractValueWithPrecision(text, mapping.imageText);
+    const matchedData = findMatchingCoverageData(structuredData, mapping.imageText);
     
-    if (extractedValue !== null && extractedValue >= 0) {
+    if (matchedData) {
+      const extractedValue = matchedData.value;
       console.log(`${mapping.section} - ${mapping.imageText}: ${extractedValue}만원 추출`);
       
       // 변경 전과 변경 후 모두에 값 설정
@@ -1200,12 +1210,10 @@ function extractCoverageAmountsForBeforeAfter(text) {
       const afterInput = document.getElementById(mapping.codeKey + '_after');
       
       if (extractedValue === 0) {
-        // 0값인 경우 빈 값으로 처리 (X 표시는 UI에서 자동 처리)
         if (beforeInput) beforeInput.value = '';
         if (afterInput) afterInput.value = '';
         console.log(`${mapping.codeKey}: 0값으로 인식 - 빈 값 설정`);
       } else {
-        // 정상 값인 경우
         if (beforeInput) {
           beforeInput.value = extractedValue.toLocaleString() + '만원';
           console.log(`${mapping.codeKey}_before에 ${extractedValue}만원 설정`);
@@ -1217,7 +1225,7 @@ function extractCoverageAmountsForBeforeAfter(text) {
         }
       }
     } else {
-      console.log(`${mapping.section} - ${mapping.imageText}: 값을 찾을 수 없음`);
+      console.log(`${mapping.section} - ${mapping.imageText}: 매칭되는 데이터를 찾을 수 없음`);
     }
   });
   
@@ -1226,6 +1234,132 @@ function extractCoverageAmountsForBeforeAfter(text) {
     handleMajorCirculatoryCalculation('before');
     handleMajorCirculatoryCalculation('after');
   }, 100);
+}
+
+// "부족" 키워드가 포함된 라인들을 완전히 제거하는 함수
+function removeDeficitLines(text) {
+  const lines = text.split(/\r?\n/);
+  const cleanedLines = lines.filter(line => {
+    const trimmedLine = line.trim();
+    // "부족" 키워드가 포함된 라인을 완전히 제거
+    return !trimmedLine.includes('부족');
+  });
+  
+  return cleanedLines.join('\n');
+}
+
+// 구조화된 담보 데이터 추출 함수
+function extractStructuredCoverageData(text) {
+  const lines = text.split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(line => line.length > 0);
+  
+  const structuredData = [];
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    
+    // 담보명 후보 라인인지 확인 (한글로 시작하고 숫자/만원이 없는 라인)
+    if (isCoverageNameLine(line)) {
+      // 다음 라인에서 숫자 패턴 찾기
+      for (let j = i + 1; j <= i + 3 && j < lines.length; j++) {
+        const nextLine = lines[j];
+        const extractedValue = extractValueFromDataLine(nextLine);
+        
+        if (extractedValue !== null) {
+          structuredData.push({
+            name: line,
+            value: extractedValue,
+            dataLine: nextLine
+          });
+          console.log(`구조화된 데이터 추가: ${line} -> ${extractedValue}`);
+          break;
+        }
+      }
+    }
+  }
+  
+  return structuredData;
+}
+
+// 담보명 라인인지 확인하는 함수
+function isCoverageNameLine(line) {
+  // 한글이 포함되어 있고, 숫자나 "만원"이 없는 라인
+  const hasKorean = /[가-힣]/.test(line);
+  const hasNumbers = /\d/.test(line);
+  const hasWon = line.includes('만원');
+  
+  return hasKorean && !hasNumbers && !hasWon && line.length >= 2;
+}
+
+// 데이터 라인에서 값 추출하는 함수 (분수형태 우선 처리)
+function extractValueFromDataLine(line) {
+  console.log(`데이터 라인 분석: "${line}"`);
+  
+  // 1순위: 분수 형태 (A/B만원) - A값 추출
+  const fractionPattern = /(\d{1,3}(?:,\d{3})*)\s*\/\s*\d{1,3}(?:,\d{3})*(?:만원)?/;
+  const fractionMatch = line.match(fractionPattern);
+  
+  if (fractionMatch) {
+    const value = parseInt(fractionMatch[1].replace(/,/g, ''));
+    console.log(`분수 형태에서 추출: ${value}`);
+    return value;
+  }
+  
+  // 2순위: 단순 숫자+만원 형태
+  const simplePattern = /(\d{1,3}(?:,\d{3})*)만원/;
+  const simpleMatch = line.match(simplePattern);
+  
+  if (simpleMatch) {
+    const value = parseInt(simpleMatch[1].replace(/,/g, ''));
+    console.log(`단순 형태에서 추출: ${value}`);
+    return value;
+  }
+  
+  // 3순위: 숫자만 있는 경우 (큰 숫자인 경우만)
+  const numberPattern = /(\d{1,3}(?:,\d{3})*)/;
+  const numberMatch = line.match(numberPattern);
+  
+  if (numberMatch) {
+    const value = parseInt(numberMatch[1].replace(/,/g, ''));
+    // 100 이상의 숫자만 유효한 보장금액으로 간주
+    if (value >= 100) {
+      console.log(`숫자에서 추출: ${value}`);
+      return value;
+    }
+  }
+  
+  console.log('데이터 라인에서 값을 찾을 수 없음');
+  return null;
+}
+
+// 구조화된 데이터에서 매칭되는 담보 찾기
+function findMatchingCoverageData(structuredData, targetText) {
+  // 정확한 매칭 우선
+  let match = structuredData.find(data => {
+    const normalizedName = data.name.toLowerCase().replace(/\s+/g, '');
+    const normalizedTarget = targetText.toLowerCase().replace(/\s+/g, '');
+    return normalizedName === normalizedTarget;
+  });
+  
+  if (match) {
+    console.log(`정확한 매칭 발견: "${match.name}" -> ${match.value}`);
+    return match;
+  }
+  
+  // 부분 매칭
+  match = structuredData.find(data => {
+    const normalizedName = data.name.toLowerCase().replace(/\s+/g, '');
+    const normalizedTarget = targetText.toLowerCase().replace(/\s+/g, '');
+    return normalizedName.includes(normalizedTarget) || normalizedTarget.includes(normalizedName);
+  });
+  
+  if (match) {
+    console.log(`부분 매칭 발견: "${match.name}" -> ${match.value}`);
+    return match;
+  }
+  
+  return null;
 }
 
 // 95% 정확도 목표 정교화된 값 추출 함수
