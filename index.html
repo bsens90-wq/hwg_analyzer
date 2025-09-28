@@ -1748,32 +1748,10 @@ function extractSimplePatternSequential(lines, currentIndex, coverageName, proce
 function extractInlinePattern(line) {
   console.log(`인라인 패턴 검사: "${line}"`);
   
-  // 여러 담보 항목이 한 줄에 있는 경우 개별 처리
-  const multipleItemsMatch = line.match(/([가-힣\s]+?)\s+(\d{1,3}(?:,\d{3})*)\s*\/\s*(\d{1,3}(?:,\d{3})*)만원/g);
-  if (multipleItemsMatch && multipleItemsMatch.length > 0) {
-    console.log(`다중 인라인 패턴 발견: ${multipleItemsMatch.length}개 항목`);
-    
-    // 첫 번째 매칭된 항목만 반환 (나머지는 별도로 처리될 예정)
-    const firstMatch = line.match(/([가-힣\s]+?)\s+(\d{1,3}(?:,\d{3})*)\s*\/\s*(\d{1,3}(?:,\d{3})*)만원/);
-    if (firstMatch) {
-      const coverageName = firstMatch[1].trim();
-      const valueA = parseInt(firstMatch[2].replace(/,/g, ''));
-      
-      console.log(`첫 번째 인라인 분수 패턴: "${coverageName}" -> ${valueA}`);
-      
-      return {
-        name: coverageName,
-        value: valueA,
-        pattern: 'inline_fraction',
-        rawLine: line
-      };
-    }
-  }
-  
-  // 단일 담보명 + 분수 패턴 (예: "급성심근경색증 1,000/3,000만원")
-  const inlineFractionMatch = line.match(/^([가-힣\s]+?)\s+(\d{1,3}(?:,\d{3})*)\s*\/\s*(\d{1,3}(?:,\d{3})*)만원/);
+  // 단일 담보명 + 분수 패턴 (예: "일반암6,000/7,000만원")
+  const inlineFractionMatch = line.match(/^([가-힣]+)(\d{1,3}(?:,\d{3})*)\s*\/\s*(\d{1,3}(?:,\d{3})*)만원/);
   if (inlineFractionMatch) {
-const coverageName = inlineFractionMatch[1].trim().replace(/\s+/g, '');
+    const coverageName = inlineFractionMatch[1].trim();
     const valueA = parseInt(inlineFractionMatch[2].replace(/,/g, ''));
     const valueB = parseInt(inlineFractionMatch[3].replace(/,/g, ''));
     
@@ -1787,15 +1765,32 @@ const coverageName = inlineFractionMatch[1].trim().replace(/\s+/g, '');
     };
   }
   
-  // 특수 항목들의 단순 패턴 (예: "형사합의지원금 20,000만원")
-  const inlineSimpleMatch = line.match(/([가-힣\s]+?)\s+(\d{1,3}(?:,\d{3})*)만원(?!\s*\/)/);
+  // 공백이 있는 경우도 처리 (예: "일반 암 6,000 / 7,000 만원")
+  const spacedFractionMatch = line.match(/^([가-힣\s]+?)(\d{1,3}(?:,\d{3})*)\s*\/\s*(\d{1,3}(?:,\d{3})*)만원/);
+  if (spacedFractionMatch) {
+    const coverageName = spacedFractionMatch[1].trim().replace(/\s+/g, '');
+    const valueA = parseInt(spacedFractionMatch[2].replace(/,/g, ''));
+    const valueB = parseInt(spacedFractionMatch[3].replace(/,/g, ''));
+    
+    console.log(`공백포함 인라인 분수 패턴 발견: "${coverageName}" -> A=${valueA}, B=${valueB}`);
+    
+    return {
+      name: coverageName,
+      value: valueA, // A 값을 추출
+      pattern: 'inline_fraction',
+      rawLine: line
+    };
+  }
+  
+  // 특수 항목들의 단순 패턴 (예: "형사합의지원금20,000만원")
+  const inlineSimpleMatch = line.match(/([가-힣]+)(\d{1,3}(?:,\d{3})*)만원(?!\s*\/)/);
   if (inlineSimpleMatch) {
     const coverageName = inlineSimpleMatch[1].trim();
     const value = parseInt(inlineSimpleMatch[2].replace(/,/g, ''));
     
     // 특수 항목들만 단순 패턴 허용
-    const specialItems = ['대인형사합의지원금', '변호사선임비용', '화재벌금', '일상생활배상책임'];
-    const isSpecialItem = specialItems.some(item => coverageName.includes(item.replace('대인형사합의지원금', '형사')) || item.includes(coverageName));
+    const specialItems = ['형사합의지원금', '변호사선임비용', '화재벌금', '일상생활배상책임'];
+    const isSpecialItem = specialItems.some(item => coverageName.includes(item.replace('형사합의지원금', '형사')) || item.includes(coverageName));
     
     if (isSpecialItem) {
       console.log(`인라인 단순 패턴 발견: "${coverageName}" -> ${value}`);
