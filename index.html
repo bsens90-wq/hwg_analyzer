@@ -1564,24 +1564,95 @@ function extractCoverageAmountsForBeforeAfter(text) {
   console.log('부족 라인 제거 후:', cleanedText);
   
  // 직접 매핑 테이블 (OCR 텍스트 -> 필드명)
+// OCR 텍스트 정규화 테이블 (긴 텍스트 -> 표준 짧은 명칭)
+const ocrTextNormalization = {
+'일반암' : '일반암진단비'
+'통합암' : '통합암진단비'
+'표적항암약물' : '표적항암치료비'
+'뇌혈관질환' : '뇌혈관진단비'
+'뇌졸중' : '뇌졸중진단비'
+'허혈성심질환' : '허혈성진단비'
+'급성심근경색증' : '심근경색진단비'
+'질병입원실손' : '(실손)질병입원'
+'상해입원실손' : '(실손)상해입원'
+'간병인질병입원' : '요양병원 외'
+'대인형사합의지원금' : '형사합의금'
+'생활보장변호사선임비용' : '변호사선임비'
+'화재벌금' : '화재벌금'
+'일상생활' : '일상생활배상책임'
+
+};
+
+// 직접 매핑 테이블 (표준 명칭 -> 필드명)
 const directMappings = {
   '일반암': 'generalCancer',
   '통합암': 'totalCancer', 
   '표적항암약물': 'targetTherapy',
-  '뇌혈관질환': 'cerebrovascularDiagnosis',
+  '뇌혈관진단비': 'cerebrovascularDiagnosis',
   '뇌졸중': 'strokeDiagnosis',
-  '허혈성심질환': 'ischemicHeartDiagnosis',
-  '급성심근경색증': 'myocardialInfarctionDiagnosis',
+  '허혈성진단비': 'ischemicHeartDiagnosis',
+  '심근경색진단비': 'myocardialInfarctionDiagnosis',
   '질병입원실손': 'diseaseHospitalization',
   '상해입원실손': 'injuryHospitalization',
   '간병인질병입원': 'nursingHospitalOut',
-  '간병인상해입원': 'injuryHospitalization', // 또는 적절한 필드
-  '대인형사합의지원금': 'criminalSettlement',
-  '생활보장변호사선임비용': 'lawyerAppointment',
+  '간병인상해입원': 'nursingHospitalOut',
+  '형사합의금': 'criminalSettlement',
+  '변호사선임비': 'lawyerAppointment',
   '화재벌금': 'fireFine',
-  '일상생활': 'dailyLifeLiability'
+  '일상생활배상': 'dailyLifeLiability'
 };
 
+// 텍스트 정규화 함수
+function normalizeOcrText(text) {
+  for (const [longName, shortName] of Object.entries(ocrTextNormalization)) {
+    if (text.includes(longName)) {
+      return text.replace(longName, shortName);
+    }
+  }
+  return text;
+}
+
+// 2단계: 라인별 직접 매칭 및 값 설정
+const lines = cleanedText.split('\n').filter(line => line.trim());
+lines.forEach(line => {
+  console.log(`처리 중인 라인: "${line}"`);
+  
+  // 먼저 OCR 텍스트 정규화
+  const normalizedLine = normalizeOcrText(line);
+  console.log(`정규화된 라인: "${normalizedLine}"`);
+  
+  // 패턴1: A/B만원 (A값 추출)
+  const fractionMatch = normalizedLine.match(/^(.+?)(\d{1,3}(?:,\d{3})*)\/(\d{1,3}(?:,\d{3})*)만원$/);
+  if (fractionMatch) {
+    const name = fractionMatch[1].trim();
+    const valueA = parseInt(fractionMatch[2].replace(/,/g, ''));
+    const fieldKey = directMappings[name];
+    
+    if (fieldKey) {
+      setFieldValue(fieldKey, valueA);
+      console.log(`${name}: ${valueA}만원 설정 (패턴: fraction)`);
+    } else {
+      console.log(`매핑되지 않은 항목: "${name}"`);
+    }
+    return;
+  }
+  
+  // 패턴2: A만원 (A값 추출)
+  const simpleMatch = normalizedLine.match(/^(.+?)(\d{1,3}(?:,\d{3})*)만원$/);
+  if (simpleMatch) {
+    const name = simpleMatch[1].trim();
+    const value = parseInt(simpleMatch[2].replace(/,/g, ''));
+    const fieldKey = directMappings[name];
+    
+    if (fieldKey) {
+      setFieldValue(fieldKey, value);
+      console.log(`${name}: ${value}만원 설정 (패턴: simple)`);
+    } else {
+      console.log(`매핑되지 않은 항목: "${name}"`);
+    }
+    return;
+  }
+});
 // 2단계: 라인별 직접 매칭 및 값 설정
 const lines = cleanedText.split('\n').filter(line => line.trim());
 lines.forEach(line => {
