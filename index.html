@@ -1585,22 +1585,39 @@ const ocrTextNormalization = {
 
 // 직접 매핑 테이블 (표준 명칭 -> 필드명)
 const directMappings = {
-  '일반암': 'generalCancer',
-  '통합암': 'totalCancer', 
-  '표적항암약물': 'targetTherapy',
+  '일반암진단비': 'generalCancer',
+  '통합암진단비': 'totalCancer', 
+  '표적항암치료비': 'targetTherapy',
   '뇌혈관진단비': 'cerebrovascularDiagnosis',
-  '뇌졸중': 'strokeDiagnosis',
+  '뇌졸중진단비': 'strokeDiagnosis',
   '허혈성진단비': 'ischemicHeartDiagnosis',
   '심근경색진단비': 'myocardialInfarctionDiagnosis',
-  '질병입원실손': 'diseaseHospitalization',
-  '상해입원실손': 'injuryHospitalization',
-  '간병인질병입원': 'nursingHospitalOut',
-  '간병인상해입원': 'nursingHospitalOut',
+  '(실손)질병입원': 'diseaseHospitalization',
+  '(실손)상해입원': 'injuryHospitalization',
+  '요양병원 외': 'nursingHospitalOut',
   '형사합의금': 'criminalSettlement',
   '변호사선임비': 'lawyerAppointment',
   '화재벌금': 'fireFine',
-  '일상생활배상': 'dailyLifeLiability'
+  '일상생활배상책임': 'dailyLifeLiability'
+    
+    //원본OCR//
+    
+  '일반암': 'generalCancer',
+  '통합암': 'totalCancer', 
+  '표적항암약물': 'targetTherapy',
+  '뇌혈관질환': 'cerebrovascularDiagnosis',
+  '뇌졸중': 'strokeDiagnosis',
+  '허혈성심질환': 'ischemicHeartDiagnosis',
+  '급성심근경색증': 'myocardialInfarctionDiagnosis',
+  '질병입원실손': 'diseaseHospitalization',
+  '상해입원실손': 'injuryHospitalization',
+  '간병인질병입원': 'nursingHospitalOut',
+  '대인형사합의지원금': 'criminalSettlement',
+  '생활보장변호사선임비용': 'lawyerAppointment',
+  '화재벌금': 'fireFine',
+  '일상생활': 'dailyLifeLiability'
 };
+
 
 // 텍스트 정규화 함수
 function normalizeOcrText(text) {
