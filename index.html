@@ -1593,6 +1593,7 @@ const structuredData = [];
 const words = cleanedText.split(/\s+/).filter(word => word.trim().length > 0);
 const wordBlocks = words.map(word => ({text: word}));
 const globalPatterns = extractGlobalPatterns(wordBlocks);
+  
 
 globalPatterns.forEach(pattern => {
   if (pattern.type === 'fraction' || pattern.type === 'simple') {
@@ -1605,7 +1606,7 @@ globalPatterns.forEach(pattern => {
   }
 });
   console.log('구조화된 데이터:', structuredData);
-  
+  console.log('매칭 테이블:', coverageMappings);
   // 3단계: 매핑 테이블과 매칭하여 값 설정
   coverageMappings.forEach(mapping => {
     const matchedData = findMatchingDataByPattern(structuredData, mapping.imageText, mapping.type);
