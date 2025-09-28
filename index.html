@@ -1116,12 +1116,26 @@ async function parseOCRResult(apiResult) {
     throw new Error('OCR 결과를 받아올 수 없습니다.');
   }
 
-  // 개선된 OCR 텍스트 인식 순서 분석 및 정렬된 텍스트 획득
-  const sortedText = analyzeOCRTextOrder(apiResult.responses[0]);
+  // OCR 응답에서 기본 텍스트 추출
+  let sortedText = '';
   
-  console.log('정렬된 OCR 텍스트:', sortedText);
+  // 방법 1: analyzeOCRTextOrder 함수 사용
+  try {
+    sortedText = analyzeOCRTextOrder(apiResult.responses[0]);
+    console.log('정렬된 OCR 텍스트:', sortedText);
+  } catch (error) {
+    console.log('analyzeOCRTextOrder 실패, 기본 텍스트 사용:', error);
+  }
+  
+  // 방법 2: 기본 전체 텍스트 사용 (fallback)
+  if (!sortedText || !sortedText.trim()) {
+    if (apiResult.responses[0].textAnnotations && apiResult.responses[0].textAnnotations[0]) {
+      sortedText = apiResult.responses[0].textAnnotations[0].description;
+      console.log('기본 OCR 텍스트 사용:', sortedText);
+    }
+  }
 
-  if (!sortedText.trim()) {
+  if (!sortedText || !sortedText.trim()) {
     throw new Error('이미지에서 텍스트를 인식할 수 없습니다.');
   }
 
