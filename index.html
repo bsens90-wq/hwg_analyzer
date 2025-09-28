@@ -1111,16 +1111,8 @@ async function parseOCRResult(apiResult) {
 function analyzeOCRTextOrder(response) {
   console.log('=== OCR 텍스트 인식 순서 분석 (개선된 버전) ===');
   
-  // 1. 전체 텍스트를 라인별로 분석
-  const fullText = response.fullTextAnnotation?.text || '';
-  const lines = fullText.split(/\r?\n/);
-  
-  console.log('📝 기존 라인별 인식 순서:');
-  lines.forEach((line, index) => {
-    if (line.trim()) {
-      console.log(`${index + 1}: "${line.trim()}"`);
-    }
-  });
+ // 이 부분을 완전히 제거하고 바로 좌표 기반 정렬로 넘어감
+console.log('📝 좌표 기반 텍스트 정렬 시작...');
   
   // 2. textAnnotations를 통한 개별 텍스트 블록 분석 및 정렬
   if (response.textAnnotations && response.textAnnotations.length > 1) {
@@ -1209,8 +1201,8 @@ sortedBlocks.forEach((block, index) => {
     return organizedFullText;
   }
   
-  console.log('=== OCR 분석 완료 (fallback) ===\n');
-  return fullText; // fallback으로 원본 텍스트 반환
+console.log('=== OCR 분석 완료 (fallback) ===\n');
+return ''; // 좌표 정보가 없으면 빈 텍스트 반환
 }
 
 // 고객 정보 추출
