@@ -1228,16 +1228,50 @@ function analyzeOCRTextOrder(response) {
 
 
 
-// 전체 블록에서 글로벌 패턴을 추출하는 함수
+
+    // 전체 블록에서 글로벌 패턴을 추출하는 함수
 function extractGlobalPatterns(allBlocks) {
-  // 하단 레이아웃 제외 키워드 정의
-  const excludeKeywords = ['생활보장', '적정', '부족', '미보장'];
+  // 하단 레이아웃 완전 제외 키워드 정의 (확장)
+  const excludeKeywords = [
+    '생활보장', '적정', '부족', '미보장',
+    '※경증치매', 'CDR2점이하', '중증치매', 'CDR3점이상',
+    '경증', '치매', 'CDR2', '점이하', 'CDR3', '점이상',
+    '자동차', '부상', '금', '임플란트'
+  ];
   
-  // 제외 키워드가 포함된 블록들을 필터링
+  // 정규식 패턴으로 더 정확한 제외 (CDR 관련, 특수기호 포함)
+  const excludePatterns = [
+    /※.*CDR.*점.*이하/,
+    /CDR\d+점.*이상/,
+    /경증.*치매/,
+    /중증.*치매/,
+    /자동차.*부상.*금/,
+    /임플란트/,
+    /※.*경증.*치매/
+  ];
+  
+  // 제외 키워드와 패턴으로 블록들을 필터링
   const filteredBlocks = allBlocks.filter(block => {
     const text = block.text.trim();
-    return !excludeKeywords.includes(text);
+    
+    // 키워드 매칭으로 제외
+    const hasExcludeKeyword = excludeKeywords.some(keyword => text.includes(keyword));
+    if (hasExcludeKeyword) {
+      console.log(`키워드로 제외된 블록: "${text}"`);
+      return false;
+    }
+    
+    // 정규식 패턴으로 제외
+    const hasExcludePattern = excludePatterns.some(pattern => pattern.test(text));
+    if (hasExcludePattern) {
+      console.log(`패턴으로 제외된 블록: "${text}"`);
+      return false;
+    }
+    
+    return true;
   });
+  
+  console.log(`필터링 전 블록 수: ${allBlocks.length}, 필터링 후 블록 수: ${filteredBlocks.length}`);
   
   const fullText = filteredBlocks.map(block => block.text).join(' ');
   console.log(`필터링된 전체 텍스트: "${fullText}"`);
@@ -1310,7 +1344,8 @@ function extractGlobalPatterns(allBlocks) {
       const firstWord = remainingText.split(/\s+/)[0];
       if (firstWord) {
         // 단순 텍스트로 추가 (숫자나 만원이 없는 경우, 그리고 제외 키워드가 아닌 경우)
-        if (!/\d/.test(firstWord) && !firstWord.includes('만원') && !excludeKeywords.includes(firstWord.trim())) {
+        const hasExcludeInWord = excludeKeywords.some(keyword => firstWord.includes(keyword));
+        if (!/\d/.test(firstWord) && !firstWord.includes('만원') && !hasExcludeInWord) {
           patterns.push({
             text: firstWord,
             type: 'text'
