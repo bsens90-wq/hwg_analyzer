@@ -1130,14 +1130,11 @@ async function parseOCRResult(apiResult) {
   extractCoverageAmountsForBeforeAfter(sortedText);
 }
 
-// OCR 텍스트 인식 순서 분석 함수 (개선된 버전 - 좌상단에서 우하단 순서)
+// 개선된 OCR 텍스트 인식 순서 분석 함수
 function analyzeOCRTextOrder(response) {
   console.log('=== OCR 텍스트 인식 순서 분석 (개선된 버전) ===');
+  console.log('📝 좌표 기반 텍스트 정렬 시작...');
   
- // 이 부분을 완전히 제거하고 바로 좌표 기반 정렬로 넘어감
-console.log('📝 좌표 기반 텍스트 정렬 시작...');
-  
-  // 2. textAnnotations를 통한 개별 텍스트 블록 분석 및 정렬
   if (response.textAnnotations && response.textAnnotations.length > 1) {
     console.log('\n🔍 개별 텍스트 블록 좌표 기반 정렬:');
     
@@ -1159,17 +1156,30 @@ console.log('📝 좌표 기반 텍스트 정렬 시작...');
     blocksWithCoords.forEach((block, index) => {
       console.log(`${index + 1}: "${block.text}" -> (${block.x}, ${block.y})`);
     });
-    
-// Y좌표 기준으로 정렬하되, 같은 줄(Y좌표 차이가 15픽셀 이내)인 경우 X좌표로 정렬
-const sortedBlocks = blocksWithCoords
-  .sort((a, b) => {
-    // Y좌표 차이가 15픽셀 이내면 같은 줄로 간주
-    const yDiff = Math.abs(a.y - b.y);
-    if (yDiff < 15) {
-      return a.x - b.x; // 같은 줄이면 X좌표로 정렬 (왼쪽에서 오른쪽)
+
+    // 동적 임계값 계산 함수
+    function calculateLineThreshold(blocks) {
+      const heights = blocks.map(block => block.height).filter(h => h > 0);
+      if (heights.length === 0) return 25; // 기본값
+      
+      const avgHeight = heights.reduce((sum, h) => sum + h, 0) / heights.length;
+      const threshold = Math.max(20, Math.min(50, avgHeight * 0.8));
+      console.log(`계산된 임계값: ${threshold}픽셀 (평균 높이: ${avgHeight})`);
+      return threshold;
     }
-    return a.y - b.y; // 다른 줄이면 Y좌표로 정렬 (위에서 아래)
-  });
+
+    const lineThreshold = calculateLineThreshold(blocksWithCoords);
+
+    // Y좌표 기준으로 정렬하되, 같은 줄(동적 임계값)인 경우 X좌표로 정렬
+    const sortedBlocks = blocksWithCoords
+      .sort((a, b) => {
+        // 동적 임계값으로 같은 줄 판단
+        const yDiff = Math.abs(a.y - b.y);
+        if (yDiff < lineThreshold) {
+          return a.x - b.x; // 같은 줄이면 X좌표로 정렬 (왼쪽에서 오른쪽)
+        }
+        return a.y - b.y; // 다른 줄이면 Y좌표로 정렬 (위에서 아래)
+      });
     
     console.log('\n🔄 정렬 후 블록 순서:');
     sortedBlocks.forEach((block, index) => {
@@ -1181,18 +1191,18 @@ const sortedBlocks = blocksWithCoords
     let currentLine = [];
     let currentY = -1;
     
-sortedBlocks.forEach((block, index) => {
-  // Y좌표가 크게 변했으면 새로운 줄 (15픽셀 기준)
-  if (Math.abs(block.y - currentY) > 15) {
-    if (currentLine.length > 0) {
-      organizedLines.push([...currentLine]);
-    }
-    currentLine = [block];
-    currentY = block.y;
-  } else {
-    currentLine.push(block);
-  }
-});
+    sortedBlocks.forEach((block, index) => {
+      // Y좌표가 크게 변했으면 새로운 줄 (동적 임계값 기준)
+      if (Math.abs(block.y - currentY) > lineThreshold) {
+        if (currentLine.length > 0) {
+          organizedLines.push([...currentLine]);
+        }
+        currentLine = [block];
+        currentY = block.y;
+      } else {
+        currentLine.push(block);
+      }
+    });
     
     // 마지막 줄 추가
     if (currentLine.length > 0) {
@@ -1202,110 +1212,108 @@ sortedBlocks.forEach((block, index) => {
     console.log('\n📍 정렬된 텍스트 (좌상단 → 우하단 순서):');
     const sortedText = [];
     
-// 라인 경계를 무시하고 전체 블록에서 패턴 추출
-const allBlocks = organizedLines.flat();
-const globalPatterns = extractGlobalPatterns(allBlocks);
+    // 라인 경계를 무시하고 전체 블록에서 패턴 추출
+    const allBlocks = organizedLines.flat();
+    const globalPatterns = extractGlobalPatterns(allBlocks);
 
-globalPatterns.forEach((pattern, index) => {
-  console.log(`패턴 ${index + 1}: "${pattern.text}"`);
-  sortedText.push(pattern.text);
-});
+    globalPatterns.forEach((pattern, index) => {
+      console.log(`패턴 ${index + 1}: "${pattern.text}"`);
+      sortedText.push(pattern.text);
+    });
 
-// 개별 블록 정보도 출력
-allBlocks.forEach((block, blockIndex) => {
-  console.log(`  블록 ${blockIndex + 1}: "${block.text}" (${block.x}, ${block.y})`);
-});
+    // 개별 블록 정보도 출력
+    allBlocks.forEach((block, blockIndex) => {
+      console.log(`  블록 ${blockIndex + 1}: "${block.text}" (${block.x}, ${block.y})`);
+    });
 
-  
-// 전체 블록에서 글로벌 패턴을 추출하는 함수
-function extractGlobalPatterns(allBlocks) {
-  const fullText = allBlocks.map(block => block.text).join(' ');
-  console.log(`전체 텍스트: "${fullText}"`);
-  
-  const patterns = [];
-  let remainingText = fullText;
-  
-  // 패턴들을 순차적으로 찾아서 제거하며 처리
-  while (remainingText.trim().length > 0) {
-    let foundPattern = false;
-    
-    // 패턴1: 항목 A/B만원 (담보명 + 분수)
-    const fractionMatch = remainingText.match(/^([가-힣\s]*?)(\d{1,3}(?:,\d{3})*)\s*\/\s*(\d{1,3}(?:,\d{3})*)\s*만원/);
-    if (fractionMatch) {
-      const coverageName = fractionMatch[1].trim().replace(/\s+/g, '');
-      const valueA = fractionMatch[2].replace(/,/g, '');
-      const valueB = fractionMatch[3].replace(/,/g, '');
-      const patternText = `${coverageName}${valueA}/${valueB}만원`;
+    // 전체 블록에서 글로벌 패턴을 추출하는 함수
+    function extractGlobalPatterns(allBlocks) {
+      const fullText = allBlocks.map(block => block.text).join(' ');
+      console.log(`전체 텍스트: "${fullText}"`);
       
-      patterns.push({
-        text: patternText,
-        type: 'fraction',
-        name: coverageName,
-        value: parseInt(valueA)
-      });
+      const patterns = [];
+      let remainingText = fullText;
       
-      remainingText = remainingText.substring(fractionMatch[0].length).trim();
-      foundPattern = true;
-      continue;
-    }
-    
-    // 패턴2: A만원부족
-    const deficitMatch = remainingText.match(/^(\d{1,3}(?:,\d{3})*)\s*만원\s*부족/);
-    if (deficitMatch) {
-      const value = deficitMatch[1].replace(/,/g, '');
-      const patternText = `${value}만원부족`;
-      
-      patterns.push({
-        text: patternText,
-        type: 'deficit',
-        value: parseInt(value)
-      });
-      
-      remainingText = remainingText.substring(deficitMatch[0].length).trim();
-      foundPattern = true;
-      continue;
-    }
-    
-    // 패턴3: 항목A만원 (단순형태)
-    const simpleMatch = remainingText.match(/^([가-힣\s]*?)(\d{1,3}(?:,\d{3})*)\s*만원(?!\s*[\/부족])/);
-    if (simpleMatch) {
-      const coverageName = simpleMatch[1].trim().replace(/\s+/g, '');
-      const value = simpleMatch[2].replace(/,/g, '');
-      const patternText = `${coverageName}${value}만원`;
-      
-      patterns.push({
-        text: patternText,
-        type: 'simple',
-        name: coverageName,
-        value: parseInt(value)
-      });
-      
-      remainingText = remainingText.substring(simpleMatch[0].length).trim();
-      foundPattern = true;
-      continue;
-    }
-    
-    // 패턴을 찾지 못한 경우 - 첫 단어만 건너뛰기
-    if (!foundPattern) {
-      const firstWord = remainingText.split(/\s+/)[0];
-      if (firstWord) {
-        // 단순 텍스트로 추가 (숫자나 만원이 없는 경우)
-        if (!/\d/.test(firstWord) && !firstWord.includes('만원')) {
+      // 패턴들을 순차적으로 찾아서 제거하며 처리
+      while (remainingText.trim().length > 0) {
+        let foundPattern = false;
+        
+        // 패턴1: 항목 A/B만원 (담보명 + 분수)
+        const fractionMatch = remainingText.match(/^([가-힣\s]*?)(\d{1,3}(?:,\d{3})*)\s*\/\s*(\d{1,3}(?:,\d{3})*)\s*만원/);
+        if (fractionMatch) {
+          const coverageName = fractionMatch[1].trim().replace(/\s+/g, '');
+          const valueA = fractionMatch[2].replace(/,/g, '');
+          const valueB = fractionMatch[3].replace(/,/g, '');
+          const patternText = `${coverageName}${valueA}/${valueB}만원`;
+          
           patterns.push({
-            text: firstWord,
-            type: 'text'
+            text: patternText,
+            type: 'fraction',
+            name: coverageName,
+            value: parseInt(valueA)
           });
+          
+          remainingText = remainingText.substring(fractionMatch[0].length).trim();
+          foundPattern = true;
+          continue;
         }
-        remainingText = remainingText.substring(firstWord.length).trim();
-      } else {
-        break;
+        
+        // 패턴2: A만원부족
+        const deficitMatch = remainingText.match(/^(\d{1,3}(?:,\d{3})*)\s*만원\s*부족/);
+        if (deficitMatch) {
+          const value = deficitMatch[1].replace(/,/g, '');
+          const patternText = `${value}만원부족`;
+          
+          patterns.push({
+            text: patternText,
+            type: 'deficit',
+            value: parseInt(value)
+          });
+          
+          remainingText = remainingText.substring(deficitMatch[0].length).trim();
+          foundPattern = true;
+          continue;
+        }
+        
+        // 패턴3: 항목A만원 (단순형태)
+        const simpleMatch = remainingText.match(/^([가-힣\s]*?)(\d{1,3}(?:,\d{3})*)\s*만원(?!\s*[\/부족])/);
+        if (simpleMatch) {
+          const coverageName = simpleMatch[1].trim().replace(/\s+/g, '');
+          const value = simpleMatch[2].replace(/,/g, '');
+          const patternText = `${coverageName}${value}만원`;
+          
+          patterns.push({
+            text: patternText,
+            type: 'simple',
+            name: coverageName,
+            value: parseInt(value)
+          });
+          
+          remainingText = remainingText.substring(simpleMatch[0].length).trim();
+          foundPattern = true;
+          continue;
+        }
+        
+        // 패턴을 찾지 못한 경우 - 첫 단어만 건너뛰기
+        if (!foundPattern) {
+          const firstWord = remainingText.split(/\s+/)[0];
+          if (firstWord) {
+            // 단순 텍스트로 추가 (숫자나 만원이 없는 경우)
+            if (!/\d/.test(firstWord) && !firstWord.includes('만원')) {
+              patterns.push({
+                text: firstWord,
+                type: 'text'
+              });
+            }
+            remainingText = remainingText.substring(firstWord.length).trim();
+          } else {
+            break;
+          }
+        }
       }
+      
+      return patterns;
     }
-  }
-  
-  return patterns;
-}
-    
     
     // 정렬된 텍스트를 전체 텍스트로 결합
     const organizedFullText = sortedText.join('\n');
@@ -1318,8 +1326,8 @@ function extractGlobalPatterns(allBlocks) {
     return organizedFullText;
   }
   
-console.log('=== OCR 분석 완료 (fallback) ===\n');
-return ''; // 좌표 정보가 없으면 빈 텍스트 반환
+  console.log('=== OCR 분석 완료 (fallback) ===\n');
+  return ''; // 좌표 정보가 없으면 빈 텍스트 반환
 }
 
 // 고객 정보 추출
@@ -1366,7 +1374,7 @@ function extractCustomerInfo(text) {
   }
 }
 
-// 새로운 OCR 값 추출 로직
+// OCR 값 추출 로직
 function extractCoverageAmountsForBeforeAfter(text) {
   console.log('새로운 OCR 값 추출 시작...');
   console.log('OCR 텍스트:', text);
