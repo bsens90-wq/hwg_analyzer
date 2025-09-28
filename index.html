@@ -1096,12 +1096,13 @@ async function parseOCRResult(apiResult) {
   // 개선된 OCR 텍스트 인식 순서 분석 및 정렬된 텍스트 획득
   const sortedText = analyzeOCRTextOrder(apiResult.responses[0]);
   
-  console.log('OCR 인식된 텍스트:', sortedText);
+  console.log('정렬된 OCR 텍스트:', sortedText);
 
   if (!sortedText.trim()) {
     throw new Error('이미지에서 텍스트를 인식할 수 없습니다.');
   }
 
+  // 정렬된 텍스트를 사용하여 정보 추출
   extractCustomerInfo(sortedText);
   extractCoverageAmountsForBeforeAfter(sortedText);
 }
@@ -1128,8 +1129,8 @@ function analyzeOCRTextOrder(response) {
     // 첫 번째는 전체 텍스트이므로 제외하고 개별 단어들만 분석
     const textBlocks = response.textAnnotations.slice(1);
     
-    // Y좌표 기준으로 정렬하되, 같은 줄(Y좌표 차이가 20픽셀 이내)인 경우 X좌표로 정렬
-    const sortedBlocks = textBlocks
+    // 좌표 정보가 있는 블록들만 필터링하고 변환
+    const blocksWithCoords = textBlocks
       .filter(block => block.boundingPoly && block.boundingPoly.vertices)
       .map(block => ({
         text: block.description,
@@ -1137,15 +1138,28 @@ function analyzeOCRTextOrder(response) {
         y: block.boundingPoly.vertices[0].y || 0,
         width: (block.boundingPoly.vertices[2].x || 0) - (block.boundingPoly.vertices[0].x || 0),
         height: (block.boundingPoly.vertices[2].y || 0) - (block.boundingPoly.vertices[0].y || 0)
-      }))
+      }));
+    
+    console.log('\n📊 모든 텍스트 블록의 좌표 정보:');
+    blocksWithCoords.forEach((block, index) => {
+      console.log(`${index + 1}: "${block.text}" -> (${block.x}, ${block.y})`);
+    });
+    
+    // Y좌표 기준으로 정렬하되, 같은 줄(Y좌표 차이가 40픽셀 이내)인 경우 X좌표로 정렬
+    const sortedBlocks = blocksWithCoords
       .sort((a, b) => {
-        // Y좌표 차이가 20픽셀 이내면 같은 줄로 간주
+        // Y좌표 차이가 40픽셀 이내면 같은 줄로 간주 (기존 20픽셀에서 증가)
         const yDiff = Math.abs(a.y - b.y);
-        if (yDiff < 20) {
+        if (yDiff < 40) {
           return a.x - b.x; // 같은 줄이면 X좌표로 정렬 (왼쪽에서 오른쪽)
         }
         return a.y - b.y; // 다른 줄이면 Y좌표로 정렬 (위에서 아래)
       });
+    
+    console.log('\n🔄 정렬 후 블록 순서:');
+    sortedBlocks.forEach((block, index) => {
+      console.log(`${index + 1}: "${block.text}" -> (${block.x}, ${block.y})`);
+    });
     
     // 정렬된 결과를 라인별로 그룹화
     const organizedLines = [];
@@ -1153,8 +1167,8 @@ function analyzeOCRTextOrder(response) {
     let currentY = -1;
     
     sortedBlocks.forEach((block, index) => {
-      // Y좌표가 크게 변했으면 새로운 줄
-      if (Math.abs(block.y - currentY) > 20) {
+      // Y좌표가 크게 변했으면 새로운 줄 (40픽셀 기준)
+      if (Math.abs(block.y - currentY) > 40) {
         if (currentLine.length > 0) {
           organizedLines.push([...currentLine]);
         }
@@ -1186,7 +1200,7 @@ function analyzeOCRTextOrder(response) {
     
     // 정렬된 텍스트를 전체 텍스트로 결합
     const organizedFullText = sortedText.join('\n');
-    console.log('\n📋 정렬된 전체 텍스트:');
+    console.log('\n📋 최종 정렬된 전체 텍스트:');
     console.log(organizedFullText);
     
     console.log('=== OCR 분석 완료 ===\n');
