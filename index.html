@@ -1145,16 +1145,16 @@ function analyzeOCRTextOrder(response) {
       console.log(`${index + 1}: "${block.text}" -> (${block.x}, ${block.y})`);
     });
     
-    // Y좌표 기준으로 정렬하되, 같은 줄(Y좌표 차이가 40픽셀 이내)인 경우 X좌표로 정렬
-    const sortedBlocks = blocksWithCoords
-      .sort((a, b) => {
-        // Y좌표 차이가 40픽셀 이내면 같은 줄로 간주 (기존 20픽셀에서 증가)
-        const yDiff = Math.abs(a.y - b.y);
-        if (yDiff < 40) {
-          return a.x - b.x; // 같은 줄이면 X좌표로 정렬 (왼쪽에서 오른쪽)
-        }
-        return a.y - b.y; // 다른 줄이면 Y좌표로 정렬 (위에서 아래)
-      });
+// Y좌표 기준으로 정렬하되, 같은 줄(Y좌표 차이가 25픽셀 이내)인 경우 X좌표로 정렬
+const sortedBlocks = blocksWithCoords
+  .sort((a, b) => {
+    // Y좌표 차이가 25픽셀 이내면 같은 줄로 간주
+    const yDiff = Math.abs(a.y - b.y);
+    if (yDiff < 25) {
+      return a.x - b.x; // 같은 줄이면 X좌표로 정렬 (왼쪽에서 오른쪽)
+    }
+    return a.y - b.y; // 다른 줄이면 Y좌표로 정렬 (위에서 아래)
+  });
     
     console.log('\n🔄 정렬 후 블록 순서:');
     sortedBlocks.forEach((block, index) => {
@@ -1166,18 +1166,18 @@ function analyzeOCRTextOrder(response) {
     let currentLine = [];
     let currentY = -1;
     
-    sortedBlocks.forEach((block, index) => {
-      // Y좌표가 크게 변했으면 새로운 줄 (40픽셀 기준)
-      if (Math.abs(block.y - currentY) > 40) {
-        if (currentLine.length > 0) {
-          organizedLines.push([...currentLine]);
-        }
-        currentLine = [block];
-        currentY = block.y;
-      } else {
-        currentLine.push(block);
-      }
-    });
+sortedBlocks.forEach((block, index) => {
+  // Y좌표가 크게 변했으면 새로운 줄 (25픽셀 기준)
+  if (Math.abs(block.y - currentY) > 25) {
+    if (currentLine.length > 0) {
+      organizedLines.push([...currentLine]);
+    }
+    currentLine = [block];
+    currentY = block.y;
+  } else {
+    currentLine.push(block);
+  }
+});
     
     // 마지막 줄 추가
     if (currentLine.length > 0) {
@@ -1714,14 +1714,17 @@ function removeDeficitLines(text) {
   return cleanedLines.join('\n');
 }
 
-// 담보명 라인인지 확인하는 함수
-function isCoverageNameLine(line) {
-  // 한글이 포함되어 있고, 숫자나 "만원"이 없는 라인
-  const hasKorean = /[가-힣]/.test(line);
-  const hasNumbers = /\d/.test(line);
-  const hasWon = line.includes('만원');
-  
-  return hasKorean && !hasNumbers && !hasWon && line.length >= 2;
+// 담보명 패턴을 더 정확하게 인식
+const hasKorean = /[가-힣]/.test(line);
+const hasNumbers = /\d/.test(line);
+const hasWon = line.includes('만원');
+const hasSlash = line.includes('/');
+
+// 담보명 키워드가 포함된 경우도 담보명으로 인식
+const coverageKeywords = ['암', '질환', '치매', '사망', '입원', '수술', '후유', '실손', '간병', '형사', '변호사', '벌금', '배상'];
+const hasCoverageKeyword = coverageKeywords.some(keyword => line.includes(keyword));
+
+return hasKorean && (hasCoverageKeyword || (!hasNumbers && !hasWon && !hasSlash)) && line.length >= 2;
 }
 
 // 데이터 저장 및 이미지 다운로드
