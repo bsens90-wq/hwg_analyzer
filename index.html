@@ -1714,17 +1714,19 @@ function removeDeficitLines(text) {
   return cleanedLines.join('\n');
 }
 
-// 담보명 패턴을 더 정확하게 인식
-const hasKorean = /[가-힣]/.test(line);
-const hasNumbers = /\d/.test(line);
-const hasWon = line.includes('만원');
-const hasSlash = line.includes('/');
+// 담보명 라인인지 확인하는 함수
+function isCoverageNameLine(line) {
+  // 담보명 패턴을 더 정확하게 인식
+  const hasKorean = /[가-힣]/.test(line);
+  const hasNumbers = /\d/.test(line);
+  const hasWon = line.includes('만원');
+  const hasSlash = line.includes('/');
 
-// 담보명 키워드가 포함된 경우도 담보명으로 인식
-const coverageKeywords = ['암', '질환', '치매', '사망', '입원', '수술', '후유', '실손', '간병', '형사', '변호사', '벌금', '배상'];
-const hasCoverageKeyword = coverageKeywords.some(keyword => line.includes(keyword));
+  // 담보명 키워드가 포함된 경우도 담보명으로 인식
+  const coverageKeywords = ['암', '질환', '치매', '사망', '입원', '수술', '후유', '실손', '간병', '형사', '변호사', '벌금', '배상'];
+  const hasCoverageKeyword = coverageKeywords.some(keyword => line.includes(keyword));
 
-return hasKorean && (hasCoverageKeyword || (!hasNumbers && !hasWon && !hasSlash)) && line.length >= 2;
+  return hasKorean && (hasCoverageKeyword || (!hasNumbers && !hasWon && !hasSlash)) && line.length >= 2;
 }
 
 // 데이터 저장 및 이미지 다운로드
