@@ -576,6 +576,25 @@
 let currentData = {};
 let savedDataList = [];
 
+// 라벨 매핑 테이블
+const LABEL_MAPPING = {
+  '일반암': 'generalCancer',
+  '통합암': 'totalCancer', 
+  '표적항암약물': 'targetTherapy',
+  '뇌혈관질환': 'cerebrovascularDiagnosis',
+  '뇌졸중': 'strokeDiagnosis',
+  '허혈성심질환': 'ischemicHeartDiagnosis',
+  '급성심근경색증': 'myocardialInfarctionDiagnosis',
+  '질병입원실손': 'diseaseHospitalization',
+  '상해입원실손': 'injuryHospitalization',
+  '간병인상해입원': 'nursingHospitalOut',
+  '간병인질병입원': 'nursingHospitalOut', 
+  '대인형사합의지원금': 'criminalSettlement',
+  '변호사선임비용': 'lawyerAppointment',
+  '일상생활배상책임': 'dailyLifeLiability',
+  '화재벌금': 'fireFine'
+};
+
 // 모든 담보 항목 통합 정의
 const ALL_COVERAGE_ITEMS = [
   // 암 관련 담보
@@ -1110,237 +1129,155 @@ async function callGoogleVisionAPI(base64Image) {
   return await response.json();
 }
 
-// OCR 결과 파싱
+// OCR 결과 파싱 (새로운 구조화된 방식)
 async function parseOCRResult(apiResult) {
   if (!apiResult || !apiResult.responses || !apiResult.responses[0]) {
     throw new Error('OCR 결과를 받아올 수 없습니다.');
   }
 
-  // 개선된 OCR 텍스트 인식 순서 분석 및 정렬된 텍스트 획득
-  const sortedText = analyzeOCRTextOrder(apiResult.responses[0]);
+  console.log('=== 새로운 구조화된 OCR 파싱 시작 ===');
   
-  console.log('정렬된 OCR 텍스트:', sortedText);
-
-  if (!sortedText.trim()) {
+  const response = apiResult.responses[0];
+  if (!response.textAnnotations || response.textAnnotations.length === 0) {
     throw new Error('이미지에서 텍스트를 인식할 수 없습니다.');
   }
 
-  // 정렬된 텍스트를 사용하여 정보 추출
-  extractCustomerInfo(sortedText);
-  extractCoverageAmountsForBeforeAfter(sortedText);
+  // 1단계: 이미지 전처리 및 구역 분할
+  const imageRegions = divideImageIntoRegions(response.textAnnotations);
+  
+  // 2단계: 각 구역별 데이터 추출
+  extractCustomerInfoFromRegion(imageRegions.customerInfo);
+  extractCoverageDataFromRegions(imageRegions);
+  
+  console.log('=== OCR 파싱 완료 ===');
 }
 
-// 개선된 OCR 텍스트 인식 순서 분석 함수
-function analyzeOCRTextOrder(response) {
-  console.log('=== OCR 텍스트 인식 순서 분석 (개선된 버전) ===');
-  console.log('📝 좌표 기반 텍스트 정렬 시작...');
+// 이미지를 구역별로 분할
+function divideImageIntoRegions(textAnnotations) {
+  console.log('이미지 구역 분할 시작...');
   
-  if (response.textAnnotations && response.textAnnotations.length > 1) {
-    console.log('\n🔍 개별 텍스트 블록 좌표 기반 정렬:');
-    
-    // 첫 번째는 전체 텍스트이므로 제외하고 개별 단어들만 분석
-    const textBlocks = response.textAnnotations.slice(1);
-    
-    // 좌표 정보가 있는 블록들만 필터링하고 변환
-    const blocksWithCoords = textBlocks
-      .filter(block => block.boundingPoly && block.boundingPoly.vertices)
-      .map(block => ({
-        text: block.description,
-        x: block.boundingPoly.vertices[0].x || 0,
-        y: block.boundingPoly.vertices[0].y || 0,
-        width: (block.boundingPoly.vertices[2].x || 0) - (block.boundingPoly.vertices[0].x || 0),
-        height: (block.boundingPoly.vertices[2].y || 0) - (block.boundingPoly.vertices[0].y || 0)
-      }));
-    
-    console.log('\n📊 모든 텍스트 블록의 좌표 정보:');
-    blocksWithCoords.forEach((block, index) => {
-      console.log(`${index + 1}: "${block.text}" -> (${block.x}, ${block.y})`);
-    });
-
-    // 동적 임계값 계산 함수
-    function calculateLineThreshold(blocks) {
-      const heights = blocks.map(block => block.height).filter(h => h > 0);
-      if (heights.length === 0) return 25; // 기본값
-      
-      const avgHeight = heights.reduce((sum, h) => sum + h, 0) / heights.length;
-      const threshold = Math.max(20, Math.min(50, avgHeight * 0.8));
-      console.log(`계산된 임계값: ${threshold}픽셀 (평균 높이: ${avgHeight})`);
-      return threshold;
-    }
-
-    const lineThreshold = calculateLineThreshold(blocksWithCoords);
-
-    // Y좌표 기준으로 정렬하되, 같은 줄(동적 임계값)인 경우 X좌표로 정렬
-    const sortedBlocks = blocksWithCoords
-      .sort((a, b) => {
-        // 동적 임계값으로 같은 줄 판단
-        const yDiff = Math.abs(a.y - b.y);
-        if (yDiff < lineThreshold) {
-          return a.x - b.x; // 같은 줄이면 X좌표로 정렬 (왼쪽에서 오른쪽)
-        }
-        return a.y - b.y; // 다른 줄이면 Y좌표로 정렬 (위에서 아래)
-      });
-    
-    console.log('\n🔄 정렬 후 블록 순서:');
-    sortedBlocks.forEach((block, index) => {
-      console.log(`${index + 1}: "${block.text}" -> (${block.x}, ${block.y})`);
-    });
-    
-    // 정렬된 결과를 라인별로 그룹화
-    const organizedLines = [];
-    let currentLine = [];
-    let currentY = -1;
-    
-    sortedBlocks.forEach((block, index) => {
-      // Y좌표가 크게 변했으면 새로운 줄 (동적 임계값 기준)
-      if (Math.abs(block.y - currentY) > lineThreshold) {
-        if (currentLine.length > 0) {
-          organizedLines.push([...currentLine]);
-        }
-        currentLine = [block];
-        currentY = block.y;
-      } else {
-        currentLine.push(block);
-      }
-    });
-    
-    // 마지막 줄 추가
-    if (currentLine.length > 0) {
-      organizedLines.push(currentLine);
-    }
-    
-    console.log('\n📍 정렬된 텍스트 (좌상단 → 우하단 순서):');
-    const sortedText = [];
-    
-    // 라인 경계를 무시하고 전체 블록에서 패턴 추출
-    const allBlocks = organizedLines.flat();
-    const globalPatterns = extractGlobalPatterns(allBlocks);
-
-    globalPatterns.forEach((pattern, index) => {
-      console.log(`패턴 ${index + 1}: "${pattern.text}"`);
-      sortedText.push(pattern.text);
-    });
-
-    // 개별 블록 정보도 출력
-    allBlocks.forEach((block, blockIndex) => {
-      console.log(`  블록 ${blockIndex + 1}: "${block.text}" (${block.x}, ${block.y})`);
-    });
-
-    // 전체 블록에서 글로벌 패턴을 추출하는 함수
-    function extractGlobalPatterns(allBlocks) {
-      const fullText = allBlocks.map(block => block.text).join(' ');
-      console.log(`전체 텍스트: "${fullText}"`);
-      
-      const patterns = [];
-      let remainingText = fullText;
-      
-      // 패턴들을 순차적으로 찾아서 제거하며 처리
-      while (remainingText.trim().length > 0) {
-        let foundPattern = false;
-        
-        // 패턴1: 항목 A/B만원 (담보명 + 분수)
-        const fractionMatch = remainingText.match(/^([가-힣\s]*?)(\d{1,3}(?:,\d{3})*)\s*\/\s*(\d{1,3}(?:,\d{3})*)\s*만원/);
-        if (fractionMatch) {
-          const coverageName = fractionMatch[1].trim().replace(/\s+/g, '');
-          const valueA = fractionMatch[2].replace(/,/g, '');
-          const valueB = fractionMatch[3].replace(/,/g, '');
-          const patternText = `${coverageName}${valueA}/${valueB}만원`;
-          
-          patterns.push({
-            text: patternText,
-            type: 'fraction',
-            name: coverageName,
-            value: parseInt(valueA)
-          });
-          
-          remainingText = remainingText.substring(fractionMatch[0].length).trim();
-          foundPattern = true;
-          continue;
-        }
-        
-        // 패턴2: A만원부족
-        const deficitMatch = remainingText.match(/^(\d{1,3}(?:,\d{3})*)\s*만원\s*부족/);
-        if (deficitMatch) {
-          const value = deficitMatch[1].replace(/,/g, '');
-          const patternText = `${value}만원부족`;
-          
-          patterns.push({
-            text: patternText,
-            type: 'deficit',
-            value: parseInt(value)
-          });
-          
-          remainingText = remainingText.substring(deficitMatch[0].length).trim();
-          foundPattern = true;
-          continue;
-        }
-        
-        // 패턴3: 항목A만원 (단순형태)
-        const simpleMatch = remainingText.match(/^([가-힣\s]*?)(\d{1,3}(?:,\d{3})*)\s*만원(?!\s*[\/부족])/);
-        if (simpleMatch) {
-          const coverageName = simpleMatch[1].trim().replace(/\s+/g, '');
-          const value = simpleMatch[2].replace(/,/g, '');
-          const patternText = `${coverageName}${value}만원`;
-          
-          patterns.push({
-            text: patternText,
-            type: 'simple',
-            name: coverageName,
-            value: parseInt(value)
-          });
-          
-          remainingText = remainingText.substring(simpleMatch[0].length).trim();
-          foundPattern = true;
-          continue;
-        }
-        
-        // 패턴을 찾지 못한 경우 - 첫 단어만 건너뛰기
-        if (!foundPattern) {
-          const firstWord = remainingText.split(/\s+/)[0];
-          if (firstWord) {
-            // 단순 텍스트로 추가 (숫자나 만원이 없는 경우)
-            if (!/\d/.test(firstWord) && !firstWord.includes('만원')) {
-              patterns.push({
-                text: firstWord,
-                type: 'text'
-              });
-            }
-            remainingText = remainingText.substring(firstWord.length).trim();
-          } else {
-            break;
-          }
-        }
-      }
-      
-      return patterns;
-    }
-    
-    // 정렬된 텍스트를 전체 텍스트로 결합
-    const organizedFullText = sortedText.join('\n');
-    console.log('\n📋 최종 정렬된 전체 텍스트:');
-    console.log(organizedFullText);
-    
-    console.log('=== OCR 분석 완료 ===\n');
-    
-    // 정렬된 텍스트를 반환
-    return organizedFullText;
+  if (!textAnnotations || textAnnotations.length < 2) {
+    console.error('텍스트 주석이 충분하지 않습니다.');
+    return { customerInfo: [], majorDisease: [], medical: [], caregiver: [], lifestyle: [] };
   }
+
+  // 전체 이미지 경계 구하기
+  const fullTextBounds = textAnnotations[0].boundingPoly;
+  if (!fullTextBounds || !fullTextBounds.vertices) {
+    console.error('전체 텍스트 경계를 찾을 수 없습니다.');
+    return { customerInfo: [], majorDisease: [], medical: [], caregiver: [], lifestyle: [] };
+  }
+
+  const imageWidth = fullTextBounds.vertices[2].x - fullTextBounds.vertices[0].x;
+  const imageHeight = fullTextBounds.vertices[2].y - fullTextBounds.vertices[0].y;
+  const topY = fullTextBounds.vertices[0].y;
+  const leftX = fullTextBounds.vertices[0].x;
   
-  console.log('=== OCR 분석 완료 (fallback) ===\n');
-  return ''; // 좌표 정보가 없으면 빈 텍스트 반환
+  console.log(`이미지 크기: ${imageWidth} x ${imageHeight}, 시작점: (${leftX}, ${topY})`);
+
+  // 구역 경계 계산 (상대적 위치)
+  const regions = {
+    customerInfo: {
+      top: topY,
+      bottom: topY + imageHeight * 0.1,
+      left: leftX,
+      right: leftX + imageWidth
+    },
+    majorDisease: {
+      top: topY + imageHeight * 0.1,
+      bottom: topY + imageHeight * 0.9,
+      left: leftX + imageWidth * 0.25,
+      right: leftX + imageWidth * 0.5
+    },
+    medical: {
+      top: topY + imageHeight * 0.1,
+      bottom: topY + imageHeight * 0.9,
+      left: leftX + imageWidth * 0.5,
+      right: leftX + imageWidth * 0.75
+    },
+    caregiver: {
+      top: topY + imageHeight * 0.1,
+      bottom: topY + imageHeight * 0.9,
+      left: leftX + imageWidth * 0.75,
+      right: leftX + imageWidth
+    },
+    lifestyle: {
+      top: topY + imageHeight * 0.9,
+      bottom: topY + imageHeight,
+      left: leftX,
+      right: leftX + imageWidth
+    }
+  };
+
+  // 각 텍스트 블록을 해당 구역에 할당
+  const result = {
+    customerInfo: [],
+    majorDisease: [],
+    medical: [],
+    caregiver: [],
+    lifestyle: []
+  };
+
+  // 개별 텍스트 주석들 처리 (첫 번째는 전체 텍스트이므로 제외)
+  for (let i = 1; i < textAnnotations.length; i++) {
+    const annotation = textAnnotations[i];
+    if (!annotation.boundingPoly || !annotation.boundingPoly.vertices) continue;
+
+    const textX = annotation.boundingPoly.vertices[0].x || 0;
+    const textY = annotation.boundingPoly.vertices[0].y || 0;
+
+    // 각 구역에 속하는지 확인
+    for (const [regionName, bounds] of Object.entries(regions)) {
+      if (textX >= bounds.left && textX <= bounds.right && 
+          textY >= bounds.top && textY <= bounds.bottom) {
+        result[regionName].push({
+          text: annotation.description,
+          x: textX,
+          y: textY
+        });
+        break;
+      }
+    }
+  }
+
+  console.log('구역별 텍스트 블록 수:');
+  Object.entries(result).forEach(([region, blocks]) => {
+    console.log(`  ${region}: ${blocks.length}개`);
+  });
+
+  return result;
 }
 
 // 고객 정보 추출
-function extractCustomerInfo(text) {
+function extractCustomerInfoFromRegion(customerInfoBlocks) {
+  console.log('고객 정보 추출 시작...');
+  
+  if (!customerInfoBlocks || customerInfoBlocks.length === 0) {
+    console.log('고객 정보 구역에서 텍스트를 찾을 수 없습니다.');
+    return;
+  }
+
+  // Y좌표 기준으로 정렬하여 텍스트 순서 정리
+  const sortedBlocks = customerInfoBlocks.sort((a, b) => {
+    const yDiff = Math.abs(a.y - b.y);
+    if (yDiff < 20) { // 같은 줄로 간주
+      return a.x - b.x; // X좌표로 정렬
+    }
+    return a.y - b.y; // Y좌표로 정렬
+  });
+
+  const fullText = sortedBlocks.map(block => block.text).join(' ');
+  console.log('고객 정보 구역 텍스트:', fullText);
+
+  // 고객명 추출: "○○○님의 한 장 요약" 패턴
   const namePatterns = [
-    /([가-힣]{2,4})님의\s*한\s*장\s*요약\s*보장분석/,
-    /^([가-힣]{2,4})님/m,
-    /성명[:\s]*([가-힣]{2,4})/,
-    /고객명[:\s]*([가-힣]{2,4})/
+    /([가-힣]{2,4})님의\s*한\s*장\s*요약/,
+    /([가-힣]{2,4})님의/,
+    /^([가-힣]{2,4})님/
   ];
 
   for (const pattern of namePatterns) {
-    const match = text.match(pattern);
+    const match = fullText.match(pattern);
     if (match) {
       document.getElementById('customerName').value = match[1];
       console.log(`고객명 추출 성공: ${match[1]}`);
@@ -1348,109 +1285,128 @@ function extractCustomerInfo(text) {
     }
   }
 
+  // 생년월일 추출: "생년월일 YY-MM-DD" 패턴
   const birthPatterns = [
+    /생년월일\s+(\d{2}-\d{1,2}-\d{1,2})/,
     /생년월일\s*(\d{2}-\d{1,2}-\d{1,2})/,
-    /생년월일\s*(\d{4}-\d{1,2}-\d{1,2})/,
-    /생년월일\s*(\d{2}\.\d{1,2}\.\d{1,2})/
+    /(\d{2}-\d{1,2}-\d{1,2})/
   ];
 
   for (const pattern of birthPatterns) {
-    const match = text.match(pattern);
+    const match = fullText.match(pattern);
     if (match) {
-      let date = match[1];
-      if (date.includes('.')) {
-        date = date.replace(/\./g, '-');
-      }
-      if (date.length > 8) {
-        const parts = date.split('-');
-        if (parts[0].length === 4) {
-          date = `${parts[0].slice(2)}-${parts[1]}-${parts[2]}`;
-        }
-      }
-      document.getElementById('birthDate').value = date;
-      console.log(`생년월일 추출 성공: ${date}`);
+      document.getElementById('birthDate').value = match[1];
+      console.log(`생년월일 추출 성공: ${match[1]}`);
       break;
     }
   }
 }
 
-// OCR 값 추출 로직
-function extractCoverageAmountsForBeforeAfter(text) {
-  console.log('새로운 OCR 값 추출 시작...');
-  console.log('OCR 텍스트:', text);
+// 각 구역에서 담보 데이터 추출
+function extractCoverageDataFromRegions(regions) {
+  console.log('담보 데이터 추출 시작...');
+
+  // 큰병보장 섹션 처리 (A/B만원 형태)
+  extractFractionFormatData(regions.majorDisease, '큰병보장');
   
-  // 1단계: 필요한 패턴들을 정규식으로 추출
-  const patterns = [
-    /생활보장변호사선임비용(\d+)만원/,
-    /대인형사합의지원금(\d+)만원/,
-    /뇌혈관질환(\d+)\/\d+만원/,
-    /질병입원실손(\d+)\/\d+만원/,
-    /일반암(\d+)\/\d+만원/,
-    /상해입원실손(\d+)\/\d+만원/,
-    /통합암(\d+)\/\d+만원/,
-    /표적항암약물(\d+)\/\d+만원/,
-    /뇌졸중(\d+)\/\d+만원/,
-    /간병인상해입원(\d+)\/\d+만원/,
-    /허혈성심질환(\d+)\/\d+만원/,
-    /간병인질병입원(\d+)\/\d+만원/,
-    /급성심근경색증(\d+)\/\d+만원/,
-    /일상생활(\d+)만원/
-  ];
+  // 의료보장 섹션 처리 (A/B만원 형태)
+  extractFractionFormatData(regions.medical, '의료보장');
   
-  // 2단계: 각 패턴별로 값 추출
-  const extractedData = {};
+  // 간병보장 섹션 처리 (A/B만원 형태)  
+  extractFractionFormatData(regions.caregiver, '간병보장');
   
-  patterns.forEach(pattern => {
-    const match = text.match(pattern);
-    if (match) {
-      const fullMatch = match[0]; // 전체 매치 (예: "뇌졸중1000/3000만원")
-      const value = parseInt(match[1]); // 첫 번째 숫자 (예: 1000)
-      
-      // 항목명 추출 (숫자와 "만원" 제거)
-      const itemName = fullMatch.replace(/\d+.*$/, ''); // 숫자부터 끝까지 제거
-      
-      extractedData[itemName] = value;
-      console.log(`추출됨: ${itemName} = ${value}`);
-    }
-  });
-  
-  console.log('추출된 데이터:', extractedData);
-  
-  // 3단계: 매핑 테이블을 사용하여 입력창에 값 설정
-  const mappingTable = {
-    '일반암': 'generalCancer',
-    '통합암': 'totalCancer',
-    '표적항암약물': 'targetTherapy',
-    '뇌혈관질환': 'cerebrovascularDiagnosis',
-    '뇌졸중': 'strokeDiagnosis',
-    '허혈성심질환': 'ischemicHeartDiagnosis',
-    '급성심근경색증': 'myocardialInfarctionDiagnosis',
-    '질병입원실손': 'diseaseHospitalization',
-    '상해입원실손': 'injuryHospitalization',
-    '간병인질병입원': 'nursingHospitalOut',
-    '대인형사합의지원금': 'criminalSettlement',
-    '생활보장변호사선임비용': 'lawyerAppointment',
-    '일상생활': 'dailyLifeLiability'
-  };
-  
-  // 4단계: 매핑하여 입력창에 값 설정
-  Object.entries(extractedData).forEach(([itemName, value]) => {
-    const fieldKey = mappingTable[itemName];
-    if (fieldKey) {
-      setFieldValue(fieldKey, value);
-      console.log(`매핑 성공: ${itemName} -> ${fieldKey} = ${value}`);
-    } else {
-      console.log(`매핑 실패: ${itemName}에 해당하는 필드를 찾을 수 없음`);
-    }
-  });
-  
-  // 5단계: 자동계산 트리거
+  // 생활보장 섹션 처리 (A만원 형태)
+  extractSimpleFormatData(regions.lifestyle, '생활보장');
+
+  // 자동계산 트리거
   setTimeout(() => {
     handleMajorCirculatoryCalculation('before');
     handleMajorCirculatoryCalculation('after');
   }, 100);
+}
+
+// A/B만원 형태 데이터 추출 (큰병보장, 의료보장, 간병보장)
+function extractFractionFormatData(blocks, sectionName) {
+  console.log(`${sectionName} 섹션 처리 시작...`);
   
-  console.log('OCR 값 추출 완료');
+  if (!blocks || blocks.length === 0) {
+    console.log(`${sectionName} 섹션에서 텍스트를 찾을 수 없습니다.`);
+    return;
+  }
+
+  // Y좌표 기준으로 정렬
+  const sortedBlocks = blocks.sort((a, b) => {
+    const yDiff = Math.abs(a.y - b.y);
+    if (yDiff < 25) { // 같은 줄로 간주
+      return a.x - b.x;
+    }
+    return a.y - b.y;
+  });
+
+  const fullText = sortedBlocks.map(block => block.text).join(' ');
+  console.log(`${sectionName} 전체 텍스트:`, fullText);
+
+  // 라벨명 A/B만원 패턴 추출
+  const patterns = Object.keys(LABEL_MAPPING).map(label => {
+    // 라벨과 숫자 사이의 공백을 유연하게 처리
+    return new RegExp(`(${label})\\s*(\\d{1,3}(?:,\\d{3})*)\\s*\\/\\s*(\\d{1,3}(?:,\\d{3})*)\\s*만원`, 'g');
+  });
+
+  patterns.forEach(pattern => {
+    let match;
+    while ((match = pattern.exec(fullText)) !== null) {
+      const labelName = match[1];
+      const valueA = parseInt(match[2].replace(/,/g, ''));
+      const valueB = parseInt(match[3].replace(/,/g, ''));
+      
+      const fieldKey = LABEL_MAPPING[labelName];
+      if (fieldKey) {
+        setFieldValue(fieldKey, valueA);
+        console.log(`${sectionName} 추출 성공: ${labelName} -> ${fieldKey} = ${valueA} (원본: ${valueA}/${valueB})`);
+      }
+    }
+  });
+}
+
+// A만원 형태 데이터 추출 (생활보장)
+function extractSimpleFormatData(blocks, sectionName) {
+  console.log(`${sectionName} 섹션 처리 시작...`);
+  
+  if (!blocks || blocks.length === 0) {
+    console.log(`${sectionName} 섹션에서 텍스트를 찾을 수 없습니다.`);
+    return;
+  }
+
+  // X좌표 기준으로 정렬 (가로 배열)
+  const sortedBlocks = blocks.sort((a, b) => {
+    const yDiff = Math.abs(a.y - b.y);
+    if (yDiff < 25) {
+      return a.x - b.x;
+    }
+    return a.y - b.y;
+  });
+
+  const fullText = sortedBlocks.map(block => block.text).join(' ');
+  console.log(`${sectionName} 전체 텍스트:`, fullText);
+
+  // 라벨명 A만원 패턴 추출
+  const patterns = Object.keys(LABEL_MAPPING).map(label => {
+    return new RegExp(`(${label})\\s*(\\d{1,3}(?:,\\d{3})*)\\s*만원`, 'g');
+  });
+
+patterns.forEach(pattern => {
+    let match;
+    while ((match = pattern.exec(fullText)) !== null) {
+      const labelName = match[1];
+      const value = parseInt(match[2].replace(/,/g, ''));
+      
+      const fieldKey = LABEL_MAPPING[labelName];
+      if (fieldKey) {
+        setFieldValue(fieldKey, value);
+        console.log(`${sectionName} 추출 성공: ${labelName} -> ${fieldKey} = ${value}`);
+      }
+    }
+  });
 }
 
 // 데이터 저장 및 이미지 다운로드
