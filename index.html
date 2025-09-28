@@ -1388,7 +1388,7 @@ function extractSimplePattern(lines, currentIndex, coverageName) {
   return null;
 }
 
-// 패턴별 매칭 데이터 찾기 (개선된 정확도)
+// 패턴별 매칭 데이터 찾기 (정확한 매칭 우선)
 function findMatchingDataByPattern(structuredData, targetText, expectedPattern) {
   console.log(`매칭 시도: "${targetText}" (패턴: ${expectedPattern})`);
   
@@ -1406,33 +1406,35 @@ function findMatchingDataByPattern(structuredData, targetText, expectedPattern) 
     return match;
   }
   
-  // 2단계: 타겟이 데이터에 포함되는 경우 (더 엄격)
+  // 2단계: 정확한 단어 포함 매칭 (전체 타겟 단어가 포함되어야 함)
   match = structuredData.find(data => {
     const normalizedName = data.name.toLowerCase().replace(/\s+/g, '');
     const normalizedTarget = targetText.toLowerCase().replace(/\s+/g, '');
+    // 타겟 전체가 데이터명에 포함되어야 하고, 타겟이 충분히 구체적이어야 함
     return normalizedName.includes(normalizedTarget) && 
-           normalizedTarget.length >= 2 && // 최소 2글자 이상
+           normalizedTarget.length >= 3 && // 최소 3글자 이상으로 변경
            (expectedPattern === 'any' || data.pattern === expectedPattern || 
             data.pattern.includes(expectedPattern.replace('fraction', '')));
   });
   
   if (match) {
-    console.log(`포함 매칭 발견: "${match.name}" -> ${match.value} (패턴: ${match.pattern})`);
+    console.log(`정확한 포함 매칭 발견: "${match.name}" -> ${match.value} (패턴: ${match.pattern})`);
     return match;
   }
   
-  // 3단계: 부분 매칭 (가장 느슨한 조건)
+  // 3단계: 데이터명이 타겟에 포함되는 경우만 허용 (역방향 포함 제거)
   match = structuredData.find(data => {
     const normalizedName = data.name.toLowerCase().replace(/\s+/g, '');
     const normalizedTarget = targetText.toLowerCase().replace(/\s+/g, '');
-    return (normalizedTarget.includes(normalizedName) || normalizedName.includes(normalizedTarget)) &&
-           Math.min(normalizedName.length, normalizedTarget.length) >= 2 &&
+    // "뇌졸중"이 "뇌혈관질환"에 잘못 매칭되는 것을 방지
+    return normalizedTarget.includes(normalizedName) &&
+           normalizedName.length >= 3 && // 데이터명도 충분히 구체적이어야 함
            (expectedPattern === 'any' || data.pattern === expectedPattern || 
             data.pattern.includes(expectedPattern.replace('fraction', '')));
   });
   
   if (match) {
-    console.log(`부분 매칭 발견: "${match.name}" -> ${match.value} (패턴: ${match.pattern})`);
+    console.log(`역방향 포함 매칭 발견: "${match.name}" -> ${match.value} (패턴: ${match.pattern})`);
     return match;
   }
   
