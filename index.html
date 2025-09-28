@@ -1325,6 +1325,8 @@ function extractStructuredDataByPattern(text) {
   return structuredData;
 }
 
+
+
 // 앞쪽 라인들에서 모든 분수 값들을 미리 찾는 함수 (새로 추가)
 function findAllFractionValuesAhead(lines, currentIndex, processedLines) {
   const values = [];
@@ -1364,44 +1366,39 @@ function findAllFractionValuesAhead(lines, currentIndex, processedLines) {
   
   return values;
 }
-  console.log(`담보명 후보 발견: "${line}"`);
+
+// 담보명 분리 함수 (새로 추가)
+function separateCoverageNames(line) {
+  // 알려진 담보명 목록
+  const knownCoverages = [
+    '뇌혈관질환', '뇌졸중', '허혈성심질환', '급성심근경색증',
+    '일반암', '통합암', '표적항암', '형사합의지원금', 
+    '변호사선임비용', '화재벌금', '일상생활배상책임'
+  ];
   
-  // 개별 담보명 분리 처리
-  const separatedNames = separateCoverageNames(line);
+  const foundNames = [];
   
-  if (separatedNames.length > 1) {
-    // 여러 담보명이 연속으로 있는 경우 개별 처리
-    console.log(`여러 담보명 발견: ${separatedNames.join(', ')}`);
-    
-    // 다음 라인들에서 분수 패턴들을 미리 찾기
-    const availableValues = findAllFractionValuesAhead(lines, i, processedLines);
-    console.log(`사용 가능한 값들: ${JSON.stringify(availableValues)}`);
-    
-    for (let nameIndex = 0; nameIndex < separatedNames.length; nameIndex++) {
-      const coverageName = separatedNames[nameIndex];
-      
-      if (nameIndex < availableValues.length && !isDataAlreadyExists(structuredData, coverageName)) {
-        const valueData = availableValues[nameIndex];
-        const fractionData = {
-          name: coverageName,
-          value: valueData.valueA,
-          pattern: 'fraction',
-          rawLine: valueData.rawLine,
-          usedLineIndex: valueData.lineIndex
-        };
-        
-        structuredData.push(fractionData);
-        console.log(`분리된 담보 패턴 추출: ${coverageName} -> ${fractionData.value}`);
-        
-        // 사용된 라인 마킹
-        processedLines.add(valueData.lineIndex);
-      }
+  // 라인에서 알려진 담보명들을 순차적으로 찾기
+  for (const coverage of knownCoverages) {
+    if (line.includes(coverage)) {
+      foundNames.push(coverage);
     }
-    
-    // 처리된 라인 마킹
-    processedLines.add(i);
-    continue;
   }
+  
+  // 발견된 담보명이 없으면 원본 라인 반환
+  return foundNames.length > 0 ? foundNames : [line];
+}
+
+// 데이터 중복 확인 함수 (새로 추가)
+function isDataAlreadyExists(structuredData, coverageName) {
+  return structuredData.some(data => {
+    const normalizedExisting = data.name.toLowerCase().replace(/\s+/g, '');
+    const normalizedNew = coverageName.toLowerCase().replace(/\s+/g, '');
+    return normalizedExisting.includes(normalizedNew) || normalizedNew.includes(normalizedExisting);
+  });
+}
+
+  
     // 앞쪽 라인들에서 모든 분수 값들을 미리 찾는 함수 (새로 추가)
 function findAllFractionValuesAhead(lines, currentIndex, processedLines) {
   const values = [];
