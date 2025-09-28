@@ -1107,42 +1107,32 @@ async function parseOCRResult(apiResult) {
   extractCoverageAmountsForBeforeAfter(sortedText);
 }
 
-  // 라인을 의미 단위별로 분할하는 함수 (패턴 기반)
+// 라인을 의미 단위별로 분할하는 함수 (패턴 기반)
 function splitLineIntoMeaningfulChunks(lineBlocks) {
   const chunks = [];
   let i = 0;
   
   while (i < lineBlocks.length) {
-    const chunk = [];
+    let chunk = [];
     let foundPattern = false;
     
-    // 현재 위치에서 시작해서 패턴을 찾음
-    for (let j = i; j < lineBlocks.length; j++) {
-      chunk.push(lineBlocks[j]);
-      const currentText = lineBlocks[j].text;
+    // 전체 라인 텍스트로 먼저 패턴 확인
+    const fullLineText = lineBlocks.slice(i).map(b => b.text).join(' ');
+    
+    // 패턴1: 분수형태 찾기 (담보명 + 숫자/숫자만원)
+    const fractionMatch = fullLineText.match(/^(.*?)(\d{1,3}(?:,\d{3})*)\s*\/\s*(\d{1,3}(?:,\d{3})*)\s*만원/);
+    if (fractionMatch) {
+      const targetText = fractionMatch[0]; // 전체 매칭된 텍스트
+      let collectedText = '';
       
-      // 패턴1: A/B만원 분수 형태 - "만원"으로 끝
-      if (currentText === '만원') {
-        // 앞에 분수 패턴이 있는지 확인
-        const chunkText = chunk.map(b => b.text).join(' ');
-        if (/\d+\s*\/\s*\d+\s*만원/.test(chunkText)) {
-          foundPattern = true;
-          i = j + 1;
-          break;
-        }
-      }
-      
-      // 패턴2: A만원 부족 형태 - "부족"으로 끝
-      if (currentText === '부족') {
-        foundPattern = true;
-        i = j + 1;
-        break;
-      }
-      
-      // 패턴3: 단순 A만원 형태 - "만원"으로 끝 (분수가 아닌 경우)
-      if (currentText === '만원') {
-        const chunkText = chunk.map(b => b.text).join(' ');
-        if (!/\d+\s*\/\s*\d+\s*만원/.test(chunkText) && /\d+\s*만원/.test(chunkText)) {
+      // 해당 텍스트에 해당하는 블록들을 수집
+      for (let j = i; j < lineBlocks.length; j++) {
+        chunk.push(lineBlocks[j]);
+        collectedText += lineBlocks[j].text + ' ';
+        
+        // 목표 텍스트를 모두 수집했으면 중단
+        if (collectedText.trim().includes(fractionMatch[2] + ' / ' + fractionMatch[3] + ' 만원') ||
+            collectedText.replace(/\s+/g, '').includes(fractionMatch[2] + '/' + fractionMatch[3] + '만원')) {
           foundPattern = true;
           i = j + 1;
           break;
@@ -1150,25 +1140,52 @@ function splitLineIntoMeaningfulChunks(lineBlocks) {
       }
     }
     
-    // 패턴을 찾지 못한 경우 (한글만 있는 경우 등) 다음 숫자나 만원이 나올 때까지
+    // 패턴2: 부족형태 찾기  
     if (!foundPattern) {
-      if (chunk.length > 0) {
-        // 한글만 있는 블록들은 하나씩 처리하거나 의미있는 단위로 묶기
-        const text = chunk[0].text;
-        if (/[가-힣]/.test(text) && !/\d/.test(text)) {
-          chunks.push([chunk[0]]);
-          i = i + 1;
-        } else {
-          chunks.push(chunk);
-          i = lineBlocks.length; // 끝까지 처리
+      const deficitMatch = fullLineText.match(/^(.*?)(\d{1,3}(?:,\d{3})*)\s*만원\s*부족/);
+      if (deficitMatch) {
+        let collectedText = '';
+        
+        for (let j = i; j < lineBlocks.length; j++) {
+          chunk.push(lineBlocks[j]);
+          collectedText += lineBlocks[j].text + ' ';
+          
+          if (lineBlocks[j].text === '부족') {
+            foundPattern = true;
+            i = j + 1;
+            break;
+          }
         }
-      } else {
-        i++;
       }
-    } else {
-      if (chunk.length > 0) {
-        chunks.push(chunk);
+    }
+    
+    // 패턴3: 단순 만원형태 찾기
+    if (!foundPattern) {
+      const simpleMatch = fullLineText.match(/^(.*?)(\d{1,3}(?:,\d{3})*)\s*만원(?!\s*[\/부족])/);
+      if (simpleMatch) {
+        let collectedText = '';
+        
+        for (let j = i; j < lineBlocks.length; j++) {
+          chunk.push(lineBlocks[j]);
+          collectedText += lineBlocks[j].text + ' ';
+          
+          if (lineBlocks[j].text === '만원') {
+            foundPattern = true;
+            i = j + 1;
+            break;
+          }
+        }
       }
+    }
+    
+    // 패턴을 찾지 못한 경우
+    if (!foundPattern) {
+      chunk = [lineBlocks[i]];
+      i = i + 1;
+    }
+    
+    if (chunk.length > 0) {
+      chunks.push(chunk);
     }
   }
   
