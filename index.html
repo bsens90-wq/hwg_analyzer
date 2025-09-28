@@ -1565,22 +1565,22 @@ function extractCoverageAmountsForBeforeAfter(text) {
   
  // 직접 매핑 테이블 (OCR 텍스트 -> 필드명)
 // OCR 텍스트 정규화 테이블 (긴 텍스트 -> 표준 짧은 명칭)
+// 수정 후 (올바른 문법)
 const ocrTextNormalization = {
-'일반암' : '일반암진단비'
-'통합암' : '통합암진단비'
-'표적항암약물' : '표적항암치료비'
-'뇌혈관질환' : '뇌혈관진단비'
-'뇌졸중' : '뇌졸중진단비'
-'허혈성심질환' : '허혈성진단비'
-'급성심근경색증' : '심근경색진단비'
-'질병입원실손' : '(실손)질병입원'
-'상해입원실손' : '(실손)상해입원'
-'간병인질병입원' : '요양병원 외'
-'대인형사합의지원금' : '형사합의금'
-'생활보장변호사선임비용' : '변호사선임비'
-'화재벌금' : '화재벌금'
-'일상생활' : '일상생활배상책임'
-
+  '일반암': '일반암진단비',
+  '통합암': '통합암진단비',
+  '표적항암약물': '표적항암치료비',
+  '뇌혈관질환': '뇌혈관진단비',
+  '뇌졸중': '뇌졸중진단비',
+  '허혈성심질환': '허혈성진단비',
+  '급성심근경색증': '심근경색진단비',
+  '질병입원실손': '(실손)질병입원',
+  '상해입원실손': '(실손)상해입원',
+  '간병인질병입원': '요양병원 외',
+  '대인형사합의지원금': '형사합의금',
+  '생활보장변호사선임비용': '변호사선임비',
+  '화재벌금': '화재벌금',
+  '일상생활': '일상생활배상책임'
 };
 
 // 직접 매핑 테이블 (표준 명칭 -> 필드명)
@@ -1612,6 +1612,8 @@ function normalizeOcrText(text) {
   return text;
 }
 
+
+// 수정 후 (중복 제거하고 정규화 버전만 유지)
 // 2단계: 라인별 직접 매칭 및 값 설정
 const lines = cleanedText.split('\n').filter(line => line.trim());
 lines.forEach(line => {
@@ -1653,43 +1655,7 @@ lines.forEach(line => {
     return;
   }
 });
-// 2단계: 라인별 직접 매칭 및 값 설정
-const lines = cleanedText.split('\n').filter(line => line.trim());
-lines.forEach(line => {
-  console.log(`처리 중인 라인: "${line}"`);
   
-  // 패턴1: A/B만원 (A값 추출)
-  const fractionMatch = line.match(/^(.+?)(\d{1,3}(?:,\d{3})*)\/(\d{1,3}(?:,\d{3})*)만원$/);
-  if (fractionMatch) {
-    const name = fractionMatch[1].trim();
-    const valueA = parseInt(fractionMatch[2].replace(/,/g, ''));
-    const fieldKey = directMappings[name];
-    
-    if (fieldKey) {
-      setFieldValue(fieldKey, valueA);
-      console.log(`${name}: ${valueA}만원 설정 (패턴: fraction)`);
-    } else {
-      console.log(`매핑되지 않은 항목: "${name}"`);
-    }
-    return;
-  }
-  
-  // 패턴2: A만원 (A값 추출)
-  const simpleMatch = line.match(/^(.+?)(\d{1,3}(?:,\d{3})*)만원$/);
-  if (simpleMatch) {
-    const name = simpleMatch[1].trim();
-    const value = parseInt(simpleMatch[2].replace(/,/g, ''));
-    const fieldKey = directMappings[name];
-    
-    if (fieldKey) {
-      setFieldValue(fieldKey, value);
-      console.log(`${name}: ${value}만원 설정 (패턴: simple)`);
-    } else {
-      console.log(`매핑되지 않은 항목: "${name}"`);
-    }
-    return;
-  }
-});
 
 // 헬퍼 함수: 필드 값 설정
 function setFieldValue(fieldKey, value) {
