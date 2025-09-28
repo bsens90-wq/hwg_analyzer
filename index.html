@@ -1397,22 +1397,35 @@ function extractCoverageAmountsForBeforeAfter(text) {
     /일상생활(\d+)만원/
   ];
   
-  // 2단계: 각 패턴별로 값 추출
-  const extractedData = {};
-  
-  patterns.forEach(pattern => {
-    const match = text.match(pattern);
-    if (match) {
-      const fullMatch = match[0]; // 전체 매치 (예: "뇌졸중1000/3000만원")
-      const value = parseInt(match[1]); // 첫 번째 숫자 (예: 1000)
-      
-      // 항목명 추출 (숫자와 "만원" 제거)
-      const itemName = fullMatch.replace(/\d+.*$/, ''); // 숫자부터 끝까지 제거
-      
-      extractedData[itemName] = value;
-      console.log(`추출됨: ${itemName} = ${value}`);
+  // 2단계: 각 패턴별로 값 추출 및 하단 레이아웃 키워드 기반 인식
+const extractedData = {};
+
+patterns.forEach(pattern => {
+  const match = text.match(pattern);
+  if (match) {
+    const fullMatch = match[0];
+    const value = parseInt(match[1]);
+    
+    // 하단 레이아웃 키워드 기반 항목명 인식
+    let itemName = '';
+    
+    if (fullMatch.includes('대인') && fullMatch.includes('형사') && fullMatch.includes('합의')) {
+      itemName = '대인형사합의지원금';
+    } else if (fullMatch.includes('변호사') && fullMatch.includes('선임')) {
+      itemName = '변호사선임비용';
+    } else if (fullMatch.includes('일상') && fullMatch.includes('생활') && fullMatch.includes('배상')) {
+      itemName = '일상생활배상책임';
+    } else if (fullMatch.includes('화재') && fullMatch.includes('벌금') && !fullMatch.includes('운전자')) {
+      itemName = '화재벌금';
+    } else {
+      // 상단 표 형태는 기존 방식 사용
+      itemName = fullMatch.replace(/\d+.*$/, '');
     }
-  });
+    
+    extractedData[itemName] = value;
+    console.log(`추출됨: ${itemName} = ${value}`);
+  }
+});
   
   console.log('추출된 데이터:', extractedData);
   
