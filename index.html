@@ -884,20 +884,7 @@ function formatAmount(value) {
 
 // 입력 필드 포맷팅 이벤트 추가
 function addAmountFormatting() {
-  document.addEventListener('input', function(e) {
-    if (e.target.classList.contains('amount-input')) {
-      const cursorPos = e.target.selectionStart;
-      const numbers = e.target.value.replace(/[^0-9]/g, '');
-      
-      if (numbers) {
-        const formatted = parseInt(numbers).toLocaleString() + '만원';
-        e.target.value = formatted;
-        
-        const newCursorPos = formatted.length - 2;
-        e.target.setSelectionRange(newCursorPos, newCursorPos);
-      }
-    }
-  });
+  document.addEventListener('input', handleAmountInput);
   
   document.addEventListener('blur', function(e) {
     if (e.target.classList.contains('amount-input')) {
@@ -1555,6 +1542,42 @@ function extractGlobalPatterns(allBlocks) {
 }
   
 
+// 헬퍼 함수: 필드 값 설정 (전역 함수로 이동)
+function setFieldValue(fieldKey, value) {
+  console.log(`setFieldValue 호출: ${fieldKey} = ${value}`);
+  
+  const beforeInput = document.getElementById(fieldKey + '_before');
+  const afterInput = document.getElementById(fieldKey + '_after');
+  
+  const displayValue = value === 0 ? '' : value.toLocaleString() + '만원';
+  
+  if (beforeInput) {
+    // 포맷팅 이벤트를 일시적으로 비활성화
+    beforeInput.removeEventListener('input', handleAmountInput);
+    beforeInput.value = displayValue;
+    console.log(`${fieldKey}_before 값 설정: ${displayValue}`);
+    // 이벤트 리스너 다시 활성화
+    setTimeout(() => {
+      beforeInput.addEventListener('input', handleAmountInput);
+    }, 100);
+  } else {
+    console.log(`${fieldKey}_before 필드를 찾을 수 없음`);
+  }
+  
+  if (afterInput) {
+    // 포맷팅 이벤트를 일시적으로 비활성화
+    afterInput.removeEventListener('input', handleAmountInput);
+    afterInput.value = displayValue;
+    console.log(`${fieldKey}_after 값 설정: ${displayValue}`);
+    // 이벤트 리스너 다시 활성화
+    setTimeout(() => {
+      afterInput.addEventListener('input', handleAmountInput);
+    }, 100);
+  } else {
+    console.log(`${fieldKey}_after 필드를 찾을 수 없음`);
+  }
+}
+
 // 개선된 OCR 담보 금액 추출 (구조화된 패턴 인식)
 function extractCoverageAmountsForBeforeAfter(text) {
   console.log('개선된 OCR 담보 금액 추출 시작...');
@@ -1563,68 +1586,52 @@ function extractCoverageAmountsForBeforeAfter(text) {
   const cleanedText = removeDeficitLines(text);
   console.log('부족 라인 제거 후:', cleanedText);
   
-  // OCR 텍스트 정규화 테이블 (긴 텍스트 -> 표준 짧은 명칭)
-  const ocrTextNormalization = {
-    '일반암': '일반암',
-    '통합암': '통합암',
-    '표적항암약물': '표적항암',
-    '뇌혈관질환': '뇌혈관',
-    '뇌졸중': '뇌졸중',
-    '허혈성심질환': '허혈성',
-    '급성심근경색증': '심근경색',
-    '질병입원실손': '질병입원',
-    '상해입원실손': '상해입원',
-    '간병인질병입원': '간병인',
-    '대인형사합의지원금': '형사합의',
-    '생활보장변호사선임비용': '변호사',
-    '화재벌금': '화재벌금',
-    '일상생활': '일상생활'
-  };
-
-  // 직접 매핑 테이블 (표준 명칭 -> 필드명)
-  const directMappings = {
+  // OCR 텍스트 정규화 및 매핑 테이블
+  const ocrMappings = {
     '일반암': 'generalCancer',
-    '통합암': 'totalCancer', 
+    '통합암': 'totalCancer',
+    '표적항암약물': 'targetTherapy',
     '표적항암': 'targetTherapy',
+    '뇌혈관질환': 'cerebrovascularDiagnosis',
     '뇌혈관': 'cerebrovascularDiagnosis',
     '뇌졸중': 'strokeDiagnosis',
+    '허혈성심질환': 'ischemicHeartDiagnosis',
     '허혈성': 'ischemicHeartDiagnosis',
+    '급성심근경색증': 'myocardialInfarctionDiagnosis',
     '심근경색': 'myocardialInfarctionDiagnosis',
+    '질병입원실손': 'diseaseHospitalization',
     '질병입원': 'diseaseHospitalization',
+    '상해입원실손': 'injuryHospitalization',
     '상해입원': 'injuryHospitalization',
+    '간병인질병입원': 'nursingHospitalOut',
     '간병인': 'nursingHospitalOut',
+    '대인형사합의지원금': 'criminalSettlement',
     '형사합의': 'criminalSettlement',
+    '생활보장변호사선임비용': 'lawyerAppointment',
     '변호사': 'lawyerAppointment',
     '화재벌금': 'fireFine',
     '일상생활': 'dailyLifeLiability'
   };
-
-  // 텍스트 정규화 함수
-  function normalizeOcrText(text) {
-    let normalizedText = text;
-    for (const [longName, shortName] of Object.entries(ocrTextNormalization)) {
-      if (normalizedText.includes(longName)) {
-        normalizedText = normalizedText.replace(longName, shortName);
-      }
-    }
-    return normalizedText;
-  }
 
   // 2단계: 라인별 직접 매칭 및 값 설정
   const lines = cleanedText.split('\n').filter(line => line.trim());
   lines.forEach(line => {
     console.log(`처리 중인 라인: "${line}"`);
     
-    // 먼저 OCR 텍스트 정규화
-    const normalizedLine = normalizeOcrText(line);
-    console.log(`정규화된 라인: "${normalizedLine}"`);
-    
     // 분수 패턴 매칭 (A/B만원)
-    const fractionMatch = normalizedLine.match(/([가-힣]+)(\d{1,3}(?:,\d{3})*)\/(\d{1,3}(?:,\d{3})*)만원/);
+    const fractionMatch = line.match(/([가-힣\s]+?)(\d{1,3}(?:,\d{3})*)\/(\d{1,3}(?:,\d{3})*)만원/);
     if (fractionMatch) {
-      const name = fractionMatch[1].trim();
+      const name = fractionMatch[1].trim().replace(/\s+/g, '');
       const valueA = parseInt(fractionMatch[2].replace(/,/g, ''));
-      const fieldKey = directMappings[name];
+      
+      // 매핑 테이블에서 필드키 찾기
+      let fieldKey = null;
+      for (const [key, value] of Object.entries(ocrMappings)) {
+        if (name.includes(key) || key.includes(name)) {
+          fieldKey = value;
+          break;
+        }
+      }
       
       if (fieldKey) {
         setFieldValue(fieldKey, valueA);
@@ -1636,11 +1643,19 @@ function extractCoverageAmountsForBeforeAfter(text) {
     }
 
     // 단순 패턴 매칭 (A만원)
-    const simpleMatch = normalizedLine.match(/([가-힣]+)(\d{1,3}(?:,\d{3})*)만원(?!.*\/)/);
+    const simpleMatch = line.match(/([가-힣\s]+?)(\d{1,3}(?:,\d{3})*)만원(?!.*\/)/);
     if (simpleMatch) {
-      const name = simpleMatch[1].trim();
+      const name = simpleMatch[1].trim().replace(/\s+/g, '');
       const value = parseInt(simpleMatch[2].replace(/,/g, ''));
-      const fieldKey = directMappings[name];
+      
+      // 매핑 테이블에서 필드키 찾기
+      let fieldKey = null;
+      for (const [key, val] of Object.entries(ocrMappings)) {
+        if (name.includes(key) || key.includes(name)) {
+          fieldKey = val;
+          break;
+        }
+      }
       
       if (fieldKey) {
         setFieldValue(fieldKey, value);
@@ -1652,27 +1667,27 @@ function extractCoverageAmountsForBeforeAfter(text) {
     }
   });
   
-
-// 헬퍼 함수: 필드 값 설정
-function setFieldValue(fieldKey, value) {
-  const beforeInput = document.getElementById(fieldKey + '_before');
-  const afterInput = document.getElementById(fieldKey + '_after');
-  
-  const displayValue = value === 0 ? '' : value.toLocaleString() + '만원';
-  
-  if (beforeInput) {
-    beforeInput.value = displayValue;
-  }
-  if (afterInput) {
-    afterInput.value = displayValue;
-  }
-}
-  
   // OCR 완료 후 자동계산 트리거
   setTimeout(() => {
     handleMajorCirculatoryCalculation('before');
     handleMajorCirculatoryCalculation('after');
   }, 100);
+}
+
+// 포맷팅 이벤트 핸들러 함수 분리
+function handleAmountInput(e) {
+  if (e.target.classList.contains('amount-input')) {
+    const cursorPos = e.target.selectionStart;
+    const numbers = e.target.value.replace(/[^0-9]/g, '');
+    
+    if (numbers) {
+      const formatted = parseInt(numbers).toLocaleString() + '만원';
+      e.target.value = formatted;
+      
+      const newCursorPos = formatted.length - 2;
+      e.target.setSelectionRange(newCursorPos, newCursorPos);
+    }
+  }
 }
 
 // 담보명 분리 함수
