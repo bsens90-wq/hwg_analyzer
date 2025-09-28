@@ -1226,94 +1226,107 @@ function analyzeOCRTextOrder(response) {
       console.log(`  블록 ${blockIndex + 1}: "${block.text}" (${block.x}, ${block.y})`);
     });
 
-    // 전체 블록에서 글로벌 패턴을 추출하는 함수
-    function extractGlobalPatterns(allBlocks) {
-      const fullText = allBlocks.map(block => block.text).join(' ');
-      console.log(`전체 텍스트: "${fullText}"`);
+
+
+// 전체 블록에서 글로벌 패턴을 추출하는 함수
+function extractGlobalPatterns(allBlocks) {
+  // 하단 레이아웃 제외 키워드 정의
+  const excludeKeywords = ['생활보장', '적정', '부족', '미보장'];
+  
+  // 제외 키워드가 포함된 블록들을 필터링
+  const filteredBlocks = allBlocks.filter(block => {
+    const text = block.text.trim();
+    return !excludeKeywords.includes(text);
+  });
+  
+  const fullText = filteredBlocks.map(block => block.text).join(' ');
+  console.log(`필터링된 전체 텍스트: "${fullText}"`);
+  
+  const patterns = [];
+  let remainingText = fullText;
+  
+  // 패턴들을 순차적으로 찾아서 제거하며 처리
+  while (remainingText.trim().length > 0) {
+    let foundPattern = false;
+    
+    // 패턴1: 항목 A/B만원 (담보명 + 분수)
+    const fractionMatch = remainingText.match(/^([가-힣\s]*?)(\d{1,3}(?:,\d{3})*)\s*\/\s*(\d{1,3}(?:,\d{3})*)\s*만원/);
+    if (fractionMatch) {
+      const coverageName = fractionMatch[1].trim().replace(/\s+/g, '');
+      const valueA = fractionMatch[2].replace(/,/g, '');
+      const valueB = fractionMatch[3].replace(/,/g, '');
+      const patternText = `${coverageName}${valueA}/${valueB}만원`;
       
-      const patterns = [];
-      let remainingText = fullText;
+      patterns.push({
+        text: patternText,
+        type: 'fraction',
+        name: coverageName,
+        value: parseInt(valueA)
+      });
       
-      // 패턴들을 순차적으로 찾아서 제거하며 처리
-      while (remainingText.trim().length > 0) {
-        let foundPattern = false;
-        
-        // 패턴1: 항목 A/B만원 (담보명 + 분수)
-        const fractionMatch = remainingText.match(/^([가-힣\s]*?)(\d{1,3}(?:,\d{3})*)\s*\/\s*(\d{1,3}(?:,\d{3})*)\s*만원/);
-        if (fractionMatch) {
-          const coverageName = fractionMatch[1].trim().replace(/\s+/g, '');
-          const valueA = fractionMatch[2].replace(/,/g, '');
-          const valueB = fractionMatch[3].replace(/,/g, '');
-          const patternText = `${coverageName}${valueA}/${valueB}만원`;
-          
-          patterns.push({
-            text: patternText,
-            type: 'fraction',
-            name: coverageName,
-            value: parseInt(valueA)
-          });
-          
-          remainingText = remainingText.substring(fractionMatch[0].length).trim();
-          foundPattern = true;
-          continue;
-        }
-        
-        // 패턴2: A만원부족
-        const deficitMatch = remainingText.match(/^(\d{1,3}(?:,\d{3})*)\s*만원\s*부족/);
-        if (deficitMatch) {
-          const value = deficitMatch[1].replace(/,/g, '');
-          const patternText = `${value}만원부족`;
-          
-          patterns.push({
-            text: patternText,
-            type: 'deficit',
-            value: parseInt(value)
-          });
-          
-          remainingText = remainingText.substring(deficitMatch[0].length).trim();
-          foundPattern = true;
-          continue;
-        }
-        
-        // 패턴3: 항목A만원 (단순형태)
-        const simpleMatch = remainingText.match(/^([가-힣\s]*?)(\d{1,3}(?:,\d{3})*)\s*만원(?!\s*[\/부족])/);
-        if (simpleMatch) {
-          const coverageName = simpleMatch[1].trim().replace(/\s+/g, '');
-          const value = simpleMatch[2].replace(/,/g, '');
-          const patternText = `${coverageName}${value}만원`;
-          
-          patterns.push({
-            text: patternText,
-            type: 'simple',
-            name: coverageName,
-            value: parseInt(value)
-          });
-          
-          remainingText = remainingText.substring(simpleMatch[0].length).trim();
-          foundPattern = true;
-          continue;
-        }
-        
-        // 패턴을 찾지 못한 경우 - 첫 단어만 건너뛰기
-        if (!foundPattern) {
-          const firstWord = remainingText.split(/\s+/)[0];
-          if (firstWord) {
-            // 단순 텍스트로 추가 (숫자나 만원이 없는 경우)
-            if (!/\d/.test(firstWord) && !firstWord.includes('만원')) {
-              patterns.push({
-                text: firstWord,
-                type: 'text'
-              });
-            }
-            remainingText = remainingText.substring(firstWord.length).trim();
-          } else {
-            break;
-          }
-        }
-      }
-      
-      return patterns;
+      remainingText = remainingText.substring(fractionMatch[0].length).trim();
+      foundPattern = true;
+      continue;
     }
+    
+    // 패턴2: A만원부족
+    const deficitMatch = remainingText.match(/^(\d{1,3}(?:,\d{3})*)\s*만원\s*부족/);
+    if (deficitMatch) {
+      const value = deficitMatch[1].replace(/,/g, '');
+      const patternText = `${value}만원부족`;
+      
+      patterns.push({
+        text: patternText,
+        type: 'deficit',
+        value: parseInt(value)
+      });
+      
+      remainingText = remainingText.substring(deficitMatch[0].length).trim();
+      foundPattern = true;
+      continue;
+    }
+    
+    // 패턴3: 항목A만원 (단순형태)
+    const simpleMatch = remainingText.match(/^([가-힣\s]*?)(\d{1,3}(?:,\d{3})*)\s*만원(?!\s*[\/부족])/);
+    if (simpleMatch) {
+      const coverageName = simpleMatch[1].trim().replace(/\s+/g, '');
+      const value = simpleMatch[2].replace(/,/g, '');
+      const patternText = `${coverageName}${value}만원`;
+      
+      patterns.push({
+        text: patternText,
+        type: 'simple',
+        name: coverageName,
+        value: parseInt(value)
+      });
+      
+      remainingText = remainingText.substring(simpleMatch[0].length).trim();
+      foundPattern = true;
+      continue;
+    }
+    
+    // 패턴을 찾지 못한 경우 - 첫 단어만 건너뛰기
+    if (!foundPattern) {
+      const firstWord = remainingText.split(/\s+/)[0];
+      if (firstWord) {
+        // 단순 텍스트로 추가 (숫자나 만원이 없는 경우, 그리고 제외 키워드가 아닌 경우)
+        if (!/\d/.test(firstWord) && !firstWord.includes('만원') && !excludeKeywords.includes(firstWord.trim())) {
+          patterns.push({
+            text: firstWord,
+            type: 'text'
+          });
+        }
+        remainingText = remainingText.substring(firstWord.length).trim();
+      } else {
+        break;
+      }
+    }
+  }
+  
+  return patterns;
+}
+
+    
     
     // 정렬된 텍스트를 전체 텍스트로 결합
     const organizedFullText = sortedText.join('\n');
