@@ -1104,12 +1104,113 @@ async function parseOCRResult(apiResult) {
   const detectedText = apiResult.responses[0].fullTextAnnotation?.text || '';
   console.log('OCR 인식된 텍스트:', detectedText);
 
+  // OCR 텍스트 인식 순서 분석
+  analyzeOCRTextOrder(apiResult.responses[0]);
+
   if (!detectedText.trim()) {
     throw new Error('이미지에서 텍스트를 인식할 수 없습니다.');
   }
 
   extractCustomerInfo(detectedText);
   extractCoverageAmountsForBeforeAfter(detectedText);
+}
+
+// OCR 텍스트 인식 순서 분석 함수
+function analyzeOCRTextOrder(response) {
+  console.log('=== OCR 텍스트 인식 순서 분석 ===');
+  
+  // 1. 전체 텍스트를 라인별로 분석
+  const fullText = response.fullTextAnnotation?.text || '';
+  const lines = fullText.split(/\r?\n/);
+  
+  console.log('📝 라인별 인식 순서:');
+  lines.forEach((line, index) => {
+    if (line.trim()) {
+      console.log(`${index + 1}: "${line.trim()}"`);
+    }
+  });
+  
+  // 2. textAnnotations를 통한 개별 텍스트 블록 분석
+  if (response.textAnnotations && response.textAnnotations.length > 1) {
+    console.log('\n🔍 개별 텍스트 블록 인식 순서 (좌표 포함):');
+    
+    // 첫 번째는 전체 텍스트이므로 제외하고 개별 단어들만 분석
+    const textBlocks = response.textAnnotations.slice(1);
+    
+    textBlocks.forEach((block, index) => {
+      if (block.description && block.boundingPoly && block.boundingPoly.vertices) {
+        const vertices = block.boundingPoly.vertices;
+        const topLeft = vertices[0];
+        const bottomRight = vertices[2];
+        
+        console.log(`${index + 1}: "${block.description}" - 위치: (${topLeft.x || 0}, ${topLeft.y || 0}) ~ (${bottomRight.x || 0}, ${bottomRight.y || 0})`);
+      }
+    });
+    
+    // 3. Y좌표별로 정렬하여 실제 읽기 순서 분석
+    console.log('\n📍 Y좌표 기준 정렬된 인식 순서:');
+    const sortedByY = textBlocks
+      .filter(block => block.boundingPoly && block.boundingPoly.vertices)
+      .map(block => ({
+        text: block.description,
+        x: block.boundingPoly.vertices[0].x || 0,
+        y: block.boundingPoly.vertices[0].y || 0
+      }))
+      .sort((a, b) => {
+        // Y좌표가 비슷한 경우(같은 줄) X좌표로 정렬, 다른 경우 Y좌표로 정렬
+        const yDiff = Math.abs(a.y - b.y);
+        if (yDiff < 10) { // 같은 줄로 간주
+          return a.x - b.x;
+        }
+        return a.y - b.y;
+      });
+    
+    let currentY = -1;
+    let lineNumber = 0;
+    sortedByY.forEach((item, index) => {
+      // Y좌표가 크게 변했으면 새로운 줄
+      if (Math.abs(item.y - currentY) > 10) {
+        lineNumber++;
+        currentY = item.y;
+        console.log(`\n줄 ${lineNumber}:`);
+      }
+      console.log(`  "${item.text}" (${item.x}, ${item.y})`);
+    });
+  }
+  
+  // 4. 페이지별 분석 (여러 페이지가 있는 경우)
+  if (response.fullTextAnnotation && response.fullTextAnnotation.pages) {
+    console.log('\n📄 페이지별 분석:');
+    response.fullTextAnnotation.pages.forEach((page, pageIndex) => {
+      console.log(`페이지 ${pageIndex + 1}:`);
+      
+      if (page.blocks) {
+        page.blocks.forEach((block, blockIndex) => {
+          console.log(`  블록 ${blockIndex + 1}:`);
+          
+          if (block.paragraphs) {
+            block.paragraphs.forEach((paragraph, paraIndex) => {
+              let paragraphText = '';
+              if (paragraph.words) {
+                paragraph.words.forEach(word => {
+                  if (word.symbols) {
+                    word.symbols.forEach(symbol => {
+                      paragraphText += symbol.text || '';
+                    });
+                  }
+                });
+              }
+              if (paragraphText.trim()) {
+                console.log(`    문단 ${paraIndex + 1}: "${paragraphText.trim()}"`);
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+  
+  console.log('=== OCR 분석 완료 ===\n');
 }
 
 // 고객 정보 추출
