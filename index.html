@@ -1132,8 +1132,8 @@ async function parseOCRResult(apiResult) {
 
 // 개선된 OCR 텍스트 인식 순서 분석 함수
 function analyzeOCRTextOrder(response) {
-  console.log('=== OCR 텍스트 인식 순서 분석 (개선된 버전) ===');
-  console.log('📝 좌표 기반 텍스트 정렬 시작...');
+  console.log('=== OCR 텍스트 인식 순서 분석 (글자 크기 기반) ===');
+  console.log('📝 글자 크기와 좌표 기반 텍스트 정렬 시작...');
   
   if (response.textAnnotations && response.textAnnotations.length > 1) {
     console.log('\n🔍 개별 텍스트 블록 좌표 기반 정렬:');
@@ -1149,7 +1149,8 @@ function analyzeOCRTextOrder(response) {
         x: block.boundingPoly.vertices[0].x || 0,
         y: block.boundingPoly.vertices[0].y || 0,
         width: (block.boundingPoly.vertices[2].x || 0) - (block.boundingPoly.vertices[0].x || 0),
-        height: (block.boundingPoly.vertices[2].y || 0) - (block.boundingPoly.vertices[0].y || 0)
+        height: (block.boundingPoly.vertices[2].y || 0) - (block.boundingPoly.vertices[0].y || 0),
+        fontSize: Math.abs((block.boundingPoly.vertices[2].y || 0) - (block.boundingPoly.vertices[0].y || 0))
       }));
     
     console.log('\n📊 모든 텍스트 블록의 좌표 정보:');
@@ -1157,18 +1158,45 @@ function analyzeOCRTextOrder(response) {
       console.log(`${index + 1}: "${block.text}" -> (${block.x}, ${block.y})`);
     });
 
-    // 동적 임계값 계산 함수
-    function calculateLineThreshold(blocks) {
-      const heights = blocks.map(block => block.height).filter(h => h > 0);
-      if (heights.length === 0) return 25; // 기본값
+   // 글자 크기 기반 구역 분할 함수
+    function categorizeBySizeAndPosition(blocks) {
+      const heights = blocks.map(block => block.fontSize).filter(h => h > 0);
+      if (heights.length === 0) return { mainContent: blocks, bottomContent: [] };
       
-      const avgHeight = heights.reduce((sum, h) => sum + h, 0) / heights.length;
-      const threshold = Math.max(20, Math.min(50, avgHeight * 0.8));
-      console.log(`계산된 임계값: ${threshold}픽셀 (평균 높이: ${avgHeight})`);
-      return threshold;
+      // 글자 크기 히스토그램 분석
+      const heightCounts = {};
+      heights.forEach(h => {
+        const rounded = Math.round(h / 5) * 5; // 5픽셀 단위로 반올림
+        heightCounts[rounded] = (heightCounts[rounded] || 0) + 1;
+      });
+      
+      console.log('글자 크기 분포:', heightCounts);
+      
+      // 가장 많이 사용된 글자 크기를 주요 콘텐츠로 간주
+      const mainFontSize = parseInt(Object.keys(heightCounts).reduce((a, b) => 
+        heightCounts[a] > heightCounts[b] ? a : b
+      ));
+      
+      // Y좌표 기준 하단 30% 영역 식별
+      const maxY = Math.max(...blocks.map(b => b.y));
+      const bottomThreshold = maxY * 0.7;
+      
+      console.log(`주요 글자 크기: ${mainFontSize}px, 하단 영역 시작: ${bottomThreshold}px`);
+      
+      // 블록을 주요 콘텐츠와 하단 정보로 분리
+      const mainContent = blocks.filter(block => 
+        Math.abs(block.fontSize - mainFontSize) <= 8 && block.y < bottomThreshold
+      );
+      
+      const bottomContent = blocks.filter(block => 
+        block.y >= bottomThreshold && /\d+만원/.test(block.text)
+      );
+      
+      return { mainContent, bottomContent, mainFontSize };
     }
 
-    const lineThreshold = calculateLineThreshold(blocksWithCoords);
+    const { mainContent, bottomContent, mainFontSize } = categorizeBySizeAndPosition(blocksWithCoords);
+    const lineThreshold = Math.max(15, mainFontSize * 0.8);
 
     // Y좌표 기준으로 정렬하되, 같은 줄(동적 임계값)인 경우 X좌표로 정렬
     const sortedBlocks = blocksWithCoords
@@ -1379,98 +1407,65 @@ function extractCoverageAmountsForBeforeAfter(text) {
   console.log('개선된 OCR 값 추출 시작...');
   console.log('OCR 텍스트:', text);
   
-  // 텍스트 전처리: 공백 제거 및 정규화
-  const normalizedText = text.replace(/\s+/g, '').replace(/\n+/g, ' ');
-  console.log('정규화된 텍스트:', normalizedText);
-  
-  // 1단계: 유연한 패턴들로 값 추출
-  const patterns = [
-    // 기본 패턴: 항목명 + 숫자 + 만원
-    { pattern: /(변호사선임비용|변호사선임|변호사).*?(\d{1,5})만원/, key: 'lawyerAppointment' },
-    { pattern: /(형사합의금|형사합의|대인형사합의).*?(\d{1,5})만원/, key: 'criminalSettlement' },
-    { pattern: /(일상생활배상|일상생활).*?(\d{1,5})만원/, key: 'dailyLifeLiability' },
-    { pattern: /(화재벌금|화재).*?(\d{1,5})만원/, key: 'fireFine' },
-    
-    // 분수 형태 패턴: 항목명 + 숫자/숫자 + 만원
-    { pattern: /(질병입원실손|질병입원).*?(\d{1,5})\/\d+만원/, key: 'diseaseHospitalization' },
-    { pattern: /(상해입원실손|상해입원).*?(\d{1,5})\/\d+만원/, key: 'injuryHospitalization' },
-    { pattern: /(일반암).*?(\d{1,5})\/\d+만원/, key: 'generalCancer' },
-    { pattern: /(통합암).*?(\d{1,5})\/\d+만원/, key: 'totalCancer' },
-    { pattern: /(표적항암|표적).*?(\d{1,5})\/\d+만원/, key: 'targetTherapy' },
-    { pattern: /(뇌혈관질환|뇌혈관).*?(\d{1,5})\/\d+만원/, key: 'cerebrovascularDiagnosis' },
-    { pattern: /(뇌졸중).*?(\d{1,5})\/\d+만원/, key: 'strokeDiagnosis' },
-    { pattern: /(허혈성심질환|허혈성).*?(\d{1,5})\/\d+만원/, key: 'ischemicHeartDiagnosis' },
-    { pattern: /(급성심근경색|심근경색).*?(\d{1,5})\/\d+만원/, key: 'myocardialInfarctionDiagnosis' },
-    
-    // 간병인 관련
-    { pattern: /(간병인.*?입원|간병인).*?(\d{1,5})\/\d+만원/, key: 'nursingHospitalOut' },
-    
-    // 단순 숫자 패턴 (백업용)
-    { pattern: /(변호사.*?)(\d{4,5})(?!.*\/)/, key: 'lawyerAppointment' },
-    { pattern: /(형사.*?)(\d{4,5})(?!.*\/)/, key: 'criminalSettlement' },
-    { pattern: /(일상.*?)(\d{4,5})(?!.*\/)/, key: 'dailyLifeLiability' }
+  // 1단계: 분수 형태 패턴 (변경전/변경후)
+  const fractionPatterns = [
+    { regex: /질병사망\s*(\d+(?:,\d{3})*)\s*\/\s*(\d+(?:,\d{3})*)\s*만원/, before: 'N/A', after: 'N/A' },
+    { regex: /상해사망\s*(\d+(?:,\d{3})*)\s*\/\s*(\d+(?:,\d{3})*)\s*만원/, before: 'N/A', after: 'N/A' },
+    { regex: /유사암\s*(\d+(?:,\d{3})*)\s*\/\s*(\d+(?:,\d{3})*)\s*만원/, before: 'N/A', after: 'N/A' },
+    { regex: /일반암\s*(\d+(?:,\d{3})*)\s*\/\s*(\d+(?:,\d{3})*)\s*만원/, before: 'generalCancer', after: 'generalCancer' },
+    { regex: /통합암\s*(\d+(?:,\d{3})*)\s*\/\s*(\d+(?:,\d{3})*)\s*만원/, before: 'totalCancer', after: 'totalCancer' },
+    { regex: /표적항암약물\s*(\d+(?:,\d{3})*)\s*\/\s*(\d+(?:,\d{3})*)\s*만원/, before: 'targetTherapy', after: 'targetTherapy' },
+    { regex: /뇌혈관질환\s*(\d+(?:,\d{3})*)\s*\/\s*(\d+(?:,\d{3})*)\s*만원/, before: 'cerebrovascularDiagnosis', after: 'cerebrovascularDiagnosis' },
+    { regex: /뇌졸중\s*(\d+(?:,\d{3})*)\s*\/\s*(\d+(?:,\d{3})*)\s*만원/, before: 'strokeDiagnosis', after: 'strokeDiagnosis' },
+    { regex: /허혈성심질환\s*(\d+(?:,\d{3})*)\s*\/\s*(\d+(?:,\d{3})*)\s*만원/, before: 'ischemicHeartDiagnosis', after: 'ischemicHeartDiagnosis' },
+    { regex: /급성심근경색증\s*(\d+(?:,\d{3})*)\s*\/\s*(\d+(?:,\d{3})*)\s*만원/, before: 'myocardialInfarctionDiagnosis', after: 'myocardialInfarctionDiagnosis' },
+    { regex: /질병입원\s*실손\s*(\d+(?:,\d{3})*)\s*\/\s*(\d+(?:,\d{3})*)\s*만원/, before: 'diseaseHospitalization', after: 'diseaseHospitalization' },
+    { regex: /상해입원\s*실손\s*(\d+(?:,\d{3})*)\s*\/\s*(\d+(?:,\d{3})*)\s*만원/, before: 'injuryHospitalization', after: 'injuryHospitalization' },
+    { regex: /질병수술비\s*(\d+(?:,\d{3})*)\s*\/\s*(\d+(?:,\d{3})*)\s*만원/, before: 'N/A', after: 'N/A' },
+    { regex: /상해수술비\s*(\d+(?:,\d{3})*)\s*\/\s*(\d+(?:,\d{3})*)\s*만원/, before: 'N/A', after: 'N/A' },
+    { regex: /간병인상해입원\s*(\d+(?:,\d{3})*)\s*\/\s*(\d+(?:,\d{3})*)\s*만원/, before: 'nursingHospitalOut', after: 'nursingHospitalOut' },
+    { regex: /간병인질병입원\s*(\d+(?:,\d{3})*)\s*\/\s*(\d+(?:,\d{3})*)\s*만원/, before: 'nursingHospitalOut', after: 'nursingHospitalOut' }
   ];
   
-  // 2단계: 패턴 매칭으로 값 추출
+  // 2단계: 단일 금액 패턴 (하단 생활보장 영역)
+  const singleAmountPatterns = [
+    { regex: /대인형사합의지원금\s*(\d+(?:,\d{3})*)\s*만원/, field: 'criminalSettlement' },
+    { regex: /변호사선임비용\s*(\d+(?:,\d{3})*)\s*만원/, field: 'lawyerAppointment' },
+    { regex: /일상생활배상책임\s*(\d+(?:,\d{3})*)\s*만원/, field: 'dailyLifeLiability' },
+    { regex: /운전자벌금\s*(\d+(?:,\d{3})*)\s*만원/, field: 'N/A' },
+    { regex: /화재벌금\s*(\d+(?:,\d{3})*)\s*만원/, field: 'fireFine' }
+  ];
+  
   const extractedData = {};
   
-  patterns.forEach(({ pattern, key }) => {
-    const match = normalizedText.match(pattern);
-    if (match && !extractedData[key]) { // 중복 방지
-      const value = parseInt(match[2]);
-      if (value > 0) {
-        extractedData[key] = value;
-        console.log(`추출 성공: ${key} = ${value} (패턴: ${pattern})`);
+  // 3단계: 분수 패턴 처리
+  fractionPatterns.forEach(pattern => {
+    const match = text.match(pattern.regex);
+    if (match && pattern.before !== 'N/A') {
+      const beforeValue = parseInt(match[1].replace(/,/g, ''));
+      const afterValue = parseInt(match[2].replace(/,/g, ''));
+      
+      console.log(`분수 패턴 추출: ${pattern.before} = ${beforeValue}/${afterValue}`);
+      
+      if (beforeValue >= 0) {
+        setFieldValue(pattern.before, beforeValue);
+      }
+      if (afterValue >= 0) {
+        setFieldValue(pattern.after, afterValue);
       }
     }
   });
   
-  // 3단계: 근접 단어 매칭 (패턴이 실패한 경우)
-  const keywordMapping = {
-    '변호사': 'lawyerAppointment',
-    '형사': 'criminalSettlement', 
-    '일상': 'dailyLifeLiability',
-    '화재': 'fireFine',
-    '질병입원': 'diseaseHospitalization',
-    '상해입원': 'injuryHospitalization',
-    '일반암': 'generalCancer',
-    '통합암': 'totalCancer',
-    '표적': 'targetTherapy'
-  };
-  
-  // 텍스트를 단어별로 분할하여 근접 매칭
-  const words = text.split(/\s+/);
-  for (let i = 0; i < words.length; i++) {
-    const word = words[i];
-    
-    // 키워드 찾기
-    const foundKey = Object.keys(keywordMapping).find(keyword => 
-      word.includes(keyword)
-    );
-    
-    if (foundKey && !extractedData[keywordMapping[foundKey]]) {
-      // 근처 단어들에서 숫자 찾기
-      for (let j = Math.max(0, i-2); j <= Math.min(words.length-1, i+3); j++) {
-        const nearWord = words[j];
-        const numberMatch = nearWord.match(/(\d{3,5})만원?/);
-        if (numberMatch) {
-          const value = parseInt(numberMatch[1]);
-          if (value >= 100) { // 최소값 필터
-            extractedData[keywordMapping[foundKey]] = value;
-            console.log(`근접 매칭 성공: ${foundKey} -> ${keywordMapping[foundKey]} = ${value}`);
-            break;
-          }
-        }
-      }
+  // 4단계: 단일 금액 패턴 처리
+  singleAmountPatterns.forEach(pattern => {
+    const match = text.match(pattern.regex);
+    if (match && pattern.field !== 'N/A') {
+      const value = parseInt(match[1].replace(/,/g, ''));
+      
+      console.log(`단일 금액 패턴 추출: ${pattern.field} = ${value}`);
+      
+      setFieldValue(pattern.field, value);
     }
-  }
-  
-  console.log('최종 추출된 데이터:', extractedData);
-  
-  // 4단계: 입력창에 값 설정
-  Object.entries(extractedData).forEach(([fieldKey, value]) => {
-    setFieldValue(fieldKey, value);
-    console.log(`필드 설정: ${fieldKey} = ${value}`);
   });
   
   // 5단계: 자동계산 트리거
@@ -1479,7 +1474,7 @@ function extractCoverageAmountsForBeforeAfter(text) {
     handleMajorCirculatoryCalculation('after');
   }, 100);
   
-  console.log('OCR 값 추출 완료');
+  console.log('개선된 OCR 값 추출 완료');
 }
 
 // 데이터 저장 및 이미지 다운로드
