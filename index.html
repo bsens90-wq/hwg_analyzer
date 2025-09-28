@@ -1145,12 +1145,12 @@ function analyzeOCRTextOrder(response) {
       console.log(`${index + 1}: "${block.text}" -> (${block.x}, ${block.y})`);
     });
     
-// Y좌표 기준으로 정렬하되, 같은 줄(Y좌표 차이가 25픽셀 이내)인 경우 X좌표로 정렬
+// Y좌표 기준으로 정렬하되, 같은 줄(Y좌표 차이가 15픽셀 이내)인 경우 X좌표로 정렬
 const sortedBlocks = blocksWithCoords
   .sort((a, b) => {
-    // Y좌표 차이가 25픽셀 이내면 같은 줄로 간주
+    // Y좌표 차이가 15픽셀 이내면 같은 줄로 간주
     const yDiff = Math.abs(a.y - b.y);
-    if (yDiff < 25) {
+    if (yDiff < 15) {
       return a.x - b.x; // 같은 줄이면 X좌표로 정렬 (왼쪽에서 오른쪽)
     }
     return a.y - b.y; // 다른 줄이면 Y좌표로 정렬 (위에서 아래)
@@ -1167,8 +1167,8 @@ const sortedBlocks = blocksWithCoords
     let currentY = -1;
     
 sortedBlocks.forEach((block, index) => {
-  // Y좌표가 크게 변했으면 새로운 줄 (25픽셀 기준)
-  if (Math.abs(block.y - currentY) > 25) {
+  // Y좌표가 크게 변했으면 새로운 줄 (15픽셀 기준)
+  if (Math.abs(block.y - currentY) > 15) {
     if (currentLine.length > 0) {
       organizedLines.push([...currentLine]);
     }
