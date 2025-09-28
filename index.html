@@ -1267,18 +1267,64 @@ function extractStructuredDataByPattern(text) {
         // 여러 담보명이 연속으로 있는 경우 개별 처리
         console.log(`여러 담보명 발견: ${separatedNames.join(', ')}`);
         
-        for (let nameIndex = 0; nameIndex < separatedNames.length; nameIndex++) {
-          const coverageName = separatedNames[nameIndex];
-          
-          // 각 담보명에 대해 개별적으로 값 찾기
-          const fractionData = extractFractionPatternSequential(lines, i, coverageName, processedLines);
-          if (fractionData && !isDataAlreadyExists(structuredData, coverageName)) {
-            structuredData.push(fractionData);
-            console.log(`분리된 담보 패턴 추출: ${coverageName} -> ${fractionData.value}`);
-            // 첫 번째 매칭만 처리하고 다음으로 넘어감
-            break;
-          }
-        }
+       // 각 담보명을 개별적으로 처리 (break 제거)
+for (let nameIndex = 0; nameIndex < separatedNames.length; nameIndex++) {
+  const coverageName = separatedNames[nameIndex];
+  
+  console.log(`개별 담보명 처리 시도: "${coverageName}"`);
+  
+  // 각 담보명에 대해 개별적으로 값 찾기 (다른 시작 위치에서)
+  const fractionData = extractFractionPatternForSpecificCoverage(lines, i, coverageName, processedLines, nameIndex);
+  if (fractionData && !isDataAlreadyExists(structuredData, coverageName)) {
+    structuredData.push(fractionData);
+    console.log(`분리된 담보 패턴 추출: ${coverageName} -> ${fractionData.value}`);
+  }
+}
+
+// 특정 담보명에 대한 순차적 패턴 추출 (새로 추가)
+function extractFractionPatternForSpecificCoverage(lines, currentIndex, coverageName, processedLines, coverageIndex) {
+  // 다음 라인부터 순차적으로 검사하되, 담보명 순서를 고려
+  for (let i = 1; i <= 5 && currentIndex + i < lines.length; i++) {
+    const targetLineIndex = currentIndex + i;
+    const targetLine = lines[targetLineIndex];
+    
+    // 이미 처리된 라인이거나 새로운 담보명이 나오면 건너뛰기
+    if (processedLines.has(targetLineIndex)) {
+      continue;
+    }
+    
+    // "부족" 라인은 건너뛰기
+    if (targetLine.includes('부족')) {
+      continue;
+    }
+    
+    // A / B만원 패턴이 여러 개 있는 라인 처리
+    const fractionMatches = [...targetLine.matchAll(/(\d{1,3}(?:,\d{3})*)\s*\/\s*(\d{1,3}(?:,\d{3})*)만원/g)];
+    
+    if (fractionMatches.length > 0) {
+      // 담보명 순서에 맞는 값 선택 (coverageIndex 활용)
+      const matchIndex = Math.min(coverageIndex, fractionMatches.length - 1);
+      const selectedMatch = fractionMatches[matchIndex];
+      
+      if (selectedMatch) {
+        const valueA = parseInt(selectedMatch[1].replace(/,/g, ''));
+        const valueB = parseInt(selectedMatch[2].replace(/,/g, ''));
+        
+        console.log(`특정 담보 패턴 발견: "${coverageName}" + "${targetLine}" -> A=${valueA} (매칭 순서: ${matchIndex})`);
+        
+        return {
+          name: coverageName,
+          value: valueA,
+          pattern: 'fraction',
+          rawLine: targetLine,
+          usedLineIndex: targetLineIndex
+        };
+      }
+    }
+  }
+  
+  return null;
+}
         
         // 처리된 라인 마킹
         processedLines.add(i);
