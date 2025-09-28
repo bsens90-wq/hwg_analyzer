@@ -1116,26 +1116,12 @@ async function parseOCRResult(apiResult) {
     throw new Error('OCR 결과를 받아올 수 없습니다.');
   }
 
-  // OCR 응답에서 기본 텍스트 추출
-  let sortedText = '';
+  // 개선된 OCR 텍스트 인식 순서 분석 및 정렬된 텍스트 획득
+  const sortedText = analyzeOCRTextOrder(apiResult.responses[0]);
   
-  // 방법 1: analyzeOCRTextOrder 함수 사용
-  try {
-    sortedText = analyzeOCRTextOrder(apiResult.responses[0]);
-    console.log('정렬된 OCR 텍스트:', sortedText);
-  } catch (error) {
-    console.log('analyzeOCRTextOrder 실패, 기본 텍스트 사용:', error);
-  }
-  
-  // 방법 2: 기본 전체 텍스트 사용 (fallback)
-  if (!sortedText || !sortedText.trim()) {
-    if (apiResult.responses[0].textAnnotations && apiResult.responses[0].textAnnotations[0]) {
-      sortedText = apiResult.responses[0].textAnnotations[0].description;
-      console.log('기본 OCR 텍스트 사용:', sortedText);
-    }
-  }
+  console.log('정렬된 OCR 텍스트:', sortedText);
 
-  if (!sortedText || !sortedText.trim()) {
+  if (!sortedText.trim()) {
     throw new Error('이미지에서 텍스트를 인식할 수 없습니다.');
   }
 
@@ -1240,72 +1226,20 @@ function analyzeOCRTextOrder(response) {
       console.log(`  블록 ${blockIndex + 1}: "${block.text}" (${block.x}, ${block.y})`);
     });
 
- // 전체 블록에서 글로벌 패턴을 추출하는 함수
+    // 전체 블록에서 글로벌 패턴을 추출하는 함수
     function extractGlobalPatterns(allBlocks) {
-      // 1단계: 분리된 텍스트 재조합
-      function reassembleFragmentedText(allBlocks) {
-        const targetPatterns = [
-          ['대인', '형사', '합의', '지원금'],
-          ['일상', '생활', '배상', '책임']
-        ];
-        
-        let reassembled = '';
-        
-        targetPatterns.forEach(pattern => {
-          let foundSequence = [];
-          let sequenceValue = '';
-          
-          // 패턴 순서대로 블록 찾기
-          for (let i = 0; i < allBlocks.length; i++) {
-            const currentText = allBlocks[i].text.trim();
-            
-            if (foundSequence.length < pattern.length && currentText === pattern[foundSequence.length]) {
-              foundSequence.push(currentText);
-              
-              // 완전한 패턴이 발견되면 뒤에 숫자 찾기
-              if (foundSequence.length === pattern.length) {
-                for (let j = i + 1; j < Math.min(i + 5, allBlocks.length); j++) {
-                  const nextText = allBlocks[j].text.trim();
-                  const numberMatch = nextText.match(/(\d{1,3}(?:,\d{3})*)만원/);
-                  if (numberMatch) {
-                    sequenceValue = numberMatch[1];
-                    break;
-                  }
-                }
-                
-                if (sequenceValue) {
-                  const combinedText = foundSequence.join('') + sequenceValue + '만원';
-                  reassembled += combinedText + ' ';
-                  console.log(`재조합됨: ${combinedText}`);
-                }
-                break;
-              }
-            } else if (foundSequence.length > 0) {
-              // 순서가 깨지면 초기화
-              foundSequence = [];
-              if (currentText === pattern[0]) {
-                foundSequence.push(currentText);
-              }
-            }
-          }
-        });
-        
-        return reassembled;
-      }
+      const fullText = allBlocks.map(block => block.text).join(' ');
+      console.log(`전체 텍스트: "${fullText}"`);
       
-      const reassembledText = reassembleFragmentedText(allBlocks);
-  const fullText = reassembledText + ' ' + allBlocks.map(block => block.text).join(' ');
-  console.log(`전체 텍스트: "${fullText}"`);
-  
-  const patterns = [];
-  let remainingText = fullText;
-  
-  // 패턴들을 순차적으로 찾아서 제거하며 처리
-  while (remainingText.trim().length > 0) {
-    let foundPattern = false;
-    
-    // 패턴1: 항목 A/B만원 (담보명 + 분수)
-    const fractionMatch = remainingText.match(/^([가-힣\s]*?)(\d{1,3}(?:,\d{3})*)\s*\/\s*(\d{1,3}(?:,\d{3})*)\s*만원/);
+      const patterns = [];
+      let remainingText = fullText;
+      
+      // 패턴들을 순차적으로 찾아서 제거하며 처리
+      while (remainingText.trim().length > 0) {
+        let foundPattern = false;
+        
+        // 패턴1: 항목 A/B만원 (담보명 + 분수)
+        const fractionMatch = remainingText.match(/^([가-힣\s]*?)(\d{1,3}(?:,\d{3})*)\s*\/\s*(\d{1,3}(?:,\d{3})*)\s*만원/);
         if (fractionMatch) {
           const coverageName = fractionMatch[1].trim().replace(/\s+/g, '');
           const valueA = fractionMatch[2].replace(/,/g, '');
@@ -1446,24 +1380,22 @@ function extractCoverageAmountsForBeforeAfter(text) {
   console.log('OCR 텍스트:', text);
   
   // 1단계: 필요한 패턴들을 정규식으로 추출
-const patterns = [
-  /변호사선임비용(\d+)만원/,
-  /대인형사합의지원금(\d+)만원/,
-  /운전자벌금(\d+)만원/,
-  /유사암(\d+)\/\d+만원/,
-  /뇌혈관질환(\d+)\/\d+만원/,
-  /질병입원실손(\d+)\/\d+만원/,
-  /일반암(\d+)\/\d+만원/,
-  /상해입원실손(\d+)\/\d+만원/,
-  /통합암(\d+)\/\d+만원/,
-  /표적항암약물(\d+)\/\d+만원/,
-  /뇌졸중(\d+)\/\d+만원/,
-  /간병인상해입원(\d+)\/\d+만원/,
-  /허혈성심질환(\d+)\/\d+만원/,
-  /간병인질병입원(\d+)\/\d+만원/,
-  /급성심근경색증(\d+)\/\d+만원/,
-  /일상생활배상책임(\d+)만원/
-];
+  const patterns = [
+    /생활보장변호사선임비용(\d+)만원/,
+    /대인형사합의지원금(\d+)만원/,
+    /뇌혈관질환(\d+)\/\d+만원/,
+    /질병입원실손(\d+)\/\d+만원/,
+    /일반암(\d+)\/\d+만원/,
+    /상해입원실손(\d+)\/\d+만원/,
+    /통합암(\d+)\/\d+만원/,
+    /표적항암약물(\d+)\/\d+만원/,
+    /뇌졸중(\d+)\/\d+만원/,
+    /간병인상해입원(\d+)\/\d+만원/,
+    /허혈성심질환(\d+)\/\d+만원/,
+    /간병인질병입원(\d+)\/\d+만원/,
+    /급성심근경색증(\d+)\/\d+만원/,
+    /일상생활(\d+)만원/
+  ];
   
   // 2단계: 각 패턴별로 값 추출
   const extractedData = {};
@@ -1486,21 +1418,20 @@ const patterns = [
   
   // 3단계: 매핑 테이블을 사용하여 입력창에 값 설정
   const mappingTable = {
-  '일반암': 'generalCancer',
-  '통합암': 'totalCancer',
-  '표적항암약물': 'targetTherapy',
-  '뇌혈관질환': 'cerebrovascularDiagnosis',
-  '뇌졸중': 'strokeDiagnosis',
-  '허혈성심질환': 'ischemicHeartDiagnosis',
-  '급성심근경색증': 'myocardialInfarctionDiagnosis',
-  '질병입원실손': 'diseaseHospitalization',
-  '상해입원실손': 'injuryHospitalization',
-  '간병인질병입원': 'nursingHospitalOut',
-  '대인형사합의지원금': 'criminalSettlement',
-  '변호사선임비용': 'lawyerAppointment',
-  '운전자벌금': 'fireFine',
-  '일상생활배상책임': 'dailyLifeLiability'
-};
+    '일반암': 'generalCancer',
+    '통합암': 'totalCancer',
+    '표적항암약물': 'targetTherapy',
+    '뇌혈관질환': 'cerebrovascularDiagnosis',
+    '뇌졸중': 'strokeDiagnosis',
+    '허혈성심질환': 'ischemicHeartDiagnosis',
+    '급성심근경색증': 'myocardialInfarctionDiagnosis',
+    '질병입원실손': 'diseaseHospitalization',
+    '상해입원실손': 'injuryHospitalization',
+    '간병인질병입원': 'nursingHospitalOut',
+    '대인형사합의지원금': 'criminalSettlement',
+    '생활보장변호사선임비용': 'lawyerAppointment',
+    '일상생활': 'dailyLifeLiability'
+  };
   
   // 4단계: 매핑하여 입력창에 값 설정
   Object.entries(extractedData).forEach(([itemName, value]) => {
