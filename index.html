@@ -784,6 +784,344 @@ function handleMajorCirculatoryCalculation(type) {
   }
 }
 
+// 인쇄용 담보 항목 생성 (최적화된 크기)
+function generateCoverageItemsForPrint(coverages, items, type) {
+  return items.map(item => {
+    const coverage = coverages[item.key];
+    const value = coverage ? extractNumber(coverage.value) : 0;
+    
+    let displayValue = '';
+    let valueColor = '#333'; 
+    
+    if (value === 0) {
+      displayValue = '✗';
+      valueColor = '#dc3545';
+    } else {
+      displayValue = value.toLocaleString() + '만원';
+      valueColor = '#333';
+    }
+    
+    let progressBarHtml = '';
+    if (value === 0) {
+      progressBarHtml = '<div class="progress-container"><div class="progress-bar" style="width: 0%; background: #e0e0e0;"></div></div>';
+    } else {
+      let barColor = '#dc3545';
+      const percentage = calculateProgressPercentage(value, item.standardAmount);
+      if (percentage >= 100) barColor = '#28a745';
+      else if (percentage >= 30) barColor = '#ffc107';
+      const width = Math.min(percentage, 100);
+      progressBarHtml = `<div class="progress-container"><div class="progress-bar" style="width: ${width}%; background: ${barColor};"></div></div>`;
+    }
+    
+    let shortName = item.name;
+    if (shortName.length > 12) {
+      shortName = shortName.replace('질환진단비', '진단').replace('질환수술비', '수술').replace('특정치료비', '치료');
+    }
+    
+    return `
+      <div class="coverage-item">
+        <div class="coverage-name" style="color: ${value === 0 ? '#dc3545' : '#333'};">${shortName}</div>
+        <div class="coverage-display">
+          ${progressBarHtml}
+          <span class="coverage-value" style="color: ${valueColor};">${displayValue}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// 진행률 바와 금액만 표시하는 함수
+function generateSimpleItemForPrint(coverages, key, type) {
+  const coverage = coverages[key];
+  const value = coverage ? extractNumber(coverage.value) : 0;
+  
+  let displayValue = '';
+  let valueColor = '#333';
+  
+  if (value === 0) {
+    displayValue = '✗';
+    valueColor = '#dc3545';
+  } else {
+    displayValue = value.toLocaleString() + '만원';
+    valueColor = '#333';
+  }
+  
+  let progressBarHtml = '';
+  if (value === 0) {
+    progressBarHtml = '<div class="progress-container"><div class="progress-bar" style="width: 0%; background: #e0e0e0;"></div></div>';
+  } else {
+    const standardItem = ALL_COVERAGE_ITEMS.find(item => item.key === key) || { standardAmount: 1000 };
+    const percentage = calculateProgressPercentage(value, standardItem.standardAmount);
+    let barColor = '#dc3545';
+    if (percentage >= 100) barColor = '#28a745';
+    else if (percentage >= 30) barColor = '#ffc107';
+    const width = Math.min(percentage, 100);
+    progressBarHtml = `<div class="progress-container"><div class="progress-bar" style="width: ${width}%; background: ${barColor};"></div></div>`;
+  }
+  
+  return `
+    <div class="coverage-item">
+      <div class="coverage-display">
+        ${progressBarHtml}
+        <span class="coverage-value" style="color: ${valueColor};">${displayValue}</span>
+      </div>
+    </div>
+  `;
+}
+
+// 필수보험 개별 항목 생성 (최적화된 크기)
+function generateEssentialItemForPrint(coverages, key, name, type) {
+  const coverage = coverages[key];
+  const value = coverage ? extractNumber(coverage.value) : 0;
+  
+  let displayValue = '';
+  let valueColor = '#333';
+  
+  if (value === 0) {
+    displayValue = '✗';
+    valueColor = '#dc3545';
+  } else {
+    displayValue = value.toLocaleString() + '만원';
+    valueColor = '#333';
+  }
+  
+  let progressBarHtml = '';
+  if (value === 0) {
+    progressBarHtml = '<div class="progress-container"><div class="progress-bar" style="width: 0%; background: #e0e0e0;"></div></div>';
+  } else {
+    const standardItem = ALL_COVERAGE_ITEMS.find(item => item.key === key) || { standardAmount: 1000 };
+    const percentage = calculateProgressPercentage(value, standardItem.standardAmount);
+    let barColor = '#dc3545';
+    if (percentage >= 100) barColor = '#28a745';
+    else if (percentage >= 30) barColor = '#ffc107';
+    const width = Math.min(percentage, 100);
+    progressBarHtml = `<div class="progress-container"><div class="progress-bar" style="width: ${width}%; background: ${barColor};"></div></div>`;
+  }
+  
+  return `
+    <div class="coverage-item">
+      <div class="coverage-name" style="color: ${value === 0 ? '#dc3545' : '#333'};">${name}</div>
+      <div class="coverage-display">
+        ${progressBarHtml}
+        <span class="coverage-value" style="color: ${valueColor};">${displayValue}</span>
+      </div>
+    </div>
+  `;
+}
+
+// 5대 필수보험 섹션 생성 (최적화된 크기)
+function generateEssentialSectionForPrint(coverages, caregiverOption, type) {
+  let html = '';
+  
+  html += `
+    <div class="subsection">
+      <div class="subsection-title">실손의료비</div>
+      ${generateEssentialItemForPrint(coverages, 'diseaseHospitalization', '(실손)질병입원', type)}
+      ${generateEssentialItemForPrint(coverages, 'injuryHospitalization', '(실손)상해입원', type)}
+    </div>
+  `;
+  
+  html += `
+    <div class="subsection">
+      <div class="subsection-title">운전자</div>
+      ${generateEssentialItemForPrint(coverages, 'criminalSettlement', '형사합의금', type)}
+      ${generateEssentialItemForPrint(coverages, 'lawyerAppointment', '변호사선임비', type)}
+    </div>
+  `;
+  
+  html += `
+    <div class="subsection">
+      <div class="subsection-title">간병인일당</div>`;
+  
+  if (caregiverOption === 'support') {
+    html += `
+      <div class="coverage-item">
+        <div class="coverage-name">지원 선택</div>
+        <div class="coverage-display">
+          <div class="progress-container"><div class="progress-bar" style="width: 0%; background: #e0e0e0;"></div></div>
+          <span class="coverage-value" style="color: #999;">-</span>
+        </div>
+      </div>`;
+  } else {
+    html += `
+      ${generateEssentialItemForPrint(coverages, 'nursingHospitalOut', '요양병원 외', type)}
+      ${generateEssentialItemForPrint(coverages, 'nursingHospitalIn', '요양병원', type)}
+      ${generateEssentialItemForPrint(coverages, 'nursingCareIntegrated', '간호간병통합', type)}`;
+  }
+  
+  html += `</div>`;
+  
+  html += `
+    <div class="subsection">
+      <div class="subsection-title">일상생활배상책임</div>
+      ${generateSimpleItemForPrint(coverages, 'dailyLifeLiability', type)}
+    </div>
+  `;
+
+  html += `
+    <div class="subsection">
+      <div class="subsection-title">화재벌금</div>
+      ${generateSimpleItemForPrint(coverages, 'fireFine', type)}
+    </div>
+  `;
+  
+  return html;
+}
+
+// 예시 섹션 생성 (가로 배치로 수정)
+function generateExampleSectionsForPrint(coverages, type) {
+  return `
+    <div class="example-section">
+      <div class="example-title">일반암 예시</div>
+      ${generateExampleItemForPrint('다빈치수술', calculateExample1(coverages))}
+      ${generateExampleItemForPrint('1부위 전이+표적', calculateExample2(coverages))}
+      ${generateExampleItemForPrint('중입자치료', calculateExample3(coverages))}
+    </div>
+    
+    <div class="example-section">
+      <div class="example-title">뇌경색 예시</div>
+      ${generateExampleItemForPrint('스텐트', calculateStentExample(coverages))}
+      ${generateExampleItemForPrint('스텐트+혈전용해', calculateStentThrombolysisExample(coverages))}
+      ${generateExampleItemForPrint('혈전제거+용해+중환자', calculateComplexTreatmentExample(coverages))}
+    </div>
+    
+    <div class="example-section">
+      <div class="example-title">심근경색 예시</div>
+      ${generateExampleItemForPrint('스텐트', calculateMyocardialStentExample(coverages))}
+      ${generateExampleItemForPrint('스텐트+혈전용해', calculateMyocardialStentThrombolysisExample(coverages))}
+      ${generateExampleItemForPrint('혈전제거+용해+중환자', calculateMyocardialComplexTreatmentExample(coverages))}
+    </div>
+  `;
+}
+
+// 인쇄용 예시 항목 생성 (최적화된 크기)
+function generateExampleItemForPrint(name, value) {
+  return `
+    <div class="example-item">
+      <div class="example-name">${name}</div>
+      <div class="example-value">${value}만원</div>
+    </div>
+  `;
+}
+
+// 치료 보장 예시 계산 함수들
+function calculateExample1(coverages) {
+  const c5 = extractNumber(coverages.generalCancer?.value || 0);
+  const c6 = extractNumber(coverages.totalCancer?.value || 0);
+  const c8 = extractNumber(coverages.cancerSpecificTreatment?.value || 0);
+  const c9 = extractNumber(coverages.cancerNonCoveredTreatment?.value || 0);
+  const c12 = extractNumber(coverages.cancerSurgery?.value || 0);
+  const c13 = extractNumber(coverages.daVinciSurgery?.value || 0);
+  const c14 = extractNumber(coverages.surgery5Type?.value || 0);
+  
+  return (c5 + c6 + c8 + c9 + c12 + c13 + c14).toLocaleString();
+}
+
+function calculateExample2(coverages) {
+  const c5 = extractNumber(coverages.generalCancer?.value || 0);
+  const c6 = extractNumber(coverages.totalCancer?.value || 0);
+  const c7 = extractNumber(coverages.metastasisCancer?.value || 0);
+  const c8 = extractNumber(coverages.cancerSpecificTreatment?.value || 0);
+  const c9 = extractNumber(coverages.cancerNonCoveredTreatment?.value || 0);
+  const c10 = extractNumber(coverages.targetTherapy?.value || 0);
+  
+  return (c5 + c6 + c7 + c8 + c9 + c10).toLocaleString();
+}
+
+function calculateExample3(coverages) {
+  const c5 = extractNumber(coverages.generalCancer?.value || 0);
+  const c6 = extractNumber(coverages.totalCancer?.value || 0);
+  const c8 = extractNumber(coverages.cancerSpecificTreatment?.value || 0);
+  const c9 = extractNumber(coverages.cancerNonCoveredTreatment?.value || 0);
+  const c11 = extractNumber(coverages.heavyIonTherapy?.value || 0);
+  
+  return (c5 + c6 + c8 + c9 + c11).toLocaleString();
+}
+
+function calculateStentExample(coverages) {
+  const g5 = extractNumber(coverages.cerebrovascularDiagnosis?.value || 0);
+  const g6 = extractNumber(coverages.strokeDiagnosis?.value || 0);
+  const g15 = extractNumber(coverages.twoMajorTreatment?.value || 0);
+  const g16 = extractNumber(coverages.majorCirculatorySurgery?.value || 0);
+  const g9 = extractNumber(coverages.cerebrovascularSurgery?.value || 0);
+  const g10 = extractNumber(coverages.strokeSurgery?.value || 0);
+  const g21 = extractNumber(coverages.surgery3Type?.value || 0);
+  const g23 = extractNumber(coverages.disease124Surgery?.value || 0);
+  const g24 = extractNumber(coverages.sevenOrganSurgery?.value || 0);
+  
+  return (g5 + g6 + g15 + g16 + g9 + g10 + g21 + g23 + g24/2).toLocaleString();
+}
+
+function calculateStentThrombolysisExample(coverages) {
+  const baseValue = parseFloat(calculateStentExample(coverages).replace(/,/g, ''));
+  const g18 = extractNumber(coverages.majorCirculatoryThrombolysis?.value || 0);
+  const g13 = extractNumber(coverages.strokeThrombolysis?.value || 0);
+  
+  return (baseValue + g18 + g13).toLocaleString();
+}
+
+function calculateComplexTreatmentExample(coverages) {
+  const g5 = extractNumber(coverages.cerebrovascularDiagnosis?.value || 0);
+  const g6 = extractNumber(coverages.strokeDiagnosis?.value || 0);
+  const g15 = extractNumber(coverages.twoMajorTreatment?.value || 0);
+  const g17 = extractNumber(coverages.majorCirculatoryThrombectomy?.value || 0);
+  const g9 = extractNumber(coverages.cerebrovascularSurgery?.value || 0);
+  const g10 = extractNumber(coverages.strokeSurgery?.value || 0);
+  const g21 = extractNumber(coverages.surgery3Type?.value || 0);
+  const g23 = extractNumber(coverages.disease124Surgery?.value || 0);
+  const g24 = extractNumber(coverages.sevenOrganSurgery?.value || 0);
+  const g18 = extractNumber(coverages.majorCirculatoryThrombolysis?.value || 0);
+  const g13 = extractNumber(coverages.strokeThrombolysis?.value || 0);
+  const g19 = extractNumber(coverages.majorCirculatoryICU?.value || 0);
+  const g20 = extractNumber(coverages.thrombectomyTreatment?.value || 0);
+  
+  return (g5 + g6 + g15 + g17 + g9 + g10 + g21 + g23 + g24/2 + g18 + g13 + g19 + g20).toLocaleString();
+}
+
+function calculateMyocardialStentExample(coverages) {
+  const g7 = extractNumber(coverages.ischemicHeartDiagnosis?.value || 0);
+  const g8 = extractNumber(coverages.myocardialInfarctionDiagnosis?.value || 0);
+  const g15 = extractNumber(coverages.twoMajorTreatment?.value || 0);
+  const g16 = extractNumber(coverages.majorCirculatorySurgery?.value || 0);
+  const g11 = extractNumber(coverages.ischemicHeartSurgery?.value || 0);
+  const g12 = extractNumber(coverages.myocardialInfarctionSurgery?.value || 0);
+  const g21 = extractNumber(coverages.surgery3Type?.value || 0);
+  const g23 = extractNumber(coverages.disease124Surgery?.value || 0);
+  const g24 = extractNumber(coverages.sevenOrganSurgery?.value || 0);
+  
+  return (g7 + g8 + g15 + g16 + g11 + g12 + g21 + g23 + g24/2).toLocaleString();
+}
+
+function calculateMyocardialStentThrombolysisExample(coverages) {
+  const baseValue = parseFloat(calculateMyocardialStentExample(coverages).replace(/,/g, ''));
+  const g18 = extractNumber(coverages.majorCirculatoryThrombolysis?.value || 0);
+  const g14 = extractNumber(coverages.myocardialInfarctionThrombolysis?.value || 0);
+  
+  return (baseValue + g18 + g14).toLocaleString();
+}
+
+function calculateMyocardialComplexTreatmentExample(coverages) {
+  const g7 = extractNumber(coverages.ischemicHeartDiagnosis?.value || 0);
+  const g8 = extractNumber(coverages.myocardialInfarctionDiagnosis?.value || 0);
+  const g15 = extractNumber(coverages.twoMajorTreatment?.value || 0);
+  const g17 = extractNumber(coverages.majorCirculatoryThrombectomy?.value || 0);
+  const g11 = extractNumber(coverages.ischemicHeartSurgery?.value || 0);
+  const g12 = extractNumber(coverages.myocardialInfarctionSurgery?.value || 0);
+  const g21 = extractNumber(coverages.surgery3Type?.value || 0);
+  const g23 = extractNumber(coverages.disease124Surgery?.value || 0);
+  const g24 = extractNumber(coverages.sevenOrganSurgery?.value || 0);
+  const g18 = extractNumber(coverages.majorCirculatoryThrombolysis?.value || 0);
+  const g14 = extractNumber(coverages.myocardialInfarctionThrombolysis?.value || 0);
+  const g19 = extractNumber(coverages.majorCirculatoryICU?.value || 0);
+  const g20 = extractNumber(coverages.thrombectomyTreatment?.value || 0);
+  
+  return (g7 + g8 + g15 + g17 + g11 + g12 + g21 + g23 + g24/2 + g18 + g14 + g19 + g20).toLocaleString();
+}
+</script>
+
+</body>
+</html>
+
 // 표준금액 설정 모달 열기
 function openStandardAmountModal() {
   const modal = document.getElementById('standardAmountModal');
@@ -1359,58 +1697,6 @@ function extractFractionPattern(lines, currentIndex, coverageName) {
   return null;
 }
 
-// 패턴별 매칭 데이터 찾기 (개선된 정확도)
-function findMatchingDataByPattern(structuredData, targetText, expectedPattern) {
-  console.log(`매칭 시도: "${targetText}" (패턴: ${expectedPattern})`);
-  
-  // 1단계: 완전 일치 우선
-  let match = structuredData.find(data => {
-    const normalizedName = data.name.toLowerCase().replace(/\s+/g, '');
-    const normalizedTarget = targetText.toLowerCase().replace(/\s+/g, '');
-    return normalizedName === normalizedTarget && 
-           (expectedPattern === 'any' || data.pattern === expectedPattern || 
-            data.pattern.includes(expectedPattern.replace('fraction', '')));
-  });
-  
-  if (match) {
-    console.log(`완전 일치 발견: "${match.name}" -> ${match.value} (패턴: ${match.pattern})`);
-    return match;
-  }
-  
-  // 2단계: 타겟이 데이터에 포함되는 경우 (더 엄격)
-  match = structuredData.find(data => {
-    const normalizedName = data.name.toLowerCase().replace(/\s+/g, '');
-    const normalizedTarget = targetText.toLowerCase().replace(/\s+/g, '');
-    return normalizedName.includes(normalizedTarget) && 
-           normalizedTarget.length >= 2 && // 최소 2글자 이상
-           (expectedPattern === 'any' || data.pattern === expectedPattern || 
-            data.pattern.includes(expectedPattern.replace('fraction', '')));
-  });
-  
-  if (match) {
-    console.log(`포함 매칭 발견: "${match.name}" -> ${match.value} (패턴: ${match.pattern})`);
-    return match;
-  }
-  
-  // 3단계: 부분 매칭 (가장 느슨한 조건)
-  match = structuredData.find(data => {
-    const normalizedName = data.name.toLowerCase().replace(/\s+/g, '');
-    const normalizedTarget = targetText.toLowerCase().replace(/\s+/g, '');
-    return (normalizedTarget.includes(normalizedName) || normalizedName.includes(normalizedTarget)) &&
-           Math.min(normalizedName.length, normalizedTarget.length) >= 2 &&
-           (expectedPattern === 'any' || data.pattern === expectedPattern || 
-            data.pattern.includes(expectedPattern.replace('fraction', '')));
-  });
-  
-  if (match) {
-    console.log(`부분 매칭 발견: "${match.name}" -> ${match.value} (패턴: ${match.pattern})`);
-    return match;
-  }
-  
-  console.log(`매칭 실패: "${targetText}"`);
-  return null;
-}
-
 // 단순 패턴 추출 (A만원 형태) - 특수 항목용
 function extractSimplePattern(lines, currentIndex, coverageName) {
   // 특수 항목들만 체크
@@ -1454,7 +1740,8 @@ function findMatchingDataByPattern(structuredData, targetText, expectedPattern) 
     const normalizedName = data.name.toLowerCase().replace(/\s+/g, '');
     const normalizedTarget = targetText.toLowerCase().replace(/\s+/g, '');
     return normalizedName === normalizedTarget && 
-           (expectedPattern === 'any' || data.pattern === expectedPattern);
+           (expectedPattern === 'any' || data.pattern === expectedPattern || 
+            data.pattern.includes(expectedPattern.replace('fraction', '')));
   });
   
   if (match) {
@@ -1468,7 +1755,8 @@ function findMatchingDataByPattern(structuredData, targetText, expectedPattern) 
     const normalizedTarget = targetText.toLowerCase().replace(/\s+/g, '');
     return normalizedName.includes(normalizedTarget) && 
            normalizedTarget.length >= 2 && // 최소 2글자 이상
-           (expectedPattern === 'any' || data.pattern === expectedPattern);
+           (expectedPattern === 'any' || data.pattern === expectedPattern || 
+            data.pattern.includes(expectedPattern.replace('fraction', '')));
   });
   
   if (match) {
@@ -1482,7 +1770,8 @@ function findMatchingDataByPattern(structuredData, targetText, expectedPattern) 
     const normalizedTarget = targetText.toLowerCase().replace(/\s+/g, '');
     return (normalizedTarget.includes(normalizedName) || normalizedName.includes(normalizedTarget)) &&
            Math.min(normalizedName.length, normalizedTarget.length) >= 2 &&
-           (expectedPattern === 'any' || data.pattern === expectedPattern);
+           (expectedPattern === 'any' || data.pattern === expectedPattern || 
+            data.pattern.includes(expectedPattern.replace('fraction', '')));
   });
   
   if (match) {
@@ -1491,27 +1780,6 @@ function findMatchingDataByPattern(structuredData, targetText, expectedPattern) 
   }
   
   console.log(`매칭 실패: "${targetText}"`);
-  return null;
-}
-  
-  if (match) {
-    console.log(`정확한 매칭 발견: "${match.name}" -> ${match.value} (패턴: ${match.pattern})`);
-    return match;
-  }
-  
-  // 부분 매칭
-  match = structuredData.find(data => {
-    const normalizedName = data.name.toLowerCase().replace(/\s+/g, '');
-    const normalizedTarget = targetText.toLowerCase().replace(/\s+/g, '');
-    return (normalizedName.includes(normalizedTarget) || normalizedTarget.includes(normalizedName)) &&
-           (expectedPattern === 'any' || data.pattern === expectedPattern);
-  });
-  
-  if (match) {
-    console.log(`부분 매칭 발견: "${match.name}" -> ${match.value} (패턴: ${match.pattern})`);
-    return match;
-  }
-  
   return null;
 }
 
@@ -1527,40 +1795,6 @@ function removeDeficitLines(text) {
   return cleanedLines.join('\n');
 }
 
-// 구조화된 담보 데이터 추출 함수
-function extractStructuredCoverageData(text) {
-  const lines = text.split(/\r?\n/)
-    .map(line => line.trim())
-    .filter(line => line.length > 0);
-  
-  const structuredData = [];
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    
-    // 담보명 후보 라인인지 확인 (한글로 시작하고 숫자/만원이 없는 라인)
-    if (isCoverageNameLine(line)) {
-      // 다음 라인에서 숫자 패턴 찾기
-      for (let j = i + 1; j <= i + 3 && j < lines.length; j++) {
-        const nextLine = lines[j];
-        const extractedValue = extractValueFromDataLine(nextLine);
-        
-        if (extractedValue !== null) {
-          structuredData.push({
-            name: line,
-            value: extractedValue,
-            dataLine: nextLine
-          });
-          console.log(`구조화된 데이터 추가: ${line} -> ${extractedValue}`);
-          break;
-        }
-      }
-    }
-  }
-  
-  return structuredData;
-}
-
 // 담보명 라인인지 확인하는 함수
 function isCoverageNameLine(line) {
   // 한글이 포함되어 있고, 숫자나 "만원"이 없는 라인
@@ -1569,417 +1803,6 @@ function isCoverageNameLine(line) {
   const hasWon = line.includes('만원');
   
   return hasKorean && !hasNumbers && !hasWon && line.length >= 2;
-}
-
-// 데이터 라인에서 값 추출하는 함수 (분수형태 우선 처리)
-function extractValueFromDataLine(line) {
-  console.log(`데이터 라인 분석: "${line}"`);
-  
-  // 1순위: 분수 형태 (A/B만원) - A값 추출
-  const fractionPattern = /(\d{1,3}(?:,\d{3})*)\s*\/\s*\d{1,3}(?:,\d{3})*(?:만원)?/;
-  const fractionMatch = line.match(fractionPattern);
-  
-  if (fractionMatch) {
-    const value = parseInt(fractionMatch[1].replace(/,/g, ''));
-    console.log(`분수 형태에서 추출: ${value}`);
-    return value;
-  }
-  
-  // 2순위: 단순 숫자+만원 형태
-  const simplePattern = /(\d{1,3}(?:,\d{3})*)만원/;
-  const simpleMatch = line.match(simplePattern);
-  
-  if (simpleMatch) {
-    const value = parseInt(simpleMatch[1].replace(/,/g, ''));
-    console.log(`단순 형태에서 추출: ${value}`);
-    return value;
-  }
-  
-  // 3순위: 숫자만 있는 경우 (큰 숫자인 경우만)
-  const numberPattern = /(\d{1,3}(?:,\d{3})*)/;
-  const numberMatch = line.match(numberPattern);
-  
-  if (numberMatch) {
-    const value = parseInt(numberMatch[1].replace(/,/g, ''));
-    // 100 이상의 숫자만 유효한 보장금액으로 간주
-    if (value >= 100) {
-      console.log(`숫자에서 추출: ${value}`);
-      return value;
-    }
-  }
-  
-  console.log('데이터 라인에서 값을 찾을 수 없음');
-  return null;
-}
-
-// 구조화된 데이터에서 매칭되는 담보 찾기
-function findMatchingCoverageData(structuredData, targetText) {
-  // 정확한 매칭 우선
-  let match = structuredData.find(data => {
-    const normalizedName = data.name.toLowerCase().replace(/\s+/g, '');
-    const normalizedTarget = targetText.toLowerCase().replace(/\s+/g, '');
-    return normalizedName === normalizedTarget;
-  });
-  
-  if (match) {
-    console.log(`정확한 매칭 발견: "${match.name}" -> ${match.value}`);
-    return match;
-  }
-  
-  // 부분 매칭
-  match = structuredData.find(data => {
-    const normalizedName = data.name.toLowerCase().replace(/\s+/g, '');
-    const normalizedTarget = targetText.toLowerCase().replace(/\s+/g, '');
-    return normalizedName.includes(normalizedTarget) || normalizedTarget.includes(normalizedName);
-  });
-  
-  if (match) {
-    console.log(`부분 매칭 발견: "${match.name}" -> ${match.value}`);
-    return match;
-  }
-  
-  return null;
-}
-
-// 95% 정확도 목표 정교화된 값 추출 함수
-function extractValueWithPrecision(text, targetText) {
-  console.log(`정교화된 추출 시작: "${targetText}"`);
-  
-  // 1단계: 텍스트를 라인별로 분리하고 정리
-  const lines = text.split(/\r?\n/)
-    .map(line => line.trim())
-    .filter(line => line.length > 0);
-  
-  // 2단계: 타겟 텍스트가 포함된 라인들 찾기 (대소문자 무시, 공백 무시)
-  const matchingLines = [];
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const normalizedLine = line.toLowerCase().replace(/\s+/g, '');
-    const normalizedTarget = targetText.toLowerCase().replace(/\s+/g, '');
-    
-    // 정확한 매칭 또는 부분 매칭
-    if (normalizedLine.includes(normalizedTarget)) {
-      matchingLines.push({
-        line: line,
-        index: i,
-        matchScore: calculateMatchScore(normalizedLine, normalizedTarget),
-        allLines: lines // 전체 라인 배열 추가
-      });
-      console.log(`라인 매칭: "${line}" (점수: ${calculateMatchScore(normalizedLine, normalizedTarget)})`);
-    }
-  }
-  
-  // 매칭 점수가 높은 순으로 정렬
-  matchingLines.sort((a, b) => b.matchScore - a.matchScore);
-  
-  // 3단계: 각 매칭된 라인에서 값 추출 시도
-  for (const match of matchingLines) {
-    const extractedValue = extractNumberFromLineAndNextLines(match.line, targetText, match.allLines, match.index);
-    
-    if (extractedValue !== null) {
-      console.log(`값 추출 성공: ${extractedValue} (라인: "${match.line}")`);
-      return extractedValue;
-    }
-  }
-  
-  console.log(`"${targetText}"에 대한 값 추출 실패`);
-  return null;
-}
-
- // 라인과 다음 라인들에서 숫자 추출 함수 (강화된 구조 통일 버전)
-function extractNumberFromLineAndNextLines(line, targetText, allLines, currentIndex) {
-  console.log(`강화된 구조 통일 숫자 추출 시도: "${line}", 타겟: "${targetText}"`);
-  
-  // 특별 처리 항목들 (기존 로직 유지)
-  const specialItems = ['형사합의지원금', '변호사선임비용', '화재벌금', '일상생활배상책임'];
-  const isSpecialItem = specialItems.includes(targetText);
-  
-  if (isSpecialItem) {
-    console.log(`특별 항목 "${targetText}" - 기존 로직 사용`);
-    return extractNumberFromLineAndNextLinesLegacy(line, targetText, allLines, currentIndex);
-  }
-  
-  // 일반 항목들 - 통일된 구조로 처리
-  console.log(`일반 항목 "${targetText}" - 통일된 구조 처리`);
-  
-  // 다음 라인들에서 통일된 패턴 찾기
-  for (let i = 1; i <= 5 && currentIndex + i < allLines.length; i++) {
-    const nextLine = allLines[currentIndex + i];
-    console.log(`라인 ${i} 검사: "${nextLine}"`);
-    
-    // 다른 담보 항목이 나타나면 검사 중지
-    if (isNextCoverageItem(nextLine, targetText)) {
-      console.log(`다른 담보 항목 발견으로 검사 중지: "${nextLine}"`);
-      break;
-    }
-    
-    // 통일된 패턴: A/B만원 형태 찾기
-    const unifiedPatternResult = extractFromUnifiedPattern(nextLine);
-    if (unifiedPatternResult !== null) {
-      console.log(`통일된 패턴에서 추출 성공: ${unifiedPatternResult}`);
-      return unifiedPatternResult;
-    }
-  }
-  
-  console.log('통일된 구조에서 숫자 추출 실패 - 0값 반환');
-  return 0;
-}
-
-// 통일된 패턴에서 숫자 추출 (A/B만원 형태)
-function extractFromUnifiedPattern(text) {
-  console.log(`통일된 패턴 검사: "${text}"`);
-  
-  // "부족" 키워드가 있는 라인은 건너뛰기
-  if (text.includes('부족')) {
-    console.log('부족 키워드가 있는 라인 건너뛰기');
-    return null;
-  }
-  
-  // A/B만원 패턴 (통일된 구조)
-  const unifiedPattern = /(\d{1,3}(?:,\d{3})*)\s*\/\s*\d{1,3}(?:,\d{3})*만원/;
-  const match = text.match(unifiedPattern);
-  
-  if (match) {
-    const numberStr = match[1].replace(/,/g, '');
-    const number = parseInt(numberStr);
-    
-    console.log(`통일된 패턴 매칭: "${match[0]}" -> 숫자: ${number}`);
-    
-    // 0값도 정상적으로 반환 (0으로 표기되어 인식됨)
-    return number;
-  }
-  
-  console.log('통일된 패턴에서 매칭 실패');
-  return null;
-}
-
-// 다음 담보 항목인지 확인
-function isNextCoverageItem(line, currentTarget) {
-  const allCoverageKeywords = [
-    '일반암', '통합암', '표적항암약물', '뇌혈관질환', '뇌졸중', 
-    '허혈성심질환', '급성심근경색증', '질병입원 실손', '상해입원실손', 
-    '간병인질병입원', '형사합의지원금', '변호사선임비용', '화재벌금', '일상생활배상책임'
-  ].filter(keyword => keyword !== currentTarget);
-  
-  return allCoverageKeywords.some(keyword => {
-    const normalizedLine = line.toLowerCase().replace(/\s+/g, '');
-    const normalizedKeyword = keyword.toLowerCase().replace(/\s+/g, '');
-    return normalizedLine.includes(normalizedKeyword);
-  });
-}
-
-// 특별 항목용 기존 로직 (형사합의지원금, 변호사선임비용, 화재벌금, 일상생활배상책임)
-function extractNumberFromLineAndNextLinesLegacy(line, targetText, allLines, currentIndex) {
-  console.log(`특별 항목 기존 로직: "${line}", 타겟: "${targetText}"`);
-  
-  // 먼저 현재 라인에서 시도
-  const currentLineResult = extractNumberFromSingleLine(line, targetText);
-  if (currentLineResult !== null) {
-    console.log(`현재 라인에서 추출 성공: ${currentLineResult}`);
-    return currentLineResult;
-  }
-  
-  // 다음 라인들에서 숫자 찾기 (기존 방식)
-  for (let i = 1; i <= 5 && currentIndex + i < allLines.length; i++) {
-    const nextLine = allLines[currentIndex + i];
-    console.log(`특별 항목 다음 라인 ${i} 검사: "${nextLine}"`);
-    
-    // 다른 담보 항목이 나타나면 검사 중지
-    if (isNextCoverageItem(nextLine, targetText)) {
-      console.log(`다른 담보 항목 발견으로 검사 중지: "${nextLine}"`);
-      break;
-    }
-    
-    // 기존 방식으로 숫자 패턴 검사
-    const numberResult = extractNumberFromText(nextLine);
-    if (numberResult !== null) {
-      console.log(`특별 항목 다음 라인 ${i}에서 숫자 추출 성공: ${numberResult}`);
-      return numberResult;
-    }
-  }
-  
-  console.log('특별 항목 기존 로직에서도 숫자 추출 실패 - 0값 반환');
-  return 0;
-}
-
-// 단일 라인에서 숫자 추출 (기존 로직)
-function extractNumberFromSingleLine(line, targetText) {
-  const targetIndex = line.toLowerCase().indexOf(targetText.toLowerCase());
-  if (targetIndex === -1) {
-    return null;
-  }
-  
-  const afterTarget = line.substring(targetIndex + targetText.length);
-  return extractNumberFromText(afterTarget);
-}
-
-// 텍스트에서 숫자 추출 (공통 로직)
-function extractNumberFromText(text) {
-  console.log(`텍스트에서 숫자 추출: "${text}"`);
-  
-  // "부족" 키워드가 포함된 텍스트는 완전 배제
-  if (text.includes('부족')) {
-    console.log('부족 키워드 발견 - 해당 라인 숫자 무시');
-    return null;
-  }
-  
-  // 숫자 패턴들 (우선순위 순)
-  const patterns = [
-    // 분수 형태 처리 (X/Y만원, X/Y, X/Y,ZZZ만원 등)
-    /(\d{1,3}(?:,\d{3})*)\s*\/\s*\d{1,3}(?:,\d{3})*(?:만원)?/,
-    
-    // 단순 숫자+만원 형태
-    /(\d{1,3}(?:,\d{3})*)만원/,
-    
-    // 숫자만 있는 형태 (쉼표 포함)
-    /(\d{1,3}(?:,\d{3})*)/
-  ];
-  
-  for (const pattern of patterns) {
-    const match = text.match(pattern);
-    if (match) {
-      const numberStr = match[1].replace(/,/g, '');
-      const number = parseInt(numberStr);
-      
-      console.log(`패턴 매칭 성공: "${match[0]}" -> 숫자: ${number}`);
-      
-      // 0값 처리
-      if (number === 0) {
-        console.log('0값 인식 - 0 반환');
-        return 0;
-      }
-      
-      if (number > 0) {
-        console.log(`정상 값 추출: ${number}`);
-        return number;
-      }
-    }
-  }
-  
-  // 0/ 패턴 특별 처리
-  if (text.includes('0/') || text.trim().startsWith('0/')) {
-    console.log('0/ 패턴 발견 - 0값 반환');
-    return 0;
-  }
-  
-  console.log('숫자 추출 실패');
-  return null;
-}
-
-// 매칭 점수 계산 함수
-function calculateMatchScore(line, target) {
-  // 완전 일치 시 최고 점수
-  if (line === target) return 100;
-  
-  // 포함 관계 점수 계산
-  if (line.includes(target)) {
-    return 90 - (line.length - target.length) * 0.1;
-  }
-  
-  // 부분 일치 점수 계산
-  let score = 0;
-  const targetChars = target.split('');
-  
-  for (const char of targetChars) {
-    if (line.includes(char)) {
-      score += 1;
-    }
-  }
-  
-  return (score / targetChars.length) * 50;
-}
-
-// 라인에서 숫자 추출 함수 (로직 1-4 구현)
-function extractNumberFromLine(line, targetText) {
-  console.log(`라인에서 숫자 추출 시도: "${line}", 타겟: "${targetText}"`);
-  
-  // 로직 1: 텍스트와 숫자는 동일한 라인에 존재
-  const targetIndex = line.toLowerCase().indexOf(targetText.toLowerCase());
-  if (targetIndex === -1) {
-    console.log('타겟 텍스트를 라인에서 찾을 수 없음');
-    return null;
-  }
-  
-  // 로직 2: 텍스트가 끝나는 시점 이후의 공백을 찾고, 공백 이후의 숫자 인식
-  const afterTarget = line.substring(targetIndex + targetText.length);
-  console.log(`타겟 이후 텍스트: "${afterTarget}"`);
-  
-  // 공백 이후 첫 번째 숫자 패턴들
-  const patterns = [
-    // 로직 3: 분수 형태 처리 (X/Y만원, X/Y, X/Y,ZZZ만원 등)
-    /\s+(\d{1,3}(?:,\d{3})*)\s*\/\s*\d{1,3}(?:,\d{3})*(?:만원)?/,
-    
-    // 단순 숫자+만원 형태
-    /\s+(\d{1,3}(?:,\d{3})*)만원/,
-    
-    // 숫자만 있는 형태
-    /\s+(\d{1,3}(?:,\d{3})*)/,
-    
-    // 공백 없이 바로 붙어있는 경우
-    /(\d{1,3}(?:,\d{3})*)\s*\/\s*\d{1,3}(?:,\d{3})*(?:만원)?/,
-    /(\d{1,3}(?:,\d{3})*)만원/,
-    /(\d{1,3}(?:,\d{3})*)/
-  ];
-  
-  for (const pattern of patterns) {
-    const match = afterTarget.match(pattern);
-    if (match) {
-      const numberStr = match[1].replace(/,/g, '');
-      const number = parseInt(numberStr);
-      
-      console.log(`패턴 매칭 성공: "${match[0]}" -> 숫자: ${number}`);
-      
-      // 로직 4: 0인 경우 체크
-      if (number === 0) {
-        console.log('0값 인식 - 0 반환');
-        return 0;
-      }
-      
-      if (number > 0) {
-        console.log(`정상 값 추출: ${number}`);
-        return number;
-      }
-    }
-  }
-  
-  // 특별한 경우: 라인 전체에서 0/ 패턴 확인 (0값 처리)
-  if (afterTarget.includes('0/') || afterTarget.trim().startsWith('0/')) {
-    console.log('0/ 패턴 발견 - 0값 반환');
-    return 0;
-  }
-  
-  console.log('숫자 추출 실패');
-  return null;
-}
-
-// 유사한 텍스트 검색 및 숫자 추출 (필요시 보조 함수로 유지)
-function findSimilarTextAndExtractNumber(lines, targetText) {
-  const targetWords = targetText.toLowerCase().split(/\s+/);
-  
-  for (const line of lines) {
-    const lineLower = line.toLowerCase();
-    
-    // 타겟 텍스트의 주요 단어들이 포함되어 있는지 확인
-    const matchedWords = targetWords.filter(word => lineLower.includes(word));
-    
-    // 50% 이상의 단어가 매칭되면 유사한 것으로 판단
-    if (matchedWords.length >= Math.ceil(targetWords.length * 0.5)) {
-      console.log(`유사한 라인 발견: "${line}"`);
-      
-      // 숫자 추출 시도
-      const numberMatch = line.match(/(\d{1,3}(?:,\d{3})*)/);
-      if (numberMatch) {
-        const number = parseInt(numberMatch[1].replace(/,/g, ''));
-        if (number > 0) {
-          console.log(`유사 텍스트에서 추출된 숫자: ${number}`);
-          return number;
-        }
-      }
-    }
-  }
-  
-  return 0;
 }
 
 // 데이터 저장 및 이미지 다운로드
@@ -2063,7 +1886,7 @@ async function generateAndDownloadImage(data) {
   gap: 40px;
   height: calc(100% - 140px);
   flex-direction: column;
-  align-items: stretch;  /* 이 줄 추가 */
+  align-items: stretch;
 }
         .main-sections-container {
           display: flex;
@@ -2177,8 +2000,8 @@ async function generateAndDownloadImage(data) {
         }
         .progress-container {
           flex: 1;
-          max-width: 500px;  /* 최대 너비 제한 */
-         min-width: 20px;  /* 최소 너비 보장 */
+          max-width: 500px;
+          min-width: 20px;
           height: 20px;
           background: #e0e0e0;
           border-radius: 10px;
@@ -2203,9 +2026,9 @@ async function generateAndDownloadImage(data) {
 .examples-container {
   display: flex;
   gap: 40px;
-  justify-content: flex-start;  /* center에서 flex-start로 변경 */
+  justify-content: flex-start;
   height: auto;
-  margin-top: 10px;  /* 30px에서 10px로 변경 */
+  margin-top: 10px;
   align-items: flex-start;
 }
         .examples-row {
@@ -2332,7 +2155,7 @@ async function generateAndDownloadImage(data) {
   <!-- 변경 전 예시 섹션 -->
   <div class="comparison-section">
     <div class="before-sections">
-      <div class="sections-container">  <!-- examples-row를 sections-container로 변경 -->
+      <div class="sections-container">
         ${generateExampleSectionsForPrint(data.coverages_before, 'before')}
       </div>
     </div>
@@ -2341,12 +2164,14 @@ async function generateAndDownloadImage(data) {
   <!-- 변경 후 예시 섹션 -->
   <div class="comparison-section">
     <div class="after-sections">
-      <div class="sections-container">  <!-- examples-row를 sections-container로 변경 -->
+      <div class="sections-container">
         ${generateExampleSectionsForPrint(data.coverages_after, 'after')}
       </div>
     </div>
   </div>
 </div>
+      </div>
+    </div>
   `;
   
   // html2canvas를 사용하여 이미지 생성
@@ -2356,8 +2181,6 @@ const canvas = await html2canvas(container.firstElementChild, {
   logging: false,
   useCORS: true,
   backgroundColor: '#ffffff',
-  // width: 3500,  // 이 줄 제거
-  // height: 3500  // 이 줄 제거
 });
     
     // 캔버스를 이미지로 변환
@@ -2484,342 +2307,3 @@ function loadCurrentDataToForm() {
     handleCaregiverOptionChange();
   }
 }
-
-// 인쇄용 담보 항목 생성 (최적화된 크기)
-function generateCoverageItemsForPrint(coverages, items, type) {
-  return items.map(item => {
-    const coverage = coverages[item.key];
-    const value = coverage ? extractNumber(coverage.value) : 0;
-    
-    let displayValue = '';
-    let valueColor = '#333'; 
-    
-    if (value === 0) {
-      displayValue = '✗';
-      valueColor = '#dc3545';
-    } else {
-      displayValue = value.toLocaleString() + '만원';
-      valueColor = '#333';
-    }
-    
-    let progressBarHtml = '';
-    if (value === 0) {
-      progressBarHtml = '<div class="progress-container"><div class="progress-bar" style="width: 0%; background: #e0e0e0;"></div></div>';
-    } else {
-      let barColor = '#dc3545';
-      const percentage = calculateProgressPercentage(value, item.standardAmount);
-      if (percentage >= 100) barColor = '#28a745';
-      else if (percentage >= 30) barColor = '#ffc107';
-      const width = Math.min(percentage, 100);
-      progressBarHtml = `<div class="progress-container"><div class="progress-bar" style="width: ${width}%; background: ${barColor};"></div></div>`;
-    }
-    
-    let shortName = item.name;
-    if (shortName.length > 12) {
-      shortName = shortName.replace('질환진단비', '진단').replace('질환수술비', '수술').replace('특정치료비', '치료');
-    }
-    
-    return `
-      <div class="coverage-item">
-        <div class="coverage-name" style="color: ${value === 0 ? '#dc3545' : '#333'};">${shortName}</div>
-        <div class="coverage-display">
-          ${progressBarHtml}
-          <span class="coverage-value" style="color: ${valueColor};">${displayValue}</span>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-
-  // 진행률 바와 금액만 표시하는 함수
-function generateSimpleItemForPrint(coverages, key, type) {
-  const coverage = coverages[key];
-  const value = coverage ? extractNumber(coverage.value) : 0;
-  
-  let displayValue = '';
-  let valueColor = '#333';
-  
-  if (value === 0) {
-    displayValue = '✗';
-    valueColor = '#dc3545';
-  } else {
-    displayValue = value.toLocaleString() + '만원';
-    valueColor = '#333';
-  }
-  
-  let progressBarHtml = '';
-  if (value === 0) {
-    progressBarHtml = '<div class="progress-container"><div class="progress-bar" style="width: 0%; background: #e0e0e0;"></div></div>';
-  } else {
-    const standardItem = ALL_COVERAGE_ITEMS.find(item => item.key === key) || { standardAmount: 1000 };
-    const percentage = calculateProgressPercentage(value, standardItem.standardAmount);
-    let barColor = '#dc3545';
-    if (percentage >= 100) barColor = '#28a745';
-    else if (percentage >= 30) barColor = '#ffc107';
-    const width = Math.min(percentage, 100);
-    progressBarHtml = `<div class="progress-container"><div class="progress-bar" style="width: ${width}%; background: ${barColor};"></div></div>`;
-  }
-  
-  return `
-    <div class="coverage-item">
-      <div class="coverage-display">
-        ${progressBarHtml}
-        <span class="coverage-value" style="color: ${valueColor};">${displayValue}</span>
-      </div>
-    </div>
-  `;
-}
-
-// 필수보험 개별 항목 생성 (최적화된 크기)
-function generateEssentialItemForPrint(coverages, key, name, type) {
-  const coverage = coverages[key];
-  const value = coverage ? extractNumber(coverage.value) : 0;
-  
-  let displayValue = '';
-  let valueColor = '#333';
-  
-  if (value === 0) {
-    displayValue = '✗';
-    valueColor = '#dc3545';
-  } else {
-    displayValue = value.toLocaleString() + '만원';
-    valueColor = '#333';
-  }
-  
-  let progressBarHtml = '';
-  if (value === 0) {
-    progressBarHtml = '<div class="progress-container"><div class="progress-bar" style="width: 0%; background: #e0e0e0;"></div></div>';
-  } else {
-    const standardItem = ALL_COVERAGE_ITEMS.find(item => item.key === key) || { standardAmount: 1000 };
-    const percentage = calculateProgressPercentage(value, standardItem.standardAmount);
-    let barColor = '#dc3545';
-    if (percentage >= 100) barColor = '#28a745';
-    else if (percentage >= 30) barColor = '#ffc107';
-    const width = Math.min(percentage, 100);
-    progressBarHtml = `<div class="progress-container"><div class="progress-bar" style="width: ${width}%; background: ${barColor};"></div></div>`;
-  }
-  
-  return `
-    <div class="coverage-item">
-      <div class="coverage-name" style="color: ${value === 0 ? '#dc3545' : '#333'};">${name}</div>
-      <div class="coverage-display">
-        ${progressBarHtml}
-        <span class="coverage-value" style="color: ${valueColor};">${displayValue}</span>
-      </div>
-    </div>
-  `;
-}
-
-// 5대 필수보험 섹션 생성 (최적화된 크기)
-function generateEssentialSectionForPrint(coverages, caregiverOption, type) {
-  let html = '';
-  
-  html += `
-    <div class="subsection">
-      <div class="subsection-title">실손의료비</div>
-      ${generateEssentialItemForPrint(coverages, 'diseaseHospitalization', '(실손)질병입원', type)}
-      ${generateEssentialItemForPrint(coverages, 'injuryHospitalization', '(실손)상해입원', type)}
-    </div>
-  `;
-  
-  html += `
-    <div class="subsection">
-      <div class="subsection-title">운전자</div>
-      ${generateEssentialItemForPrint(coverages, 'criminalSettlement', '형사합의금', type)}
-      ${generateEssentialItemForPrint(coverages, 'lawyerAppointment', '변호사선임비', type)}
-    </div>
-  `;
-  
-  html += `
-    <div class="subsection">
-      <div class="subsection-title">간병인일당</div>`;
-  
-  if (caregiverOption === 'support') {
-    html += `
-      <div class="coverage-item">
-        <div class="coverage-name">지원 선택</div>
-        <div class="coverage-display">
-          <div class="progress-container"><div class="progress-bar" style="width: 0%; background: #e0e0e0;"></div></div>
-          <span class="coverage-value" style="color: #999;">-</span>
-        </div>
-      </div>`;
-  } else {
-    html += `
-      ${generateEssentialItemForPrint(coverages, 'nursingHospitalOut', '요양병원 외', type)}
-      ${generateEssentialItemForPrint(coverages, 'nursingHospitalIn', '요양병원', type)}
-      ${generateEssentialItemForPrint(coverages, 'nursingCareIntegrated', '간호간병통합', type)}`;
-  }
-  
-  html += `</div>`;
-  
-html += `
-  <div class="subsection">
-    <div class="subsection-title">일상생활배상책임</div>
-    ${generateSimpleItemForPrint(coverages, 'dailyLifeLiability', type)}
-  </div>
-`;
-
-html += `
-  <div class="subsection">
-    <div class="subsection-title">화재벌금</div>
-    ${generateSimpleItemForPrint(coverages, 'fireFine', type)}
-  </div>
-`;
-  
-  return html;
-}
-
-// 예시 섹션 생성 (가로 배치로 수정)
-function generateExampleSectionsForPrint(coverages, type) {
-  return `
-    <div class="example-section">
-      <div class="example-title">일반암 예시</div>
-      ${generateExampleItemForPrint('다빈치수술', calculateExample1(coverages))}
-      ${generateExampleItemForPrint('1부위 전이+표적', calculateExample2(coverages))}
-      ${generateExampleItemForPrint('중입자치료', calculateExample3(coverages))}
-    </div>
-    
-    <div class="example-section">
-      <div class="example-title">뇌경색 예시</div>
-      ${generateExampleItemForPrint('스텐트', calculateStentExample(coverages))}
-      ${generateExampleItemForPrint('스텐트+혈전용해', calculateStentThrombolysisExample(coverages))}
-      ${generateExampleItemForPrint('혈전제거+용해+중환자', calculateComplexTreatmentExample(coverages))}
-    </div>
-    
-    <div class="example-section">
-      <div class="example-title">심근경색 예시</div>
-      ${generateExampleItemForPrint('스텐트', calculateMyocardialStentExample(coverages))}
-      ${generateExampleItemForPrint('스텐트+혈전용해', calculateMyocardialStentThrombolysisExample(coverages))}
-      ${generateExampleItemForPrint('혈전제거+용해+중환자', calculateMyocardialComplexTreatmentExample(coverages))}
-    </div>
-  `;
-}
-
-// 인쇄용 예시 항목 생성 (최적화된 크기)
-function generateExampleItemForPrint(name, value) {
-  return `
-    <div class="example-item">
-      <div class="example-name">${name}</div>
-      <div class="example-value">${value}만원</div>
-    </div>
-  `;
-}
-
-// 치료 보장 예시 계산 함수들
-function calculateExample1(coverages) {
-  const c5 = extractNumber(coverages.generalCancer?.value || 0);
-  const c6 = extractNumber(coverages.totalCancer?.value || 0);
-  const c8 = extractNumber(coverages.cancerSpecificTreatment?.value || 0);
-  const c9 = extractNumber(coverages.cancerNonCoveredTreatment?.value || 0);
-  const c12 = extractNumber(coverages.cancerSurgery?.value || 0);
-  const c13 = extractNumber(coverages.daVinciSurgery?.value || 0);
-  const c14 = extractNumber(coverages.surgery5Type?.value || 0);
-  
-  return (c5 + c6 + c8 + c9 + c12 + c13 + c14).toLocaleString();
-}
-
-function calculateExample2(coverages) {
-  const c5 = extractNumber(coverages.generalCancer?.value || 0);
-  const c6 = extractNumber(coverages.totalCancer?.value || 0);
-  const c7 = extractNumber(coverages.metastasisCancer?.value || 0);
-  const c8 = extractNumber(coverages.cancerSpecificTreatment?.value || 0);
-  const c9 = extractNumber(coverages.cancerNonCoveredTreatment?.value || 0);
-  const c10 = extractNumber(coverages.targetTherapy?.value || 0);
-  
-  return (c5 + c6 + c7 + c8 + c9 + c10).toLocaleString();
-}
-
-function calculateExample3(coverages) {
-  const c5 = extractNumber(coverages.generalCancer?.value || 0);
-  const c6 = extractNumber(coverages.totalCancer?.value || 0);
-  const c8 = extractNumber(coverages.cancerSpecificTreatment?.value || 0);
-  const c9 = extractNumber(coverages.cancerNonCoveredTreatment?.value || 0);
-  const c11 = extractNumber(coverages.heavyIonTherapy?.value || 0);
-  
-  return (c5 + c6 + c8 + c9 + c11).toLocaleString();
-}
-
-function calculateStentExample(coverages) {
-  const g5 = extractNumber(coverages.cerebrovascularDiagnosis?.value || 0);
-  const g6 = extractNumber(coverages.strokeDiagnosis?.value || 0);
-  const g15 = extractNumber(coverages.twoMajorTreatment?.value || 0);
-  const g16 = extractNumber(coverages.majorCirculatorySurgery?.value || 0);
-  const g9 = extractNumber(coverages.cerebrovascularSurgery?.value || 0);
-  const g10 = extractNumber(coverages.strokeSurgery?.value || 0);
-  const g21 = extractNumber(coverages.surgery3Type?.value || 0);
-  const g23 = extractNumber(coverages.disease124Surgery?.value || 0);
-  const g24 = extractNumber(coverages.sevenOrganSurgery?.value || 0);
-  
-  return (g5 + g6 + g15 + g16 + g9 + g10 + g21 + g23 + g24/2).toLocaleString();
-}
-
-function calculateStentThrombolysisExample(coverages) {
-  const baseValue = parseFloat(calculateStentExample(coverages).replace(/,/g, ''));
-  const g18 = extractNumber(coverages.majorCirculatoryThrombolysis?.value || 0);
-  const g13 = extractNumber(coverages.strokeThrombolysis?.value || 0);
-  
-  return (baseValue + g18 + g13).toLocaleString();
-}
-
-function calculateComplexTreatmentExample(coverages) {
-  const g5 = extractNumber(coverages.cerebrovascularDiagnosis?.value || 0);
-  const g6 = extractNumber(coverages.strokeDiagnosis?.value || 0);
-  const g15 = extractNumber(coverages.twoMajorTreatment?.value || 0);
-  const g17 = extractNumber(coverages.majorCirculatoryThrombectomy?.value || 0);
-  const g9 = extractNumber(coverages.cerebrovascularSurgery?.value || 0);
-  const g10 = extractNumber(coverages.strokeSurgery?.value || 0);
-  const g21 = extractNumber(coverages.surgery3Type?.value || 0);
-  const g23 = extractNumber(coverages.disease124Surgery?.value || 0);
-  const g24 = extractNumber(coverages.sevenOrganSurgery?.value || 0);
-  const g18 = extractNumber(coverages.majorCirculatoryThrombolysis?.value || 0);
-  const g13 = extractNumber(coverages.strokeThrombolysis?.value || 0);
-  const g19 = extractNumber(coverages.majorCirculatoryICU?.value || 0);
-  const g20 = extractNumber(coverages.thrombectomyTreatment?.value || 0);
-  
-  return (g5 + g6 + g15 + g17 + g9 + g10 + g21 + g23 + g24/2 + g18 + g13 + g19 + g20).toLocaleString();
-}
-
-function calculateMyocardialStentExample(coverages) {
-  const g7 = extractNumber(coverages.ischemicHeartDiagnosis?.value || 0);
-  const g8 = extractNumber(coverages.myocardialInfarctionDiagnosis?.value || 0);
-  const g15 = extractNumber(coverages.twoMajorTreatment?.value || 0);
-  const g16 = extractNumber(coverages.majorCirculatorySurgery?.value || 0);
-  const g11 = extractNumber(coverages.ischemicHeartSurgery?.value || 0);
-  const g12 = extractNumber(coverages.myocardialInfarctionSurgery?.value || 0);
-  const g21 = extractNumber(coverages.surgery3Type?.value || 0);
-  const g23 = extractNumber(coverages.disease124Surgery?.value || 0);
-  const g24 = extractNumber(coverages.sevenOrganSurgery?.value || 0);
-  
-  return (g7 + g8 + g15 + g16 + g11 + g12 + g21 + g23 + g24/2).toLocaleString();
-}
-
-function calculateMyocardialStentThrombolysisExample(coverages) {
-  const baseValue = parseFloat(calculateMyocardialStentExample(coverages).replace(/,/g, ''));
-  const g18 = extractNumber(coverages.majorCirculatoryThrombolysis?.value || 0);
-  const g14 = extractNumber(coverages.myocardialInfarctionThrombolysis?.value || 0);
-  
-  return (baseValue + g18 + g14).toLocaleString();
-}
-
-function calculateMyocardialComplexTreatmentExample(coverages) {
-  const g7 = extractNumber(coverages.ischemicHeartDiagnosis?.value || 0);
-  const g8 = extractNumber(coverages.myocardialInfarctionDiagnosis?.value || 0);
-  const g15 = extractNumber(coverages.twoMajorTreatment?.value || 0);
-  const g17 = extractNumber(coverages.majorCirculatoryThrombectomy?.value || 0);
-  const g11 = extractNumber(coverages.ischemicHeartSurgery?.value || 0);
-  const g12 = extractNumber(coverages.myocardialInfarctionSurgery?.value || 0);
-  const g21 = extractNumber(coverages.surgery3Type?.value || 0);
-  const g23 = extractNumber(coverages.disease124Surgery?.value || 0);
-  const g24 = extractNumber(coverages.sevenOrganSurgery?.value || 0);
-  const g18 = extractNumber(coverages.majorCirculatoryThrombolysis?.value || 0);
-  const g14 = extractNumber(coverages.myocardialInfarctionThrombolysis?.value || 0);
-  const g19 = extractNumber(coverages.majorCirculatoryICU?.value || 0);
-  const g20 = extractNumber(coverages.thrombectomyTreatment?.value || 0);
-  
-  return (g7 + g8 + g15 + g17 + g11 + g12 + g21 + g23 + g24/2 + g18 + g14 + g19 + g20).toLocaleString();
-}
-</script>
-
-</body>
-</html>
