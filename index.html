@@ -1237,7 +1237,7 @@ function extractCoverageAmountsForBeforeAfter(text) {
   }, 100);
 }
 
-// 패턴별 구조화된 데이터 추출 함수 (신규)
+// 패턴별 구조화된 데이터 추출 함수 (개선된 버전)
 function extractStructuredDataByPattern(text) {
   const lines = text.split(/\r?\n/)
     .map(line => line.trim())
@@ -1248,11 +1248,19 @@ function extractStructuredDataByPattern(text) {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     
-    // 담보명 후보 라인인지 확인
+    // 패턴 1: 한 라인에 담보명과 값이 모두 있는 경우 (우선 처리)
+    const inlineData = extractInlinePattern(line);
+    if (inlineData) {
+      structuredData.push(inlineData);
+      console.log(`인라인 패턴 추출: ${line} -> ${inlineData.value}`);
+      continue;
+    }
+    
+    // 패턴 2: 담보명이 별도 라인에 있는 경우
     if (isCoverageNameLine(line)) {
       console.log(`담보명 후보 발견: "${line}"`);
       
-      // 패턴 1: fraction 형태 (A / B만원)
+      // 분수 패턴 (A / B만원)
       const fractionData = extractFractionPattern(lines, i, line);
       if (fractionData) {
         structuredData.push(fractionData);
@@ -1260,7 +1268,7 @@ function extractStructuredDataByPattern(text) {
         continue;
       }
       
-      // 패턴 2: simple 형태 (A만원)
+      // 단순 패턴 (A만원)
       const simpleData = extractSimplePattern(lines, i, line);
       if (simpleData) {
         structuredData.push(simpleData);
@@ -1273,11 +1281,62 @@ function extractStructuredDataByPattern(text) {
   return structuredData;
 }
 
-// 분수 패턴 추출 (A / B만원 형태)
+// 인라인 패턴 추출 (담보명과 값이 한 라인에 있는 경우) - 신규 함수
+function extractInlinePattern(line) {
+  console.log(`인라인 패턴 검사: "${line}"`);
+  
+  // 담보명 + 분수 패턴 (예: "급성심근경색증 1,000/3,000만원")
+  const inlineFractionMatch = line.match(/([가-힣\s]+?)\s+(\d{1,3}(?:,\d{3})*)\s*\/\s*(\d{1,3}(?:,\d{3})*)만원/);
+  if (inlineFractionMatch) {
+    const coverageName = inlineFractionMatch[1].trim();
+    const valueA = parseInt(inlineFractionMatch[2].replace(/,/g, ''));
+    const valueB = parseInt(inlineFractionMatch[3].replace(/,/g, ''));
+    
+    console.log(`인라인 분수 패턴 발견: "${coverageName}" -> A=${valueA}, B=${valueB}`);
+    
+    return {
+      name: coverageName,
+      value: valueA, // A 값을 추출
+      pattern: 'inline_fraction',
+      rawLine: line
+    };
+  }
+  
+  // 담보명 + 단순 패턴 (예: "형사합의지원금 20,000만원")
+  const inlineSimpleMatch = line.match(/([가-힣\s]+?)\s+(\d{1,3}(?:,\d{3})*)만원(?!\s*\/)/);
+  if (inlineSimpleMatch) {
+    const coverageName = inlineSimpleMatch[1].trim();
+    const value = parseInt(inlineSimpleMatch[2].replace(/,/g, ''));
+    
+    // 특수 항목들만 단순 패턴 허용
+    const specialItems = ['형사합의지원금', '변호사선임비용', '화재벌금', '일상생활배상책임'];
+    const isSpecialItem = specialItems.some(item => coverageName.includes(item));
+    
+    if (isSpecialItem) {
+      console.log(`인라인 단순 패턴 발견: "${coverageName}" -> ${value}`);
+      
+      return {
+        name: coverageName,
+        value: value,
+        pattern: 'inline_simple',
+        rawLine: line
+      };
+    }
+  }
+  
+  return null;
+}
+
+// 분수 패턴 추출 (A / B만원 형태) - 개선된 버전
 function extractFractionPattern(lines, currentIndex, coverageName) {
   // 현재 라인 또는 다음 2-3라인에서 A / B만원 패턴 찾기
   for (let i = 0; i <= 3 && currentIndex + i < lines.length; i++) {
     const targetLine = lines[currentIndex + i];
+    
+    // 이미 인라인으로 처리된 라인은 건너뛰기
+    if (i === 0 && targetLine.match(/[가-힣\s]+\s+\d{1,3}(?:,\d{3})*\s*\/\s*\d{1,3}(?:,\d{3})*만원/)) {
+      continue;
+    }
     
     // A / B만원 패턴 매칭 (공백 허용)
     const fractionMatch = targetLine.match(/(\d{1,3}(?:,\d{3})*)\s*\/\s*(\d{1,3}(?:,\d{3})*)만원/);
@@ -1297,6 +1356,58 @@ function extractFractionPattern(lines, currentIndex, coverageName) {
     }
   }
   
+  return null;
+}
+
+// 패턴별 매칭 데이터 찾기 (개선된 정확도)
+function findMatchingDataByPattern(structuredData, targetText, expectedPattern) {
+  console.log(`매칭 시도: "${targetText}" (패턴: ${expectedPattern})`);
+  
+  // 1단계: 완전 일치 우선
+  let match = structuredData.find(data => {
+    const normalizedName = data.name.toLowerCase().replace(/\s+/g, '');
+    const normalizedTarget = targetText.toLowerCase().replace(/\s+/g, '');
+    return normalizedName === normalizedTarget && 
+           (expectedPattern === 'any' || data.pattern === expectedPattern || 
+            data.pattern.includes(expectedPattern.replace('fraction', '')));
+  });
+  
+  if (match) {
+    console.log(`완전 일치 발견: "${match.name}" -> ${match.value} (패턴: ${match.pattern})`);
+    return match;
+  }
+  
+  // 2단계: 타겟이 데이터에 포함되는 경우 (더 엄격)
+  match = structuredData.find(data => {
+    const normalizedName = data.name.toLowerCase().replace(/\s+/g, '');
+    const normalizedTarget = targetText.toLowerCase().replace(/\s+/g, '');
+    return normalizedName.includes(normalizedTarget) && 
+           normalizedTarget.length >= 2 && // 최소 2글자 이상
+           (expectedPattern === 'any' || data.pattern === expectedPattern || 
+            data.pattern.includes(expectedPattern.replace('fraction', '')));
+  });
+  
+  if (match) {
+    console.log(`포함 매칭 발견: "${match.name}" -> ${match.value} (패턴: ${match.pattern})`);
+    return match;
+  }
+  
+  // 3단계: 부분 매칭 (가장 느슨한 조건)
+  match = structuredData.find(data => {
+    const normalizedName = data.name.toLowerCase().replace(/\s+/g, '');
+    const normalizedTarget = targetText.toLowerCase().replace(/\s+/g, '');
+    return (normalizedTarget.includes(normalizedName) || normalizedName.includes(normalizedTarget)) &&
+           Math.min(normalizedName.length, normalizedTarget.length) >= 2 &&
+           (expectedPattern === 'any' || data.pattern === expectedPattern || 
+            data.pattern.includes(expectedPattern.replace('fraction', '')));
+  });
+  
+  if (match) {
+    console.log(`부분 매칭 발견: "${match.name}" -> ${match.value} (패턴: ${match.pattern})`);
+    return match;
+  }
+  
+  console.log(`매칭 실패: "${targetText}"`);
   return null;
 }
 
@@ -1334,15 +1445,54 @@ function extractSimplePattern(lines, currentIndex, coverageName) {
   return null;
 }
 
-// 패턴별 매칭 데이터 찾기
+// 패턴별 매칭 데이터 찾기 (개선된 정확도)
 function findMatchingDataByPattern(structuredData, targetText, expectedPattern) {
-  // 정확한 매칭 우선
+  console.log(`매칭 시도: "${targetText}" (패턴: ${expectedPattern})`);
+  
+  // 1단계: 완전 일치 우선
   let match = structuredData.find(data => {
     const normalizedName = data.name.toLowerCase().replace(/\s+/g, '');
     const normalizedTarget = targetText.toLowerCase().replace(/\s+/g, '');
-    return normalizedName.includes(normalizedTarget) && 
+    return normalizedName === normalizedTarget && 
            (expectedPattern === 'any' || data.pattern === expectedPattern);
   });
+  
+  if (match) {
+    console.log(`완전 일치 발견: "${match.name}" -> ${match.value} (패턴: ${match.pattern})`);
+    return match;
+  }
+  
+  // 2단계: 타겟이 데이터에 포함되는 경우 (더 엄격)
+  match = structuredData.find(data => {
+    const normalizedName = data.name.toLowerCase().replace(/\s+/g, '');
+    const normalizedTarget = targetText.toLowerCase().replace(/\s+/g, '');
+    return normalizedName.includes(normalizedTarget) && 
+           normalizedTarget.length >= 2 && // 최소 2글자 이상
+           (expectedPattern === 'any' || data.pattern === expectedPattern);
+  });
+  
+  if (match) {
+    console.log(`포함 매칭 발견: "${match.name}" -> ${match.value} (패턴: ${match.pattern})`);
+    return match;
+  }
+  
+  // 3단계: 부분 매칭 (가장 느슨한 조건)
+  match = structuredData.find(data => {
+    const normalizedName = data.name.toLowerCase().replace(/\s+/g, '');
+    const normalizedTarget = targetText.toLowerCase().replace(/\s+/g, '');
+    return (normalizedTarget.includes(normalizedName) || normalizedName.includes(normalizedTarget)) &&
+           Math.min(normalizedName.length, normalizedTarget.length) >= 2 &&
+           (expectedPattern === 'any' || data.pattern === expectedPattern);
+  });
+  
+  if (match) {
+    console.log(`부분 매칭 발견: "${match.name}" -> ${match.value} (패턴: ${match.pattern})`);
+    return match;
+  }
+  
+  console.log(`매칭 실패: "${targetText}"`);
+  return null;
+}
   
   if (match) {
     console.log(`정확한 매칭 발견: "${match.name}" -> ${match.value} (패턴: ${match.pattern})`);
