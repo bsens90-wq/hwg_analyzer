@@ -1775,12 +1775,9 @@ async function generateAndDownloadImage(data) {
   `;
   
   try {
-// 용량 최적화: scale 낮추고 품질 조정
-const pixelRatio = window.devicePixelRatio || 1;
-const scale = Math.max(1.2, Math.min(pixelRatio, 2.0));  // 1.5→1.2, 2.5→2.0
-
+// 수정 후 - 모든 기기에서 동일한 scale 사용
 const canvas = await html2canvas(container.firstElementChild, {
-  scale: scale,
+  scale: 1.5,  // 모든 기기에서 동일하게 2배 고정
   logging: false,
   useCORS: true,
   backgroundColor: '#ffffff',
