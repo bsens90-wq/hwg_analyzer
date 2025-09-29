@@ -2212,11 +2212,12 @@ function calculateExample1(coverages) {
   const c6 = extractNumber(coverages.totalCancer?.value || 0);
   const c8 = extractNumber(coverages.cancerSpecificTreatment?.value || 0);
   const c9 = extractNumber(coverages.cancerNonCoveredTreatment?.value || 0);
+  const c11 = extractNumber(coverages.cancerTreatmentSurgery?.value || 0);  // 암치료비(수술) 추가
   const c12 = extractNumber(coverages.cancerSurgery?.value || 0);
   const c13 = extractNumber(coverages.daVinciSurgery?.value || 0);
   const c14 = extractNumber(coverages.surgery5Type?.value || 0);
   
-  return (c5 + c6 + c8 + c9 + c12 + c13 + c14).toLocaleString();
+  return (c5 + c6 + c8 + c9 + c11 + c12 + c13 + c14).toLocaleString();
 }
 
 function calculateExample2(coverages) {
@@ -2226,8 +2227,20 @@ function calculateExample2(coverages) {
   const c8 = extractNumber(coverages.cancerSpecificTreatment?.value || 0);
   const c9 = extractNumber(coverages.cancerNonCoveredTreatment?.value || 0);
   const c10 = extractNumber(coverages.targetTherapy?.value || 0);
+  const c15 = extractNumber(coverages.cancerTreatmentDrug?.value || 0);  // 암치료비(약물) 추가
   
-  return (c5 + c6 + c7 + c8 + c9 + c10).toLocaleString();
+  return (c5 + c6 + c7 + c8 + c9 + c10 + c15).toLocaleString();
+}
+
+function calculateExample3(coverages) {
+  const c5 = extractNumber(coverages.generalCancer?.value || 0);
+  const c6 = extractNumber(coverages.totalCancer?.value || 0);
+  const c8 = extractNumber(coverages.cancerSpecificTreatment?.value || 0);
+  const c9 = extractNumber(coverages.cancerNonCoveredTreatment?.value || 0);
+  const c11 = extractNumber(coverages.heavyIonTherapy?.value || 0);
+  const c16 = extractNumber(coverages.cancerTreatmentRadiation?.value || 0);  // 암치료비(방사선) 추가
+  
+  return (c5 + c6 + c8 + c9 + c11 + c16).toLocaleString();
 }
 
 function calculateExample3(coverages) {
