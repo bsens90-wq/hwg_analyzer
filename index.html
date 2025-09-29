@@ -1777,7 +1777,7 @@ async function generateAndDownloadImage(data) {
   
   try {
 const canvas = await html2canvas(container.firstElementChild, {
-  scale: 1.5,  // 적당한 해상도 유지
+  scale: window.devicePixelRatio || 1,  // 디바이스에 맞춰 자동 조정
   logging: false,
   useCORS: true,
   backgroundColor: '#ffffff',
