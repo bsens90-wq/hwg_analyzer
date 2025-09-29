@@ -1064,7 +1064,10 @@ function displayImagePreview(file) {
     uploadText.style.display = 'none';
     
     document.getElementById('ocrProcessBtn').disabled = false;
-    document.getElementById('ocrStatus').textContent = 'OCR 인식을 시작할 수 있습니다.';
+    document.getElementById('ocrStatus').textContent = 'OCR 인식 중... 잠시만 기다려주세요.';
+    
+    // 자동으로 OCR 처리 시작
+    processOCR();
   };
   reader.readAsDataURL(file);
 }
@@ -1074,6 +1077,7 @@ async function processOCR() {
   const ocrBtn = document.getElementById('ocrProcessBtn');
   const ocrStatus = document.getElementById('ocrStatus');
   const imagePreview = document.getElementById('imagePreview');
+  const imageInput = document.getElementById('imageInput');
   
   if (!imagePreview.src) {
     alert('먼저 이미지를 업로드해주세요.');
@@ -1092,7 +1096,14 @@ async function processOCR() {
     ocrStatus.innerHTML = '<span class="success">✅ OCR 인식이 완료되었습니다. 결과를 확인하고 필요시 수정해주세요.</span>';
   } catch (error) {
     console.error('OCR 처리 오류:', error);
-    ocrStatus.innerHTML = '<span class="error">❌ OCR 처리 중 오류가 발생했습니다: ' + error.message + '</span>';
+    ocrStatus.innerHTML = '<span class="error">❌ ' + error.message + '</span>';
+    
+    // 고객 정보 인식 실패 시 재촬영 안내
+    if (error.message.includes('고객 정보를 인식할 수 없습니다')) {
+      setTimeout(() => {
+        imageInput.click();
+      }, 1500);
+    }
   } finally {
     ocrBtn.disabled = false;
   }
@@ -1150,6 +1161,14 @@ async function parseOCRResult(apiResult) {
   extractCoverageDataFromRegions(imageRegions);
   
   console.log('=== OCR 파싱 완료 ===');
+  
+  // 3단계: OCR 성공 여부 검증
+  const customerName = document.getElementById('customerName').value.trim();
+  const birthDate = document.getElementById('birthDate').value.trim();
+  
+  if (!customerName && !birthDate) {
+    throw new Error('고객 정보를 인식할 수 없습니다. 이미지를 다시 촬영해주세요.');
+  }
 }
 
 // 이미지를 구역별로 분할
@@ -1794,13 +1813,8 @@ async function generateAndDownloadImage(data) {
 function saveDataToStorage(data) {
   let savedData = JSON.parse(localStorage.getItem('ocrWarrantyData') || '[]');
   
-  const existingIndex = savedData.findIndex(item => item.customerName === data.customerName);
-  
-  if (existingIndex >= 0) {
-    savedData[existingIndex] = data;
-  } else {
-    savedData.push(data);
-  }
+  // 항상 새로운 항목으로 추가 (중복 허용)
+  savedData.push(data);
   
   localStorage.setItem('ocrWarrantyData', JSON.stringify(savedData));
   savedDataList = savedData;
@@ -1820,8 +1834,13 @@ function displaySavedList() {
     return;
   }
   
-  savedList.innerHTML = savedDataList.map(data => `
-    <div class="saved-item" onclick="loadSavedItem('${data.customerName}')">
+  // 최신순으로 정렬
+  const sortedList = [...savedDataList].sort((a, b) => {
+    return new Date(b.inputDate) - new Date(a.inputDate);
+  });
+  
+  savedList.innerHTML = sortedList.map(data => `
+    <div class="saved-item" onclick="loadSavedItem('${data.customerName}', '${data.inputDate}')">
       <div class="saved-item-title">${data.customerName}</div>
       <div class="saved-item-date">${data.inputDate}</div>
     </div>
@@ -1842,8 +1861,13 @@ function filterSavedList() {
     return;
   }
   
-  savedList.innerHTML = filteredList.map(data => `
-    <div class="saved-item" onclick="loadSavedItem('${data.customerName}')">
+  // 최신순으로 정렬
+  const sortedList = [...filteredList].sort((a, b) => {
+    return new Date(b.inputDate) - new Date(a.inputDate);
+  });
+  
+  savedList.innerHTML = sortedList.map(data => `
+    <div class="saved-item" onclick="loadSavedItem('${data.customerName}', '${data.inputDate}')">
       <div class="saved-item-title">${data.customerName}</div>
       <div class="saved-item-date">${data.inputDate}</div>
     </div>
@@ -1851,8 +1875,10 @@ function filterSavedList() {
 }
 
 // 저장된 항목 로드하여 입력 화면에 표시
-function loadSavedItem(customerName) {
-  const data = savedDataList.find(item => item.customerName === customerName);
+function loadSavedItem(customerName, inputDate) {
+  const data = savedDataList.find(item => 
+    item.customerName === customerName && item.inputDate === inputDate
+  );
   if (!data) return;
   
   currentData = data;
