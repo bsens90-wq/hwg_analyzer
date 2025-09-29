@@ -418,7 +418,6 @@
       </div>
       
       <div class="row">
-        <button id="ocrProcessBtn" disabled>🔍 자동 스캔하기</button>
         <div id="ocrStatus" class="hint"></div>
       </div>
       
@@ -687,9 +686,7 @@ function setupEventListeners() {
     e.preventDefault();
     imageUploadArea.classList.remove('drag-over');
   });
-  
-  // OCR 처리 버튼
-  document.getElementById('ocrProcessBtn').addEventListener('click', processOCR);
+
   
   // 저장 버튼
   document.getElementById('saveDataBtn').addEventListener('click', saveAndDownloadImage);
@@ -1063,18 +1060,16 @@ function displayImagePreview(file) {
     imagePreview.classList.remove('hidden');
     uploadText.style.display = 'none';
     
-    document.getElementById('ocrProcessBtn').disabled = false;
-    document.getElementById('ocrStatus').textContent = 'OCR 인식 중... 잠시만 기다려주세요.';
-    
-    // 자동으로 OCR 처리 시작
-    processOCR();
+document.getElementById('ocrStatus').textContent = '이미지 인식 중... 잠시만 기다려주세요.';
+
+// 자동으로 OCR 처리 시작
+processOCR();
   };
   reader.readAsDataURL(file);
 }
 
 // OCR 처리
 async function processOCR() {
-  const ocrBtn = document.getElementById('ocrProcessBtn');
   const ocrStatus = document.getElementById('ocrStatus');
   const imagePreview = document.getElementById('imagePreview');
   const imageInput = document.getElementById('imageInput');
@@ -1085,7 +1080,6 @@ async function processOCR() {
   }
   
   try {
-    ocrBtn.disabled = true;
     ocrStatus.innerHTML = '<span class="loading"></span> OCR 인식 중... 잠시만 기다려주세요.';
     
     const base64Image = imagePreview.src.split(',')[1];
@@ -1104,8 +1098,8 @@ async function processOCR() {
         imageInput.click();
       }, 1500);
     }
-  } finally {
-    ocrBtn.disabled = false;
+} finally {
+    // finally 블록은 비워두거나 제거
   }
 }
 
@@ -1477,10 +1471,8 @@ async function saveAndDownloadImage() {
     }
   });
   
-  saveDataToStorage(currentData);
-  await generateAndDownloadImage(currentData);
-  
-  alert('이미지가 저장되었습니다!');
+saveDataToStorage(currentData);
+await generateAndDownloadImage(currentData);
 }
 
 // 표준금액 대비 진행률 계산
@@ -1627,7 +1619,7 @@ async function generateAndDownloadImage(data) {
         }
         .progress-container {
           flex: 1;
-          max-width: 500px;
+          max-width: 400px;
           min-width: 20px;
           height: 20px;
           background: #e0e0e0;
