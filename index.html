@@ -441,12 +441,11 @@
         <h3>담보 항목별 보장금액</h3>
         <div style="text-align: right; margin-bottom: 10px;">
           <button id="standardAmountBtn" class="small" style="background: linear-gradient(135deg, #ff6600, #ff8f00); color: white; padding: 8px 16px; font-size: 13px; width: auto; margin: 0;">
-            ⚙️ 표준금액 설정
+            ⚙️
           </button>
         </div>
         <div class="section-notice">
-          ⚠️ OCR 인식 후 변경 전/후 값이 동일하게 세팅됩니다. 필요시 수동으로 수정해주세요.<br>
-          🔢 주요순환계(수술) 입력 시 관련 항목들이 자동 계산됩니다.
+          가입금액 인식을 확인 후 필요 시 수동입력 바랍니다.<br>
         </div>
         <table class="input-table" id="coverageTable">
           <thead>
@@ -602,6 +601,11 @@ const ALL_COVERAGE_ITEMS = [
   { key: 'metastasisCancer', name: '전이암진단비', standardAmount: 2000, category: 'cancer' },
   { key: 'cancerSpecificTreatment', name: '암치료비', standardAmount: 1000, category: 'cancer' },
   { key: 'cancerNonCoveredTreatment', name: '암치료비(비급여)', standardAmount: 3000, category: 'cancer' },
+  { key: 'cancerTreatmentSurgery', name: '암치료비(수술)', standardAmount: 2000, category: 'cancer' },  // 신규
+  { key: 'cancerTreatmentDrug', name: '암치료비(약물)', standardAmount: 2000, category: 'cancer' },  // 신규
+  { key: 'cancerTreatmentRadiation', name: '암치료비(방사선)', standardAmount: 2000, category: 'cancer' },  // 신규
+  { key: 'cancerTreatmentICU', name: '암치료비(중환자실)', standardAmount: 1000, category: 'cancer' },  // 신규
+  { key: 'cancerTreatmentHospice', name: '암치료비(호스피스)', standardAmount: 2000, category: 'cancer' },  // 신규
   { key: 'targetTherapy', name: '표적항암치료비', standardAmount: 3000, category: 'cancer' },
   { key: 'heavyIonTherapy', name: '중입자치료비', standardAmount: 5000, category: 'cancer' },
   { key: 'cancerSurgery', name: '암수술비', standardAmount: 500, category: 'cancer' },
@@ -653,6 +657,7 @@ function initializeApp() {
   createCoverageTable();
   addAmountFormatting();
   setupMajorCirculatoryAutoCalculation();
+  setupCancerTreatmentAutoCalculation();  // 이 줄 추가
 }
 
 // 이벤트 리스너 설정
@@ -733,6 +738,72 @@ function setupMajorCirculatoryAutoCalculation() {
       surgeryInputAfter.addEventListener('blur', () => handleMajorCirculatoryCalculation('after'));
     }
   }, 100);
+}
+
+
+  // 암치료비 자동 계산 설정 (주요순환계 함수 바로 아래에 추가)
+function setupCancerTreatmentAutoCalculation() {
+  setTimeout(() => {
+    const surgeryInputBefore = document.getElementById('cancerTreatmentSurgery_before');
+    const surgeryInputAfter = document.getElementById('cancerTreatmentSurgery_after');
+    
+    if (surgeryInputBefore) {
+      surgeryInputBefore.addEventListener('input', () => handleCancerTreatmentCalculation('before'));
+      surgeryInputBefore.addEventListener('blur', () => handleCancerTreatmentCalculation('before'));
+    }
+    
+    if (surgeryInputAfter) {
+      surgeryInputAfter.addEventListener('input', () => handleCancerTreatmentCalculation('after'));
+      surgeryInputAfter.addEventListener('blur', () => handleCancerTreatmentCalculation('after'));
+    }
+  }, 100);
+}
+
+// 암치료비 자동 계산 함수
+function handleCancerTreatmentCalculation(type) {
+  const surgeryInput = document.getElementById('cancerTreatmentSurgery_' + type);
+  if (!surgeryInput) return;
+  
+  const surgeryValue = extractNumber(surgeryInput.value);
+  
+  // 관련 필드들
+  const drugInput = document.getElementById('cancerTreatmentDrug_' + type);
+  const radiationInput = document.getElementById('cancerTreatmentRadiation_' + type);
+  const icuInput = document.getElementById('cancerTreatmentICU_' + type);
+  const hospiceInput = document.getElementById('cancerTreatmentHospice_' + type);
+  
+  if (surgeryValue > 0) {
+    // 약물, 방사선, 호스피스는 수술 금액과 동일
+    if (drugInput) {
+      drugInput.value = formatToDisplayValue(surgeryValue);
+      drugInput.classList.add('auto-calculated');
+    }
+    
+    if (radiationInput) {
+      radiationInput.value = formatToDisplayValue(surgeryValue);
+      radiationInput.classList.add('auto-calculated');
+    }
+    
+    if (hospiceInput) {
+      hospiceInput.value = formatToDisplayValue(surgeryValue);
+      hospiceInput.classList.add('auto-calculated');
+    }
+    
+    // 중환자실은 50%
+    if (icuInput) {
+      const icuValue = Math.floor(surgeryValue * 0.5);
+      icuInput.value = formatToDisplayValue(icuValue);
+      icuInput.classList.add('auto-calculated');
+    }
+  } else {
+    // 수술 금액이 0이면 모두 초기화
+    [drugInput, radiationInput, icuInput, hospiceInput].forEach(input => {
+      if (input) {
+        input.value = '';
+        input.classList.remove('auto-calculated');
+      }
+    });
+  }
 }
 
 // 숫자 추출 함수
@@ -907,6 +978,7 @@ function createCoverageTable() {
   });
   
   setupMajorCirculatoryAutoCalculation();
+  setupCancerTreatmentAutoCalculation();  // 이 줄 추가
 }
 
 // 숫자 포맷팅 함수
