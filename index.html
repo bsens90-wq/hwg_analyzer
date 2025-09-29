@@ -1270,6 +1270,11 @@ function extractCustomerInfoFromRegion(customerInfoBlocks) {
   console.log('고객 정보 구역 텍스트:', fullText);
 
   // 고객명 추출: "○○○님의 한 장 요약" 패턴
+  // "비교" 문자 이후부터 검색 시작
+  const textAfterCompare = fullText.includes('비교') 
+    ? fullText.substring(fullText.indexOf('비교') + 2) 
+    : fullText;
+
   const namePatterns = [
     /([가-힣]{2,4})님의\s*한\s*장\s*요약/,
     /([가-힣]{2,4})님의/,
@@ -1277,7 +1282,7 @@ function extractCustomerInfoFromRegion(customerInfoBlocks) {
   ];
 
   for (const pattern of namePatterns) {
-    const match = fullText.match(pattern);
+    const match = textAfterCompare.match(pattern);
     if (match) {
       document.getElementById('customerName').value = match[1];
       console.log(`고객명 추출 성공: ${match[1]}`);
@@ -1301,7 +1306,7 @@ function extractCustomerInfoFromRegion(customerInfoBlocks) {
     }
   }
 }
-
+  
 // 각 구역에서 담보 데이터 추출
 function extractCoverageDataFromRegions(regions) {
   console.log('담보 데이터 추출 시작...');
