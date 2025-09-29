@@ -1080,7 +1080,7 @@ async function processOCR() {
   }
   
   try {
-    ocrStatus.innerHTML = '<span class="loading"></span> OCR 인식 중... 잠시만 기다려주세요.';
+    ocrStatus.innerHTML = '<span class="loading"></span> 이미지 인식 중... 잠시만 기다려주세요.';
     
     const base64Image = imagePreview.src.split(',')[1];
     
@@ -1776,23 +1776,23 @@ async function generateAndDownloadImage(data) {
   `;
   
   try {
-    const canvas = await html2canvas(container.firstElementChild, {
-      scale: 2,
-      logging: false,
-      useCORS: true,
-      backgroundColor: '#ffffff',
-    });
+const canvas = await html2canvas(container.firstElementChild, {
+  scale: 1.5,  // 적당한 해상도 유지
+  logging: false,
+  useCORS: true,
+  backgroundColor: '#ffffff',
+});
     
-    canvas.toBlob(function(blob) {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `보장분석_${data.customerName}_${new Date().getTime()}.png`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    });
+canvas.toBlob(function(blob) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `보장분석_${data.customerName}_${new Date().getTime()}.jpg`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}, 'image/jpeg', 0.9);  // 품질 90%로 설정
   } catch (error) {
     console.error('이미지 생성 오류:', error);
     alert('이미지 생성 중 오류가 발생했습니다.');
