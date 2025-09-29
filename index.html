@@ -634,11 +634,14 @@ const ALL_COVERAGE_ITEMS = [
   { key: 'disease124Surgery', name: '124대(특정10대)', standardAmount: 500, category: 'majorDisease' },
   { key: 'sevenOrganSurgery', name: '7대기관(뇌/심 관혈)', standardAmount: 2000, category: 'majorDisease' },
   
-  // 5대 필수보험
+ // 5대 필수보험
   { key: 'diseaseHospitalization', name: '(실손)질병입원', standardAmount: 5000, category: 'essential' },
   { key: 'injuryHospitalization', name: '(실손)상해입원', standardAmount: 5000, category: 'essential' },
   { key: 'criminalSettlement', name: '형사합의금', standardAmount: 20000, category: 'essential' },
   { key: 'lawyerAppointment', name: '변호사선임비', standardAmount: 3000, category: 'essential' },
+  { key: 'nursingHospitalOut', name: '요양병원 외', standardAmount: 15, category: 'essential' },  // 신규 추가
+  { key: 'nursingHospitalIn', name: '요양병원', standardAmount: 6, category: 'essential' },  // 신규 추가
+  { key: 'nursingCareIntegrated', name: '간호간병통합', standardAmount: 7, category: 'essential' },  // 신규 추가
   { key: 'dailyLifeLiability', name: '일상생활배상책임', standardAmount: 10000, category: 'essential' },
   { key: 'fireFine', name: '화재벌금', standardAmount: 2000, category: 'essential' }
 ];
@@ -1516,14 +1519,8 @@ async function saveAndDownloadImage() {
     caregiverOption: document.querySelector('input[name="caregiverOption"]:checked').value
   };
   
-  const allFields = [
-    ...ALL_COVERAGE_ITEMS,
-    { key: 'nursingHospitalOut', name: '요양병원 외' },
-    { key: 'nursingHospitalIn', name: '요양병원' },
-    { key: 'nursingCareIntegrated', name: '간호간병통합' }
-  ];
-  
-  allFields.forEach(item => {
+  // 이제 ALL_COVERAGE_ITEMS에 간병인 항목이 포함되어 있으므로 별도 추가 불필요
+  ALL_COVERAGE_ITEMS.forEach(item => {
     const beforeInput = document.getElementById(item.key + '_before');
     const afterInput = document.getElementById(item.key + '_after');
     
@@ -1542,8 +1539,8 @@ async function saveAndDownloadImage() {
     }
   });
   
-saveDataToStorage(currentData);
-await generateAndDownloadImage(currentData);
+  saveDataToStorage(currentData);
+  await generateAndDownloadImage(currentData);
 }
 
 // 표준금액 대비 진행률 계산
