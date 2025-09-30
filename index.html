@@ -1554,7 +1554,7 @@ async function generateAndDownloadImage(data) {
   const container = document.getElementById('hiddenPrintContainer');
   
   container.innerHTML = `
-   <div style="background: white; padding: 50px; width: auto; min-width: 6000px; height: auto; min-height: 2000px; font-family: 'Noto Sans KR', Arial, sans-serif; overflow: visible;">
+ <div style="background: white; padding: 50px; width: auto; min-width: 6000px; height: auto; min-height: 2000px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-weight: bold; overflow: visible;">
       <style>
         .main-title {
           text-align: center;
@@ -1674,12 +1674,14 @@ async function generateAndDownloadImage(data) {
           flex-direction: column;
           padding: 3px 0;
         }
-        .coverage-name {
-          font-size: 65px;
+       .coverage-name {
+          font-size: 80px;
           margin-bottom: -8px;
-          font-weight: 600;
+          font-weight: 700;
           line-height: 1.0;
-          padding-bottom: 0;    // 혹시 모를 padding 제거
+          padding-bottom: 0;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
         }
         .coverage-display {
           display: flex;
@@ -1847,10 +1849,12 @@ async function generateAndDownloadImage(data) {
   try {
 // 수정 후 - 모든 기기에서 동일한 scale 사용
 const canvas = await html2canvas(container.firstElementChild, {
-  scale: 1.5,  // 모든 기기에서 동일하게 2배 고정
+  scale: 1.5,
   logging: false,
   useCORS: true,
   backgroundColor: '#ffffff',
+  allowTaint: true,
+  foreignObjectRendering: false
 });
     
 canvas.toBlob(function(blob) {
