@@ -356,11 +356,11 @@
       display: none;
     }
     
-    #hiddenPrintContainer {
+#hiddenPrintContainer {
       position: absolute;
       left: -9999px;
       top: -9999px;
-      width: 3900px;
+      width: 6500px;
     }
     
     .auto-calculated {
@@ -1554,7 +1554,7 @@ async function generateAndDownloadImage(data) {
   const container = document.getElementById('hiddenPrintContainer');
   
   container.innerHTML = `
-   <div style="background: white; padding: 50px; width: auto; min-width: 5000px; height: auto; min-height: 2000px; font-family: 'Noto Sans KR', Arial, sans-serif; overflow: visible;">
+   <div style="background: white; padding: 50px; width: auto; min-width: 6000px; height: auto; min-height: 2000px; font-family: 'Noto Sans KR', Arial, sans-serif; overflow: visible;">
       <style>
         .main-title {
           text-align: center;
@@ -1611,7 +1611,7 @@ async function generateAndDownloadImage(data) {
           flex: 1;
         }
         .section {
-          width: 1200px;
+          width: 1000px;
           border-radius: 16px;
           padding: 20px;
           overflow-y: auto;
@@ -1717,7 +1717,7 @@ async function generateAndDownloadImage(data) {
           align-items: flex-start;
         }
         .example-section {
-          width: 1200px;
+          width: 1000px;
           padding: 20px;
           border-radius: 15px;
         }
